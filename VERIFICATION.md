@@ -1,5 +1,30 @@
 # Verification record
 
+## Publication verification — 8 October 2026
+
+The owner approved publication. Source commit
+`ec9f768d378b75e496d040712c450990c3eea4bb` was pushed by normal fast-forward to
+the existing public [SCanerG/DemoErp repository](https://github.com/SCanerG/DemoErp).
+The original six commits remain ancestors; the repository URL/visibility and
+no-open-source-license usage terms were preserved.
+
+- GitHub confirmed the source commit, README and 94-file source tree. Obsolete
+  samples/visuals and generated/private files are absent from the current tree.
+- [GitHub Actions run](https://github.com/SCanerG/DemoErp/actions/runs/37691499135):
+  backend restore/build/tests and frontend npm ci/build all succeeded.
+- A new clone from GitHub at that exact source commit passed Compose config and
+  `up --build --wait` on an isolated fresh database (ports 3250/5350).
+  All three services became healthy; frontend login, API health and OpenAPI returned
+  successful HTTP responses. Both committed migrations were applied automatically.
+- Gitleaks scanned the published seven-commit history, including the source commit,
+  with no findings. No force push or fabricated history was used.
+- The README foregrounds implemented functionality and executed checks. A short
+  general AI-assisted-development notice remains in NOTICE; no manual-only claim
+  is made.
+
+This follow-up documentation records checks performed after the source publication.
+The older preparation table below deliberately retains its pre-publication statuses.
+
 ## Publication preparation snapshot — 8 October 2026
 
 The existing application was preserved. English/Turkish README files, architecture,

@@ -63,8 +63,8 @@ ve tekrar üretilebilir komutlar [DEVELOPMENT.md](docs/DEVELOPMENT.md)'dedir.
 Rol/tenant, sayfalama, token yenileme/iptal, parola kurtarma, stok, vergi, indirim ve
 ödeme yoktur. Normal kayıt güncellemelerinde son yazma kazanır; sipariş durumunda
 eşzamanlı değişiklik denetlenir. Para birimi USD’dir. Üretim dağıtımı veya yük testi
-yapıldığı iddia edilmez. GitHub Actions yapılandırıldı; hazırlanan sürümün uzaktaki
-CI çalışması yayın öncesinde doğrulanamaz.
+yapıldığı iddia edilmez. GitHub Actions backend/frontend işleri başarılı tamamlandı;
+[CI çalışmaları](https://github.com/SCanerG/DemoErp/actions/workflows/ci.yml) incelenebilir.
 
 Teknik değerlendirme için yayımlanır; açık kaynak lisansı verilmez.
 [Kullanım koşulu](NOTICE.md).

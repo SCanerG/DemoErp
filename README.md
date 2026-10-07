@@ -232,8 +232,9 @@ upgrade. Browser tests cover complete business workflows, TR/EN switching, mobil
 layouts, dialogs, storage failures and query/session error cases.
 
 Executed checks and their limits are recorded in [VERIFICATION.md](VERIFICATION.md).
-The CI workflow uses the same build/test commands; remote CI execution is unverified
-until this prepared revision is published and GitHub Actions runs it.
+The CI workflow uses the same build/test commands. Backend and frontend jobs passed
+on GitHub Actions; see the [workflow runs](https://github.com/SCanerG/DemoErp/actions/workflows/ci.yml)
+and [publication verification](VERIFICATION.md#publication-verification--8-october-2026).
 
 ## Known limitations
 

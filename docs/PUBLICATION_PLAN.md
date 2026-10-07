@@ -4,6 +4,7 @@ Hedef: https://github.com/SCanerG/DemoErp — PUBLIC, main dalı.
 İncelenen başlangıç commit: 17dcffbef56881a9dca5e6fa102144dd54dd923d.
 Bu rapor yayın öncesi yerel hazırlığın kaydıdır. Hazırlık anında commit/push yapılmamıştı.
 Kullanıcı 8 Ekim 2026 tarihinde yayını onayladı; aşağıdaki uzak doğrulama durumları yayın öncesine aittir.
+Yayın gerçekleşti. Sonuçlar [VERIFICATION.md](../VERIFICATION.md#publication-verification--8-october-2026) dosyasına kaydedildi.
 
 ## Yedek ve Git ayarları
 
@@ -12,7 +13,7 @@ Kullanıcı 8 Ekim 2026 tarihinde yayını onayladı; aşağıdaki uzak doğrula
 - Hazırlık checkout: .tools/publication/review; origin mevcut HTTPS URL, dal main.
 - Ana çalışma alanının Git ayarları ve global kullanıcı ayarları değiştirilmedi.
 - Hazırlık checkout clone işleminin origin/main takip ayarlarını içerir; geçmiş korunur.
-- Onay sonrasında tek gerçek commit oluşturulup main dalına normal fast-forward push yapılacak.
+- Kaynak yayını ve yayın sonrası doğrulama kaydı gerçek commitlerle main dalına normal fast-forward push kullanır.
 - Push öncesi uzak HEAD yeniden kontrol edilecek; değişmişse yeni değişiklikler incelenecek.
 - Force push, depo silme, görünürlük değişikliği ve uydurma commit geçmişi yok.
 - Kullanıcı tercihi: açık kaynak lisansı eklenmeyecek; NOTICE kullanım koşulu korunacak.
