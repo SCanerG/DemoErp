@@ -1,6 +1,6 @@
 # Publication scope / Yayın kapsamı
 
-## Public evidence
+## Published portfolio content / Yayınlanan portföy içeriği
 
 - Bilingual product and architecture documentation
 - Anonymous workflow visuals

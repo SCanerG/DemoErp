@@ -21,7 +21,7 @@ Platform için web, Windows masaüstü ve Android istemcileri hazırlanmıştır
 | 2 dakika | `docs/VERIFICATION.md` | Derleme, smoke test ve doğrulama yaklaşımı |
 | 1 dakika | Güvenlik özeti | JWT, refresh token, rol ve hata yönetimi farkındalığı |
 
-### Teknik kanıtlar
+### Teknik inceleme başlıkları
 
 - ASP.NET Core 9 Minimal API ve açık HTTP sözleşmeleri
 - API, Application, Domain ve Infrastructure sorumluluk ayrımı
@@ -32,7 +32,7 @@ Platform için web, Windows masaüstü ve Android istemcileri hazırlanmıştır
 - Problem Details tabanlı global hata yanıtları ve trace ID
 - Docker ve kalıcı PostgreSQL volume yapılandırması
 
-### Ürün kanıtları
+### Uygulama kapsamı
 
 - Web ve Windows istemcilerinde karşılaştırılabilir sipariş, palet ve barkod ekranları
 - Müşteri bağlantılı sipariş, sipariş satırı ve revizyon
@@ -67,7 +67,7 @@ Web, Windows desktop and Android clients have been prepared for the platform. Th
 
 ### Suggested review order
 
-| Time | Area | Evidence |
+| Time | Area | What it shows |
 |---|---|---|
 | 1 minute | README and product visuals | Domain understanding, product thinking and delivered UI |
 | 3 minutes | `docs/ARCHITECTURE.md` | Layer boundaries, dependency direction and decisions |

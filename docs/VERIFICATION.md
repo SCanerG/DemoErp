@@ -1,6 +1,6 @@
 # Verification / Doğrulama
 
-## Public evidence / Public kanıt
+## Public verification / Public doğrulama
 
 ```sh
 dotnet run --project samples/DemoErp.Sample -- --self-test

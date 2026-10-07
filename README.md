@@ -15,7 +15,7 @@
 4. Bilinçli olarak küçük tutulan [.NET 9 örneğini](samples/DemoErp.Sample) çalıştırın.
 5. [Public yayın sınırlarını](docs/PUBLICATION_SCOPE.md) okuyun.
 
-Bu depo dağıtılabilir bir ERP paketi değil, teknik portföydür. Tam domain implementasyonunu, veritabanlarını ve operasyonel entegrasyonları gizli tutarken ürün ve mühendislik yetkinliğini doğrulanabilir kanıtlarla gösterir.
+Bu depo dağıtılabilir bir ERP paketi değil, teknik portföydür. Tam domain implementasyonunu, veritabanlarını ve operasyonel entegrasyonları gizli tutarken ürün ve mühendislik yaklaşımını incelenebilir örneklerle gösterir.
 
 ### English
 
@@ -25,9 +25,9 @@ Bu depo dağıtılabilir bir ERP paketi değil, teknik portföydür. Tam domain 
 4. Run the deliberately small [.NET 9 sample](samples/DemoErp.Sample).
 5. Read the [publication boundary](docs/PUBLICATION_SCOPE.md).
 
-This repository is a technical portfolio, not a distributable ERP package. It provides verifiable product and engineering evidence while keeping the complete domain implementation, databases and operational integrations private.
+This repository is a technical portfolio, not a distributable ERP package. It presents reviewable product and engineering examples while keeping the complete domain implementation, databases and operational integrations private.
 
-## Product evidence / Ürün kanıtı
+## Application showcase / Uygulama vitrini
 
 The web screenshots below were captured from the running application on localhost with demo data. Windows visuals document the prepared desktop client experience. No customer records, production designs or machine configuration are published.
 
@@ -144,7 +144,7 @@ Product/material cards expose list, detail, create, update and soft-delete opera
 
 Access tokens default to 15 minutes and refresh tokens to seven days. Refresh tokens are hashed in storage and rotated on renewal. Logout revokes the current refresh token and clears cookies; immediate server-side revocation of previously issued access tokens is not implemented. Request validation, global Problem Details handling, provider-specific migrations and seed data are present.
 
-### Evidence and planned work
+### Implementation status and roadmap
 
 Start with the [sample project](samples/DemoErp.Sample/DemoErp.Sample.csproj), [API example](samples/DemoErp.Sample/Program.cs) and [domain rule](samples/DemoErp.Sample/SizeRule.cs). Run the two commands above to inspect the public sample; it demonstrates size validation, not the private authentication or persistence implementation.
 
