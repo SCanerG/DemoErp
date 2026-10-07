@@ -54,7 +54,6 @@ Remote baseline: `17dcffbef56881a9dca5e6fa102144dd54dd923d`, public
 `SCanerG/DemoErp`, main. The isolated preparation checkout retains this history.
 The application's original working directory has no local commits; no history was
 fabricated. The old sample/visuals are removed only in the local prepared checkout.
-Full file changes and recommended About/topics are in [PUBLICATION_PLAN](docs/PUBLICATION_PLAN.md).
 Tools, bundles, scanner reports and generated diagram previews stay in ignored
 local storage. Development placeholders are clearly identified; a clean secret
 scan is not proof against every possible secret format.
