@@ -1,0 +1,11 @@
+bin/
+obj/
+.vs/
+.idea/
+*.user
+*.db
+*.db-*
+*.sqlite*
+.env*
+artifacts/
+publish/
