@@ -5,9 +5,9 @@
 
 [Türkçe](#türkçe) · [English](#english) · [Reviewer guide](docs/REVIEWER_GUIDE.md) · [Architecture](docs/ARCHITECTURE.md) · [Verification](docs/VERIFICATION.md)
 
-## 60 saniyelik inceleme yolu / 60-second reviewer path
+## İşe alım incelemesi / Recruiter review
 
-### Türkçe
+### Türkçe — 60 saniyelik inceleme yolu
 
 1. Aşağıdaki gerçek web uygulaması ekranlarını ve Windows istemci görsellerini inceleyin.
 2. [Mimari ve güvenlik kararlarına](docs/REVIEWER_GUIDE.md) göz atın.
@@ -17,7 +17,7 @@
 
 Bu depo dağıtılabilir bir ERP paketi değil, teknik portföydür. Tam domain implementasyonunu, veritabanlarını ve operasyonel entegrasyonları gizli tutarken ürün ve mühendislik yaklaşımını incelenebilir örneklerle gösterir.
 
-### English
+### English — 60-second reviewer path
 
 1. Review the real web-application screens and Windows-client visuals below.
 2. Inspect the [architecture and security decisions](docs/REVIEWER_GUIDE.md).
