@@ -3,7 +3,45 @@
 
 **C# · ASP.NET Core 9 · EF Core 9 · PostgreSQL · JWT · JavaScript SPA · Docker**
 
-[Türkçe](#türkçe) · [English](#english) · [Architecture](docs/ARCHITECTURE.md) · [Verification](docs/VERIFICATION.md)
+[Türkçe](#türkçe) · [English](#english) · [Reviewer guide](docs/REVIEWER_GUIDE.md) · [Architecture](docs/ARCHITECTURE.md) · [Verification](docs/VERIFICATION.md)
+
+## 60-second reviewer path
+
+1. Review the real web-application screens and Windows-client visuals below.
+2. Inspect the [architecture and security decisions](docs/REVIEWER_GUIDE.md).
+3. Review the [selected code examples](docs/CODE_EXAMPLES.md).
+4. Run the deliberately small [.NET 9 sample](samples/DemoErp.Sample).
+5. Read the [publication boundary](docs/PUBLICATION_SCOPE.md).
+
+This repository is a technical portfolio, not a distributable ERP package. It provides verifiable product and engineering evidence while keeping the complete domain implementation, databases and operational integrations private.
+
+## Product evidence / Ürün kanıtı
+
+The web screenshots below were captured from the running application on localhost with demo data. Windows visuals document the prepared desktop client experience. No customer records, production designs or machine configuration are published.
+
+### Web client / Web istemcisi — real application captures
+
+| Order detail / Sipariş detayı | Palette and color preview / Palet ve renk önizleme | ZPL barcode designer / Barkod tasarımı |
+|---|---|---|
+| [![Order detail](docs/screenshots/web-order-detail.png)](docs/screenshots/web-order-detail.png) | [![Palette preview](docs/screenshots/web-palette-color-preview.png)](docs/screenshots/web-palette-color-preview.png) | [![Barcode designer](docs/screenshots/web-barcode-designer.png)](docs/screenshots/web-barcode-designer.png) |
+
+### Windows client / Windows istemcisi
+
+| Order detail / Sipariş detayı | Palette and color preview / Palet ve renk önizleme | ZPL barcode designer / Barkod tasarımı |
+|---|---|---|
+| [![Windows order detail](docs/screenshots/windows-order-detail.svg)](docs/screenshots/windows-order-detail.svg) | [![Windows palette preview](docs/screenshots/windows-palette-color-preview.svg)](docs/screenshots/windows-palette-color-preview.svg) | [![Windows barcode designer](docs/screenshots/windows-barcode-designer.svg)](docs/screenshots/windows-barcode-designer.svg) |
+
+## Multi-client platform / Çoklu istemci platformu
+
+DemoErp is designed around one protected ASP.NET Core REST API and shared JWT identity contracts:
+
+- **Web:** reference client and current delivery priority
+- **Windows desktop:** prepared for workstation and shop-floor workflows
+- **Android:** prepared for portable operational workflows
+
+Feature coverage can differ by operating scenario. New capabilities are delivered to the web reference client first; the clients share backend authorization and business contracts rather than duplicating security rules in the UI.
+
+DemoErp; ortak ASP.NET Core REST API ve JWT kimlik sözleşmeleri etrafında geliştirilir. Web, Windows masaüstü ve Android istemcileri hazırlanmıştır. Referans istemci ve güncel teslimat önceliği web uygulamasıdır; özellik kapsamı kullanım senaryosuna göre farklılaşabilir.
 
 ## Türkçe
 
@@ -23,7 +61,7 @@ Bu public depo teknik dokümantasyon ve seçilmiş, çalıştırılabilir C# ör
 | Doğrulama | Request DTO doğrulaması ve Domain iş kuralları |
 | Hatalar | Global exception handling, Problem Details ve trace ID |
 | Dağıtım | Docker, Docker Compose, kalıcı PostgreSQL volume |
-| Diğer istemci | WPF; web ile eşit özellik kapsamına henüz sahip değil |
+| İstemciler | Web referans istemci; Windows masaüstü ve Android istemcileri hazırlanmış durumda |
 
 SQLite, test ve eski veri aktarımı desteği olarak bulunur. Varsayılan uygulama veritabanı PostgreSQL'dir.
 
@@ -86,7 +124,7 @@ This public repository contains documentation and selected executable C# samples
 
 ### Implemented stack and flow
 
-The application uses C#, ASP.NET Core 9 Minimal APIs, EF Core 9, Npgsql and PostgreSQL 17. API, Application, Domain and Infrastructure projects separate HTTP handling, use cases, business rules and persistence. The web client is an HTML/CSS/vanilla JavaScript SPA with protected hash routes. Docker Compose defines web/API hosting and persistent PostgreSQL storage.
+The application uses C#, ASP.NET Core 9 Minimal APIs, EF Core 9, Npgsql and PostgreSQL 17. API, Application, Domain and Infrastructure projects separate HTTP handling, use cases, business rules and persistence. The current web client is an HTML/CSS/vanilla JavaScript SPA with protected hash routes; React and TypeScript migration is planned. Windows desktop and Android clients are prepared around the same protected API contracts. Docker Compose defines web/API hosting and persistent PostgreSQL storage.
 
 The first administrator is created through `POST /api/auth/setup`; administrators provision subsequent users. There is no public self-registration endpoint. Login returns a short-lived JWT and sets an HttpOnly refresh cookie. The browser renews expired access tokens and retries a request once. Backend role policies enforce write permissions independently of the UI.
 
