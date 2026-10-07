@@ -1,40 +1,35 @@
-# Architecture
+# Architecture / Mimari
 
-The private application follows a layered monolith structure. This is an architectural
-direction, not a claim that every existing module is perfectly isolated.
+DemoErp is a layered manufacturing monolith. The public sample is intentionally smaller than the private solution.
 
 ```mermaid
 flowchart LR
-    Web[HTML / CSS / JavaScript SPA] --> API[ASP.NET Core 9 API]
-    Desktop[WPF client - partial] --> API
-    API --> App[Application use cases]
-    App --> Domain[Domain rules and entities]
-    API --> Infra[Infrastructure services]
-    Infra --> DB[(SQLite / EF Core 9)]
+    Browser[JavaScript SPA] --> API[ASP.NET Core 9 Minimal API]
+    Desktop[WPF client] --> API
+    API --> Application[Application use cases]
+    Application --> Domain[Domain rules and repository contracts]
+    Application --> Infrastructure[Infrastructure implementations]
+    Infrastructure --> Database[(EF Core 9 / PostgreSQL)]
 ```
 
-## Responsibilities
+The arrows describe runtime flow, not project reference direction. Repository contracts live in Domain; Infrastructure implements them. API is the composition root. Existing UnitOfWork and repositories remain part of the application; no claim is made that every module is fully isolated.
 
-- **Domain:** value validation, state transitions and entity behavior.
-- **Application:** use cases, repository contracts, authorization context and orchestration.
-- **Infrastructure:** EF Core persistence, migrations and integration services.
-- **API:** HTTP endpoints, authentication policies and static web client hosting.
-- **Desktop:** Windows-specific client; not yet equivalent to the web client.
+## Review path / İnceleme yolu
 
-Some modules currently use infrastructure services directly from endpoints.
-The browser application also contains a large shared script alongside module scripts.
-Both are refactoring opportunities, not hidden behind a claim of strict Clean Architecture.
+JWT login → protected product/material catalog → create/read/update/deactivate → EF Core persistence → logout.
 
-## Decisions and trade-offs
+Product cards use request models and a ProductCardDto response mapper. Deactivation preserves manufacturing and stock history. Technical carpet cards and inventory material cards remain separate models.
 
-- SQLite keeps local development simple. PostgreSQL is not yet configured.
-- Business invariants are checked on the server as well as in forms.
-- Archive revisions retain original bytes; metadata and hashes enable traceability.
-- Stock correctness tests include independent readers and duplicate posting cases.
-- ZPL previews run locally, avoiding transfer of label content to external renderers.
-  The preview is partial and cannot substitute for printer acceptance tests.
-- Multi-company SaaS isolation, production deployment and enterprise security
-  hardening remain separate delivery work.
+The web SPA uses hash navigation and shared API helpers. It is not React or TypeScript today. Some endpoints directly orchestrate repositories or infrastructure services; extracting these responsibilities remains refactoring work.
 
-.NET 9 is the current project target, not a promise about long-term platform support.
-Runtime lifecycle and upgrade planning must be reviewed before production deployment.
+## Security and configuration / Güvenlik ve yapılandırma
+
+Access tokens use JWT validation and role policies. Refresh tokens use HttpOnly, SameSite=Strict cookies and hashed database records with rotation. Access tokens are returned to clients and also set as cookies for compatibility. Browser and API are served from the same origin; no cross-origin frontend deployment is claimed.
+
+PostgreSQL is the default application provider; credentials and signing keys come from environment variables. Separate migrations support PostgreSQL and SQLite test/legacy paths. Docker Compose uses a persistent PostgreSQL volume. Production HTTPS, cookie policy, session revocation and deployment acceptance require further verification.
+
+## Target direction / Hedef
+
+Focus the portfolio on authentication and existing product CRUD. Evaluate React/TypeScript with Vite and a separate frontend directory, upgrade the backend to .NET 10, and add OpenAPI documentation. These are planned changes.
+
+The current source layout is `src/DokumaERP.Api`, `src/DokumaERP.Application`, `src/DokumaERP.Domain`, `src/DokumaERP.Infrastructure`, `src/DokumaERP.PostgreSqlMigrations`, plus Desktop, tests and tools. The public repository exposes only `samples/` and documentation.
