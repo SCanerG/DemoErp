@@ -1,161 +1,250 @@
-# DemoErp
-### Manufacturing ERP / MRP · Full-stack engineering portfolio
+# DemoErp — Catalog business demo
 
-**C# · ASP.NET Core 9 · EF Core 9 · PostgreSQL · JWT · JavaScript SPA · Docker**
+A runnable full-stack engineering portfolio: register/sign in, manage products,
+categories and customers, and create orders with prices calculated by the server.
+The web interface switches immediately between English and Turkish.
 
-[Türkçe](#türkçe) · [English](#english) · [Reviewer guide](docs/REVIEWER_GUIDE.md) · [Architecture](docs/ARCHITECTURE.md) · [Verification](docs/VERIFICATION.md)
+[Türkçe](README.tr.md) · [Architecture](docs/ARCHITECTURE.md) · [Database](docs/DATABASE.md) · [API](docs/API.md) · [Development](docs/DEVELOPMENT.md) · [Verification](VERIFICATION.md)
 
-## İşe alım incelemesi / Recruiter review
+This source tree contains the complete standalone demo. Earlier commits describe a
+different, private manufacturing ERP; its samples and visuals are superseded here.
+The current application does not include manufacturing, barcode or desktop modules.
+Verification includes builds, PostgreSQL integration tests and browser acceptance tests.
 
-### Türkçe — 60 saniyelik inceleme yolu
+## Features
 
-1. Aşağıdaki gerçek web uygulaması ekranlarını ve Windows istemci görsellerini inceleyin.
-2. [Mimari ve güvenlik kararlarına](docs/REVIEWER_GUIDE.md) göz atın.
-3. [Seçilmiş kod örneklerini](docs/CODE_EXAMPLES.md) inceleyin.
-4. Bilinçli olarak küçük tutulan [.NET 9 örneğini](samples/DemoErp.Sample) çalıştırın.
-5. [Public yayın sınırlarını](docs/PUBLICATION_SCOPE.md) okuyun.
+- Registration, password hashing, JWT login and protected API/UI routes.
+- Product, category and customer list/detail/create/edit/delete screens; active flags
+  and reference protection for deletion. Every product belongs to a category.
+- Orders with multiple distinct products, quantity validation, database price
+  snapshots, transaction rollback and unique sequence-backed order numbers.
+- Pending → Confirmed → Completed status flow, with cancellation before completion.
+- TR/EN navigation, forms, validation, dialogs, dates and number formatting; responsive
+  mobile cards and accessible native confirmation dialogs.
+- Persistent PostgreSQL data, committed migrations, one-command Docker startup and
+  Development Swagger/OpenAPI.
 
-Bu depo dağıtılabilir bir ERP paketi değil, teknik portföydür. Tam domain implementasyonunu, veritabanlarını ve operasyonel entegrasyonları gizli tutarken ürün ve mühendislik yaklaşımını incelenebilir örneklerle gösterir.
+## Screenshots
 
-### English — 60-second reviewer path
+Real Chromium captures from the running application, using synthetic demo records
+in a disposable PostgreSQL database. No production data is shown.
 
-1. Review the real web-application screens and Windows-client visuals below.
-2. Inspect the [architecture and security decisions](docs/REVIEWER_GUIDE.md).
-3. Review the [selected code examples](docs/CODE_EXAMPLES.md).
-4. Run the deliberately small [.NET 9 sample](samples/DemoErp.Sample).
-5. Read the [publication boundary](docs/PUBLICATION_SCOPE.md).
+| English product workspace | Turkish order detail |
+| --- | --- |
+| ![Products in English](docs/screenshots/products-en.png) | ![Order in Turkish](docs/screenshots/order-detail-tr.png) |
 
-This repository is a technical portfolio, not a distributable ERP package. It presents reviewable product and engineering examples while keeping the complete domain implementation, databases and operational integrations private.
+| Login | Order creation |
+| --- | --- |
+| ![Login](docs/screenshots/login-en.png) | ![Create order](docs/screenshots/order-create-en.png) |
 
-## Application showcase / Uygulama vitrini
+Additional captures: [categories](docs/screenshots/categories-en.png),
+[customers](docs/screenshots/customers-en.png), [orders](docs/screenshots/orders-en.png),
+[Turkish products](docs/screenshots/products-tr.png). [Capture procedure](docs/DEVELOPMENT.md#screenshots).
 
-The web screenshots below were captured from the running application on localhost with demo data. Windows visuals document the prepared desktop client experience. No customer records, production designs or machine configuration are published.
+## Tech stack
 
-### Web client / Web istemcisi — real application captures
+Frontend versions below are resolved from the committed npm lockfile; .NET packages
+are explicit project references. Container tags are configured versions, not immutable
+image digests.
 
-| Order detail / Sipariş detayı | Palette and color preview / Palet ve renk önizleme | ZPL barcode designer / Barkod tasarımı |
-|---|---|---|
-| [![Order detail](docs/screenshots/web-order-detail.png)](docs/screenshots/web-order-detail.png) | [![Palette preview](docs/screenshots/web-palette-color-preview.png)](docs/screenshots/web-palette-color-preview.png) | [![Barcode designer](docs/screenshots/web-barcode-designer.png)](docs/screenshots/web-barcode-designer.png) |
+| Area | Technology / version |
+| --- | --- |
+| Frontend | React 19.3.0, TypeScript 5.9.3, Vite 6.4.4, Tailwind CSS 4.3.3 |
+| Routing / server state | React Router 7.18.4, TanStack Query 5.104.1 |
+| Forms / validation | React Hook Form 7.89.0, Zod 4.1.11; FluentValidation 12.1.1 |
+| Backend | ASP.NET Core / .NET 10; verified SDK 10.0.401 |
+| ORM / database | EF Core 10.0.12, Npgsql EF provider 10.0.3, PostgreSQL 17 |
+| Authentication | JWT Bearer 10.0.12, HS256; Identity PBKDF2 password hasher |
+| API documentation | Swashbuckle 10.3.0 |
+| Backend tests | xUnit v3 package 4.0.1, ASP.NET testing 10.0.12, Testcontainers 4.15.0 |
+| Browser tests | Playwright 1.63.0, Chromium |
+| Containers | Docker Compose v2; SDK/ASP.NET 10, Node 22 Alpine, PostgreSQL 17 Alpine, unprivileged Nginx |
+| CI | GitHub Actions: backend build/tests and frontend build; no deployment workflow |
 
-### Windows client / Windows istemcisi
+## System architecture
 
-| Order detail / Sipariş detayı | Palette and color preview / Palet ve renk önizleme | ZPL barcode designer / Barkod tasarımı |
-|---|---|---|
-| [![Windows order detail](docs/screenshots/windows-order-detail.svg)](docs/screenshots/windows-order-detail.svg) | [![Windows palette preview](docs/screenshots/windows-palette-color-preview.svg)](docs/screenshots/windows-palette-color-preview.svg) | [![Windows barcode designer](docs/screenshots/windows-barcode-designer.svg)](docs/screenshots/windows-barcode-designer.svg) |
+One API project separates concerns through directories and scoped services; it does
+not claim separate Application/Infrastructure projects.
 
-## Multi-client platform / Çoklu istemci platformu
+```mermaid
+flowchart LR
+  React[React / TypeScript] -->|JSON + Bearer JWT| API[ASP.NET Core controllers]
+  API --> Logic[Business services + FluentValidation]
+  Logic --> EF[EF Core AppDbContext]
+  EF --> DB[(PostgreSQL)]
+```
 
-DemoErp is designed around one protected ASP.NET Core REST API and shared JWT identity contracts:
+See [architecture decisions](docs/ARCHITECTURE.md) and the source in
+[controllers](backend/Demo.Api/Controllers), [services](backend/Demo.Api/Services),
+[contracts](backend/Demo.Api/Contracts) and [data](backend/Demo.Api/Data).
 
-- **Web:** reference client and current delivery priority
-- **Windows desktop:** prepared for workstation and shop-floor workflows
-- **Android:** prepared for portable operational workflows
+## Database architecture
 
-Feature coverage can differ by operating scenario. New capabilities are delivered to the web reference client first; the clients share backend authorization and business contracts rather than duplicating security rules in the UI.
+```mermaid
+erDiagram
+  Users {
+    uuid Id PK
+    varchar Email UK
+    text PasswordHash
+  }
+  Categories ||--o{ Products : categorizes
+  Customers ||--o{ Orders : places
+  Orders ||--|{ OrderItems : contains
+  Products ||--o{ OrderItems : referenced_by
+  Categories {
+    uuid Id PK
+  }
+  Products {
+    uuid Id PK
+    uuid CategoryId FK
+    decimal Price
+  }
+  Customers {
+    uuid Id PK
+  }
+  Orders {
+    uuid Id PK
+    uuid CustomerId FK
+    varchar OrderNumber UK
+    decimal TotalAmount
+  }
+  OrderItems {
+    uuid Id PK
+    uuid OrderId FK
+    uuid ProductId FK
+    int Quantity
+    decimal UnitPrice
+    decimal LineTotal
+  }
+```
 
-DemoErp; ortak ASP.NET Core REST API ve JWT kimlik sözleşmeleri etrafında geliştirilir. Web, Windows masaüstü ve Android istemcileri hazırlanmıştır. Referans istemci ve güncel teslimat önceliği web uygulamasıdır; özellik kapsamı kullanım senaryosuna göre farklılaşabilir.
+Users have no business-record ownership relationships. API-created orders require
+at least one line; this minimum is enforced by validation. Foreign keys protect
+referenced category/customer/product records; order-item deletion cascades only
+when an order is administratively deleted. [Full schema and migrations](docs/DATABASE.md).
 
-## Türkçe
+## Application workflow
 
-DemoErp, halı, iplik ve kumaş süreçlerine yönelik geliştirilen bir üretim yönetim projesidir. İşe alım incelemesi için odak noktası tek bir akıştır: **giriş → yetkilendirilmiş API → ürün kartı CRUD → kalıcı veri → çıkış**.
+The authenticated landing page is the product workspace with summary cards; there
+is no separate dashboard route.
 
-Bu public depo teknik dokümantasyon ve seçilmiş, çalıştırılabilir C# örnekleri içerir. Tam MRP uygulaması, kimlik doğrulama uygulaması ve veritabanı dağıtımı bu depoda yayınlanmaz. Aşağıdaki ürün özellikleri özel çalışma alanındaki implementasyonu anlatır; public örneğin yetenekleri ayrıca belirtilmiştir.
+```mermaid
+flowchart TD
+  Register[Register account] --> Login[Login]
+  Login --> Auth[Validate credentials and issue JWT]
+  Auth --> Workspace[Product workspace / summary cards]
+  Workspace --> Products[Products]
+  Workspace --> Categories[Categories]
+  Workspace --> Customers[Customers]
+  Workspace --> Orders[Orders]
+```
 
-### Mevcut teknoloji yığını
+```mermaid
+flowchart LR
+  Customer[Select active customer] --> Product[Select active products]
+  Product --> Quantity[Enter quantities]
+  Quantity --> Validation[Server-side validation]
+  Validation --> Price[Read database prices and calculate totals]
+  Price --> Persist[Persist order and lines in one transaction]
+  Persist --> Pending[Order created: Pending]
+  Pending --> Confirm[User confirms order]
+  Confirm --> Confirmed[Status: Confirmed]
+```
 
-| Alan | Uygulanan teknoloji |
-|---|---|
-| Backend | C#, .NET 9, ASP.NET Core Minimal API |
-| Mimari | API, Application, Domain, Infrastructure; use case ve repository ayrımı |
-| Veri | EF Core 9, Npgsql, PostgreSQL 17, migration ve başlangıç verileri |
-| Web | HTML, CSS, vanilla JavaScript SPA, hash tabanlı korunan rotalar |
-| Kimlik | JWT access token, HttpOnly refresh cookie, token rotasyonu, rol politikaları |
-| Doğrulama | Request DTO doğrulaması ve Domain iş kuralları |
-| Hatalar | Global exception handling, Problem Details ve trace ID |
-| Dağıtım | Docker, Docker Compose, kalıcı PostgreSQL volume |
-| İstemciler | Web referans istemci; Windows masaüstü ve Android istemcileri hazırlanmış durumda |
+Browser totals are previews. Order creation accepts only customer/product IDs and
+quantities; the API calculates prices/totals. Stored unit prices do not change when
+product prices change. Product/customer names remain live references.
 
-SQLite, test ve eski veri aktarımı desteği olarak bulunur. Varsayılan uygulama veritabanı PostgreSQL'dir.
+## API
 
-### İncelenecek temel akış
+Default base URL: http://localhost:5080/api. Business endpoints require Bearer JWT.
 
-1. İlk kurulumda yönetici hesabı oluşturulur; sonraki kullanıcıları yönetici açar.
-2. Login, kısa ömürlü JWT ve HttpOnly refresh cookie üretir.
-3. Kullanıcı ürün/malzeme kartlarını listeler, oluşturur, görüntüler ve günceller.
-4. Silme isteği, stok ve kullanım kurallarını denetleyerek kartı pasife alır.
-5. Access token süresi dolduğunda istemci yenileme yapar; logout refresh tokenı iptal edip cookie'leri temizler.
+| Module | Endpoints | Authentication |
+| --- | --- | --- |
+| Auth | POST /auth/register, POST /auth/login | Public; rate limited |
+| Products | GET/POST /products; GET/PUT/DELETE /products/{id} | Bearer |
+| Categories | GET/POST /categories; GET/PUT/DELETE /categories/{id} | Bearer |
+| Customers | GET/POST /customers; GET/PUT/DELETE /customers/{id} | Bearer |
+| Orders | GET/POST /orders; GET /orders/{id}; PUT /orders/{id}/status | Bearer |
+| Health | GET /health (outside /api) | Public |
 
-Halı, iplik ve kumaş iş alanındaki ürünlerdir. Teknik halı kartları ayrı özellikler taşır; örnek CRUD mevcut ürün/malzeme kartlarını kullanır. Bu katalogda hayali fiyat veya açıklama alanları gösterilmez.
+[Detailed endpoint contracts](docs/API.md) · [Local Swagger](http://localhost:5080/swagger).
+There is no order-delete, refresh-token or server logout endpoint.
 
-| İşlem | Gerçek API yolu |
-|---|---|
-| İlk yönetici kurulumu | `POST /api/auth/setup` |
-| Giriş / yenileme / çıkış | `POST /api/auth/login`, `/refresh`, `/logout` |
-| Liste / detay | `GET /api/inventory/items`, `GET /api/inventory/items/{id}` |
-| Oluştur / güncelle | `POST /api/inventory/items`, `PUT /api/inventory/items/{id}` |
-| Pasife al | `DELETE /api/inventory/items/{id}` |
+## Getting started
 
-Self-service `/register` endpointi yoktur. Web rotaları `#product-cards` ve `#carpet-products` biçimindedir; oluşturma ve düzenleme formları bu ekranlardan açılır.
-
-### Güvenlik davranışı
-
-Access token varsayılan 15 dakika, refresh token 7 gün geçerlidir. İstemci access tokenı bellekte tutar; aynı origin ve masaüstü uyumluluğu için access cookie de vardır. Refresh cookie HttpOnly ve SameSite=Strict'tir; HTTPS dağıtımında Secure etkinleştirilmelidir. Refresh tokenın yalnızca SHA-256 özeti veritabanına yazılır. Yenilemede token değiştirilir ve eskisi iptal edilir.
-
-API, JWT imzasını, issuer, audience ve süreyi doğrular; yazma işlemlerinde rol kontrolü uygular. Frontend route guard kullanıcı deneyimini yönetir; erişim güvenliği backend tarafından sağlanır. Logout mevcut refresh tokenı iptal eder; önceden alınmış access tokenın süresi dolmadan sunucuda anında iptali henüz uygulanmamıştır.
-
-### Çalıştırma ve doğrulama sınırı
-
-Public örnek .NET 9 SDK ile çalışır:
+Requires Docker Desktop with Linux containers, or Docker Engine with Compose v2.
 
 ```sh
-dotnet run --project samples/DemoErp.Sample -- --self-test
-dotnet run --project samples/DemoErp.Sample -- --urls http://localhost:5095
+git clone https://github.com/SCanerG/DemoErp.git
+cd DemoErp
+# Optional: copy .env.example to .env and customize development settings.
+docker compose up --build
 ```
 
-`POST /samples/size/validate` için örnek istek:
+Development defaults work without a .env file or host SDK. The example contains
+clearly marked local placeholders; never use these as production credentials.
+Register your own account; fresh databases have no seeded login or business data.
 
-```json
-{"widthCm":160,"lengthCm":230,"shape":"Rectangle"}
+| Service | URL |
+| --- | --- |
+| Frontend | http://localhost:3000 |
+| Swagger / OpenAPI | http://localhost:5080/swagger / http://localhost:5080/swagger/v1/swagger.json |
+| Health | http://localhost:5080/health |
+
+PostgreSQL is internal to Compose. Health checks order startup and the API applies
+migrations automatically. `docker compose down` retains the database volume;
+`docker compose down -v` deletes it. [Environment variables and local development](docs/DEVELOPMENT.md).
+
+## Engineering decisions
+
+- Scoped services/DbContext keep HTTP handling, business rules and persistence clear
+  within one API project. Explicit DTOs omit hashes and persistence internals.
+- FluentValidation is authoritative; Zod gives browser feedback. Database constraints
+  enforce uniqueness, foreign keys and numeric invariants under concurrency.
+- EF read projections and AsNoTracking avoid tracking overhead and per-item queries.
+- Repeatable-read order transactions prevent partial writes; PostgreSQL sequence
+  allocation and a unique index provide concurrent order-number safety.
+- JWT validates issuer, audience, signature and expiry. Passwords are salted PBKDF2
+  hashes. Session expiry/401 clears browser state; logout does not revoke JWTs.
+- Localization uses one dictionary and a React subscription, with storage fallback.
+- Errors return safe ProblemDetails and trace IDs; structured logs avoid sensitive
+  request/SQL values. [Details and tradeoffs](docs/ARCHITECTURE.md).
+
+## Testing
+
+.NET 10 SDK and running Docker are required for PostgreSQL integration tests:
+
+```sh
+dotnet build Catalog.slnx
+dotnet test
+cd frontend
+npm ci
+npm run build
+npx playwright install chromium
+npm run test:e2e
 ```
 
-Örnek; Minimal API, request/response sözleşmesi ve ebat iş kurallarını gösterir. JWT, ürün CRUD, EF Core veya Docker içermez.
+Browser tests require the running Compose stack. Docker Chromium is also supported;
+see [development commands](docs/DEVELOPMENT.md). The backend suite covers auth,
+CRUD, validation, reference protection, concurrency, transactions and legacy migration
+upgrade. Browser tests cover complete business workflows, TR/EN switching, mobile
+layouts, dialogs, storage failures and query/session error cases.
 
-Tam uygulamada gerekli environment sırları hazırlandıktan sonra `docker compose up --build` web/API ve PostgreSQL'i başlatacak şekilde yapılandırılmıştır. Web/API adresi `http://localhost:5080` olur. Public depo tam uygulamayı içermez; burada bu komutla ERP başlatılamaz. Compose doğrulandı; gerçek Docker/PostgreSQL çalıştırma kabul testi henüz raporlanmamıştır.
+Executed checks and their limits are recorded in [VERIFICATION.md](VERIFICATION.md).
+The CI workflow uses the same build/test commands; remote CI execution is unverified
+until this prepared revision is published and GitHub Actions runs it.
 
-### Planlanan gelişmeler
+## Known limitations
 
-React, TypeScript ve Vite tabanlı istemci; React Router, TanStack Query, React Hook Form, Zod ve Tailwind CSS değerlendirmesi; .NET 10 geçişi; FluentValidation değerlendirmesi; OpenAPI/Swagger dokümantasyonu. Bunlar mevcut tech stack değildir.
+Business data is shared; there are no roles, tenants, per-user ownership, pagination,
+refresh/revocation, password recovery, inventory, taxes, discounts or payments.
+Most record edits use last write wins; order status changes detect conflicts.
+Only unit prices are snapshots. Currency is USD. No production deployment, load
+test, cross-browser certification or cross-platform certification is claimed.
+Future improvements are not presented as implemented functionality.
 
-Öncelik, auth ve ürün CRUD akışını gerçek PostgreSQL üzerinde doğrulamak, refresh/replay ve oturum iptali testlerini genişletmek ve frontend modüllerini ayırmaktır. Ayrı frontend/backend klasör düzeni bu geçişle değerlendirilecektir.
+## Reuse
 
-## English
-
-DemoErp is a manufacturing ERP/MRP project covering carpet, yarn and fabric workflows. Its recruitment presentation focuses on **login → authorized API → product-card CRUD → persistent data → logout**.
-
-This public repository contains documentation and selected executable C# samples. The complete application, authentication implementation and database deployment remain private. The implementation described here belongs to that private application, not to the small public sample.
-
-### Implemented stack and flow
-
-The application uses C#, ASP.NET Core 9 Minimal APIs, EF Core 9, Npgsql and PostgreSQL 17. API, Application, Domain and Infrastructure projects separate HTTP handling, use cases, business rules and persistence. The current web client is an HTML/CSS/vanilla JavaScript SPA with protected hash routes; React and TypeScript migration is planned. Windows desktop and Android clients are prepared around the same protected API contracts. Docker Compose defines web/API hosting and persistent PostgreSQL storage.
-
-The first administrator is created through `POST /api/auth/setup`; administrators provision subsequent users. There is no public self-registration endpoint. Login returns a short-lived JWT and sets an HttpOnly refresh cookie. The browser renews expired access tokens and retries a request once. Backend role policies enforce write permissions independently of the UI.
-
-Product/material cards expose list, detail, create, update and soft-delete operations at `/api/inventory/items`. Responses use `ProductCardDto`; business rules prevent deactivation when stock or open usage exists. Carpet technical cards retain their specialized model. Existing manufacturing products provide the CRUD example.
-
-Access tokens default to 15 minutes and refresh tokens to seven days. Refresh tokens are hashed in storage and rotated on renewal. Logout revokes the current refresh token and clears cookies; immediate server-side revocation of previously issued access tokens is not implemented. Request validation, global Problem Details handling, provider-specific migrations and seed data are present.
-
-### Implementation status and roadmap
-
-Start with the [sample project](samples/DemoErp.Sample/DemoErp.Sample.csproj), [API example](samples/DemoErp.Sample/Program.cs) and [domain rule](samples/DemoErp.Sample/SizeRule.cs). Run the two commands above to inspect the public sample; it demonstrates size validation, not the private authentication or persistence implementation.
-
-Local solution builds, MRP regressions and an isolated SQLite HTTP smoke test passed. The smoke test covered JWT login/renewal/logout, authorized API access, role checks and product CRUD. PostgreSQL migration snapshots and Compose configuration were checked. A real PostgreSQL/Docker acceptance run and comprehensive security/browser tests remain outstanding.
-
-React, TypeScript, Vite, React Router, TanStack Query, React Hook Form, Zod, Tailwind CSS, .NET 10, FluentValidation and Swagger are proposed upgrades, not claims about today's implementation. No Redis, Kafka, event bus or additional architectural framework is required for the review flow.
-
-For the full private application, Compose is configured for `docker compose up --build` after environment secrets are supplied, serving web/API at `http://localhost:5080`. That deployment cannot be launched from this limited public repository.
-
-## Publication / Yayın kapsamı
-
-No complete ERP source, customer data, database files, credentials, original designs or operational machine integrations are published. AI-assisted tools are used during development. See [NOTICE](NOTICE.md) for reuse terms.
-
-**Author / İletişim:** [SCanerG](https://github.com/SCanerG)
+Published for technical evaluation. No open-source license is granted; see
+[NOTICE](NOTICE.md). Author: [SCanerG](https://github.com/SCanerG).

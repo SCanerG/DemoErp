@@ -1,35 +1,72 @@
-# Architecture / Mimari
+# Architecture
 
-DemoErp is a layered manufacturing monolith. The public sample is intentionally smaller than the private solution.
+[README](../README.md) · [Database](DATABASE.md) · [API](API.md) · [Development](DEVELOPMENT.md)
+
+The repository contains one ASP.NET Core API project and one React application.
+`Domain`, `Contracts`, `Services` and `Data` are directories within `Demo.Api`;
+there are no separate Application or Infrastructure assemblies.
 
 ```mermaid
 flowchart LR
-    Browser[JavaScript SPA] --> API[ASP.NET Core 9 Minimal API]
-    Desktop[WPF client] --> API
-    API --> Application[Application use cases]
-    Application --> Domain[Domain rules and repository contracts]
-    Application --> Infrastructure[Infrastructure implementations]
-    Infrastructure --> Database[(EF Core 9 / PostgreSQL)]
+  UI[React and TypeScript] -->|HTTP JSON and Bearer JWT| API[ASP.NET Core controllers]
+  UI --> Query[TanStack Query cache]
+  API --> Validation[FluentValidation request validators]
+  API --> Services[Scoped business services]
+  Services --> EF[Scoped EF Core AppDbContext]
+  EF --> DB[(PostgreSQL 17)]
+  API --> Errors[ProblemDetails exception handling]
 ```
 
-The arrows describe runtime flow, not project reference direction. Repository contracts live in Domain; Infrastructure implements them. API is the composition root. Existing UnitOfWork and repositories remain part of the application; no claim is made that every module is fully isolated.
+Controllers own HTTP status codes and validation. Services implement authentication,
+catalog operations, reference checks and order transitions. Dependency injection
+creates a scoped context/services per request; token generation is a singleton
+using validated JWT options. EF tracking and transactions provide the persistence
+boundary without additional repository or unit-of-work wrappers.
 
-## Review path / İnceleme yolu
+Read operations use `AsNoTracking` and explicit DTO projections, including category
+names, counts and order-line product names. Order reads avoid per-line queries.
+Lists currently return all rows; pagination and load testing are not implemented.
+TanStack Query owns server state and mutation invalidation. React Hook Form/Zod
+provide immediate form feedback; the backend remains authoritative.
 
-JWT login → protected product/material catalog → create/read/update/deactivate → EF Core persistence → logout.
+## Authentication and errors
 
-Product cards use request models and a ProductCardDto response mapper. Deactivation preserves manufacturing and stock history. Technical carpet cards and inventory material cards remain separate models.
+Registration normalizes email; a unique database index handles races. Identity's
+PBKDF2 hasher uses 210,000 iterations. JWT Bearer validates HS256, signature,
+issuer, audience and expiry. Authentication requests are limited to 20/IP/minute.
+Safe DTOs exclude password hashes. Business records are shared by authenticated
+users, with no role or tenant partitioning.
 
-The web SPA uses hash navigation and shared API helpers. It is not React or TypeScript today. Some endpoints directly orchestrate repositories or infrastructure services; extracting these responsibilities remains refactoring work.
+Browser sessions use sessionStorage with a memory fallback. Current-session 401
+or expiry clears authentication/cache; late responses for a replaced token do not
+clear the new session. Logout does not revoke an issued token. This browser storage
+is accessible to JavaScript; production hardening would need an explicit XSS and
+identity strategy.
 
-## Security and configuration / Güvenlik ve yapılandırma
+Validation returns 400 ProblemDetails, missing records 404 and reference/status
+conflicts 409. Unexpected failures produce a generic 500 with a trace ID and JSON
+server logs. Request bodies and sensitive SQL values are not logged.
 
-Access tokens use JWT validation and role policies. Refresh tokens use HttpOnly, SameSite=Strict cookies and hashed database records with rotation. Access tokens are returned to clients and also set as cookies for compatibility. Browser and API are served from the same origin; no cross-origin frontend deployment is claimed.
+## Orders
 
-PostgreSQL is the default application provider; credentials and signing keys come from environment variables. Separate migrations support PostgreSQL and SQLite test/legacy paths. Docker Compose uses a persistent PostgreSQL volume. Production HTTPS, cookie policy, session revocation and deployment acceptance require further verification.
+One repeatable-read transaction checks active references, reads current database
+prices, allocates a sequence number and saves the order and all items. A failure
+rolls back every business write. Sequence allocation is not rolled back, so gaps
+are expected. Unit prices are snapshots; names remain live references.
 
-## Target direction / Hedef
+Conditional status updates detect concurrent transitions. Product/category/customer
+edits use last write wins. Referenced records cannot be physically deleted; inactive
+records remain readable. There is no order deletion API.
 
-Focus the portfolio on authentication and existing product CRUD. Evaluate React/TypeScript with Vite and a separate frontend directory, upgrade the backend to .NET 10, and add OpenAPI documentation. These are planned changes.
+## Localization and deployment
 
-The current source layout is `src/DokumaERP.Api`, `src/DokumaERP.Application`, `src/DokumaERP.Domain`, `src/DokumaERP.Infrastructure`, `src/DokumaERP.PostgreSqlMigrations`, plus Desktop, tests and tools. The public repository exposes only `samples/` and documentation.
+`translations.ts` plus a lightweight React external store provides immediate TR/EN
+switching and localStorage preference persistence. Document language/title and
+number/date formatting follow the selected locale. Currency remains USD and
+user-entered data is not translated.
+
+Compose runs PostgreSQL, API and an unprivileged Nginx frontend, with ordered health
+checks and a persistent database volume. API startup applies committed migrations
+with bounded retries. Host ports bind to localhost; PostgreSQL is internal.
+Swagger is Development-only. Production migrations/deployment, HTTPS and distributed
+rate limiting are outside the demonstrated scope.

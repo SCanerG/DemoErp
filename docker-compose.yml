@@ -1,0 +1,60 @@
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-catalog}
+      POSTGRES_USER: ${POSTGRES_USER:-catalog}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-development-only-db-password}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 5s
+      retries: 15
+    restart: unless-stopped
+
+  backend:
+    build:
+      context: ./backend
+    environment:
+      ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-Development}
+      ASPNETCORE_HTTP_PORTS: 8080
+      ConnectionStrings__Default: Host=postgres;Port=5432;Database=${POSTGRES_DB:-catalog};Username=${POSTGRES_USER:-catalog};Password=${POSTGRES_PASSWORD:-development-only-db-password}
+      Jwt__Secret: ${JWT_SECRET:-development-only-change-me-jwt-signing-key-32bytes}
+      Jwt__Issuer: ${JWT_ISSUER:-catalog-api}
+      Jwt__Audience: ${JWT_AUDIENCE:-catalog-web}
+      Jwt__LifetimeMinutes: ${JWT_LIFETIME_MINUTES:-60}
+      Cors__Origins__0: ${FRONTEND_ORIGIN:-http://localhost:3000}
+    ports:
+      - "127.0.0.1:${BACKEND_PORT:-5080}:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "--silent", "http://localhost:8080/health"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 15s
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        VITE_API_BASE_URL: ${VITE_API_BASE_URL:-http://localhost:5080/api}
+    ports:
+      - "127.0.0.1:${FRONTEND_PORT:-3000}:8080"
+    depends_on:
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--spider", "http://127.0.0.1:8080/"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
