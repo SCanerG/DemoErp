@@ -5,7 +5,19 @@
 
 [Türkçe](#türkçe) · [English](#english) · [Reviewer guide](docs/REVIEWER_GUIDE.md) · [Architecture](docs/ARCHITECTURE.md) · [Verification](docs/VERIFICATION.md)
 
-## 60-second reviewer path
+## 60 saniyelik inceleme yolu / 60-second reviewer path
+
+### Türkçe
+
+1. Aşağıdaki gerçek web uygulaması ekranlarını ve Windows istemci görsellerini inceleyin.
+2. [Mimari ve güvenlik kararlarına](docs/REVIEWER_GUIDE.md) göz atın.
+3. [Seçilmiş kod örneklerini](docs/CODE_EXAMPLES.md) inceleyin.
+4. Bilinçli olarak küçük tutulan [.NET 9 örneğini](samples/DemoErp.Sample) çalıştırın.
+5. [Public yayın sınırlarını](docs/PUBLICATION_SCOPE.md) okuyun.
+
+Bu depo dağıtılabilir bir ERP paketi değil, teknik portföydür. Tam domain implementasyonunu, veritabanlarını ve operasyonel entegrasyonları gizli tutarken ürün ve mühendislik yetkinliğini doğrulanabilir kanıtlarla gösterir.
+
+### English
 
 1. Review the real web-application screens and Windows-client visuals below.
 2. Inspect the [architecture and security decisions](docs/REVIEWER_GUIDE.md).
