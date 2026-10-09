@@ -1,0 +1,191 @@
+{
+  "MeasuredAt": "2026-10-09T13:33:36.792941+00:00",
+  "Runtime": "10.0.12",
+  "PostgreSql": "17.11",
+  "Method": "Actual EF command \u002B typed parameters, EXPLAIN ANALYZE BUFFERS JSON. One discarded warmup, seven warm executions. No cold-cache claim.",
+  "Rows": {
+    "Categories": 500,
+    "Products": 5000,
+    "Customers": 2000,
+    "Orders": 20000,
+    "OrderItems": 80000,
+    "Movements": 100000
+  },
+  "Measurements": [
+    {
+      "Query": "sales-total",
+      "MedianMs": 1.456,
+      "SamplesMs": [
+        1.976,
+        1.288,
+        1.759,
+        1.456,
+        2.316,
+        1.392,
+        1.337
+      ],
+      "Parameters": [
+        {
+          "ParameterName": "@filter_Start",
+          "Value": "1.09.2025 00:00:00 \u002B00:00",
+          "Type": "TimestampTz"
+        },
+        {
+          "ParameterName": "@filter_End",
+          "Value": "1.10.2025 00:00:00 \u002B00:00",
+          "Type": "TimestampTz"
+        }
+      ]
+    },
+    {
+      "Query": "top-products",
+      "MedianMs": 14.029,
+      "SamplesMs": [
+        18.526,
+        14.029,
+        13.183,
+        14,
+        22.071,
+        13.911,
+        15.699
+      ],
+      "Parameters": [
+        {
+          "ParameterName": "@start",
+          "Value": "1.09.2025 00:00:00 \u002B00:00",
+          "Type": "TimestampTz"
+        },
+        {
+          "ParameterName": "@end",
+          "Value": "1.10.2025 00:00:00 \u002B00:00",
+          "Type": "TimestampTz"
+        },
+        {
+          "ParameterName": "@p",
+          "Value": "10",
+          "Type": "Integer"
+        }
+      ]
+    },
+    {
+      "Query": "customer-summary",
+      "MedianMs": 6.804,
+      "SamplesMs": [
+        5.52,
+        5.052,
+        6.022,
+        7.631,
+        7.242,
+        7.712,
+        6.804
+      ],
+      "Parameters": [
+        {
+          "ParameterName": "@start",
+          "Value": "1.09.2025 00:00:00 \u002B00:00",
+          "Type": "TimestampTz"
+        },
+        {
+          "ParameterName": "@end",
+          "Value": "1.10.2025 00:00:00 \u002B00:00",
+          "Type": "TimestampTz"
+        },
+        {
+          "ParameterName": "@start2",
+          "Value": "1.09.2025 00:00:00 \u002B00:00",
+          "Type": "TimestampTz"
+        },
+        {
+          "ParameterName": "@end3",
+          "Value": "1.10.2025 00:00:00 \u002B00:00",
+          "Type": "TimestampTz"
+        },
+        {
+          "ParameterName": "@p",
+          "Value": "20",
+          "Type": "Integer"
+        }
+      ]
+    },
+    {
+      "Query": "filtered-orders",
+      "MedianMs": 2.739,
+      "SamplesMs": [
+        2.627,
+        3.476,
+        2.731,
+        2.69,
+        2.739,
+        2.993,
+        3.881
+      ],
+      "Parameters": [
+        {
+          "ParameterName": "@start",
+          "Value": "1.09.2025 00:00:00 \u002B00:00",
+          "Type": "TimestampTz"
+        },
+        {
+          "ParameterName": "@end",
+          "Value": "1.10.2025 00:00:00 \u002B00:00",
+          "Type": "TimestampTz"
+        },
+        {
+          "ParameterName": "@filter_Status",
+          "Value": "Pending",
+          "Type": "Varchar"
+        },
+        {
+          "ParameterName": "@p",
+          "Value": "20",
+          "Type": "Integer"
+        }
+      ]
+    },
+    {
+      "Query": "inventory-joins",
+      "MedianMs": 0.401,
+      "SamplesMs": [
+        0.448,
+        0.294,
+        0.452,
+        0.573,
+        0.315,
+        0.32,
+        0.401
+      ],
+      "Parameters": [
+        {
+          "ParameterName": "@filter_CategoryId",
+          "Value": "379c0f89-7db0-fa7e-004f-65f52cce2e75",
+          "Type": "Uuid"
+        },
+        {
+          "ParameterName": "@p",
+          "Value": "20",
+          "Type": "Integer"
+        }
+      ]
+    },
+    {
+      "Query": "movement-history",
+      "MedianMs": 0.209,
+      "SamplesMs": [
+        0.172,
+        0.184,
+        0.201,
+        0.413,
+        0.245,
+        0.209,
+        0.32
+      ],
+      "Parameters": [
+        {
+          "ParameterName": "@productId",
+          "Value": "42f1e2fa-04bc-46d2-bd22-d11514db6623",
+          "Type": "Uuid"
+        }
+      ]
+    }
+  ]
+}

@@ -4,7 +4,7 @@ using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 namespace Demo.Api.Controllers;
-[ApiController, Authorize, Route("api/orders")]
+[ApiController, Authorize(Policy = AccessPolicies.BusinessRead), Route("api/orders")]
 public sealed class OrdersController(OrderService service, IValidator<OrderRequest> validator, IValidator<OrderStatusRequest> statusValidator) : ControllerBase
 {
     [HttpGet]
@@ -13,9 +13,11 @@ public sealed class OrdersController(OrderService service, IValidator<OrderReque
     public async Task<ActionResult<OrderResponse>> Get(Guid id, CancellationToken ct)
     { var value = await service.Get(id, ct); return value is null ? Problem(statusCode: 404, title: "Record not found") : Ok(value); }
     [HttpPost]
+    [Authorize(Policy = AccessPolicies.OrderManage)]
     public async Task<ActionResult<OrderResponse>> Create(OrderRequest request, CancellationToken ct)
     { await validator.ValidateAndThrowAsync(request, ct); var value = await service.Create(request, ct); return CreatedAtAction(nameof(Get), new { id = value.Id }, value); }
     [HttpPut("{id:guid}/status")]
+    [Authorize(Policy = AccessPolicies.OrderManage)]
     public async Task<ActionResult<OrderResponse>> Status(Guid id, OrderStatusRequest request, CancellationToken ct)
-    { await statusValidator.ValidateAndThrowAsync(request, ct); var value = await service.ChangeStatus(id, request.Status, ct); return value is null ? Problem(statusCode: 404, title: "Record not found") : Ok(value); }
+    { await statusValidator.ValidateAndThrowAsync(request, ct); var value = await service.ChangeStatus(id, request.Status, InventoryController.Actor(User), ct); return value is null ? Problem(statusCode: 404, title: "Record not found") : Ok(value); }
 }

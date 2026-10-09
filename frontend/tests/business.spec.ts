@@ -1,3 +1,4 @@
+import { promoteRegistered } from './admin-helper';
 import { test, expect } from '@playwright/test';
 
 test('business workflow, EN/TR switching, persistence, and authoritative order detail', async ({ page }) => {
@@ -7,8 +8,10 @@ test('business workflow, EN/TR switching, persistence, and authoritative order d
   await page.getByLabel('Password', { exact: true }).fill('BusinessPassword123!'); await page.getByLabel('Confirm password').fill('BusinessPassword123!');
   await page.getByRole('button', { name: 'Create account', exact: true }).click();
   await expect(page).toHaveURL(/\/auth\/login/);
+  await promoteRegistered(page.request, email);
   await page.getByLabel('Email address').fill(email); await page.getByLabel('Password', { exact: true }).fill('BusinessPassword123!'); await page.getByRole('button', { name: 'Sign in', exact: true }).click();
-  await expect(page).toHaveURL(/\/products$/);
+  await expect(page).toHaveURL(/\/dashboard$/);
+  await page.getByRole('navigation').getByRole('link', { name: 'Products', exact: true }).click();
   await page.getByRole('button', { name: 'TR', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Ürünler', exact: true })).toBeVisible();
   for (const name of ['Ürünler', 'Kategoriler', 'Müşteriler', 'Siparişler']) await expect(page.getByRole('navigation').getByRole('link', { name, exact: true })).toBeVisible();
@@ -45,6 +48,11 @@ test('business workflow, EN/TR switching, persistence, and authoritative order d
   await page.getByLabel('Product name', { exact: false }).nth(1).selectOption(secondId); await page.getByLabel('Quantity', { exact: false }).nth(1).fill('3'); await expect(page.locator('.order-total')).toContainText('$350.50');
   await page.getByRole('button', { name: 'Create order', exact: true }).click(); await expect(page.getByRole('heading', { name: /^ORD-/ })).toBeVisible();
   const orderUrl = page.url(); await expect(page.locator('.order-total')).toContainText('$350.50'); await expect(page.getByRole('row').filter({ hasText: `Paper ${suffix}` })).toContainText('$200.50');
+  const accessToken = await page.evaluate(() => JSON.parse(sessionStorage.getItem('catalog.session')!).accessToken as string);
+  for (const productId of [firstId, secondId]) {
+    const supply = await page.request.post(`${process.env.API_URL ?? 'http://localhost:5080'}/api/inventory/${productId}/stock-in`, { headers: { Authorization: `Bearer ${accessToken}` }, data: { quantity: 10, reason: 'Browser workflow supply' } });
+    expect(supply.status()).toBe(200);
+  }
   await page.getByRole('button', { name: 'Confirm', exact: true }).click(); await expect(page.locator('.badge')).toHaveText('Confirmed');
   await page.getByRole('button', { name: 'TR', exact: true }).click(); await expect(page.locator('.badge')).toHaveText('Onaylandı'); await expect(page.locator('.order-total')).toContainText('350,50'); await page.getByRole('button', { name: 'Tamamla', exact: true }).click(); await expect(page.locator('.badge')).toHaveText('Tamamlandı');
   await page.reload(); await expect(page.locator('.badge')).toHaveText('Tamamlandı'); await expect(page.getByRole('button', { name: 'Çıkış' })).toBeVisible();

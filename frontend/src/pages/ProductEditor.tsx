@@ -36,6 +36,7 @@ function ProductForm({ product }: { product?: Product }) {
     onSuccess: async value => {
       queryClient.setQueryData(['products', value.id], value);
       await queryClient.invalidateQueries({ queryKey: ['products'] });
+      await queryClient.invalidateQueries({ queryKey: ['inventory'] });
       await queryClient.invalidateQueries({ queryKey: ['categories'] });
       navigate(`/products/${value.id}`);
     } });

@@ -8,7 +8,8 @@ public sealed record RegisterRequest(string Name, string Email, string Password)
 public sealed record LoginRequest(string Email, string Password);
 public sealed record ProductRequest(string Name, string Description,
     [property: JsonRequired] decimal Price, [property: JsonRequired] bool IsActive, Guid CategoryId = default);
-public sealed record UserResponse(Guid Id, string Name, string Email);
+public sealed record UserResponse(Guid Id, string Name, string Email, Demo.Api.Domain.UserRole Role = Demo.Api.Domain.UserRole.Viewer,
+    bool IsActive = true, DateTimeOffset CreatedAt = default, DateTimeOffset? UpdatedAt = null);
 public sealed record LoginResponse(string AccessToken, DateTimeOffset ExpiresAt, UserResponse User);
 public sealed record ProductResponse(Guid Id, string Name, string Description, decimal Price,
     bool IsActive, DateTimeOffset CreatedAt, DateTimeOffset? UpdatedAt, Guid CategoryId, string CategoryName);

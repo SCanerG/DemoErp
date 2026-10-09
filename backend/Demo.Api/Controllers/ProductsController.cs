@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Demo.Api.Controllers;
 
 [ApiController]
-[Authorize]
+[Authorize(Policy = AccessPolicies.BusinessRead)]
 [Route("api/products")]
 [ProducesResponseType<ProblemDetails>(StatusCodes.Status401Unauthorized)]
 public sealed class ProductsController(ProductService products, IValidator<ProductRequest> validator) : ControllerBase
@@ -26,6 +26,7 @@ public sealed class ProductsController(ProductService products, IValidator<Produ
     }
 
     [HttpPost]
+    [Authorize(Policy = AccessPolicies.BusinessWrite)]
     [ProducesResponseType<ProductResponse>(StatusCodes.Status201Created)]
     [ProducesResponseType<ValidationProblemDetails>(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<ProductResponse>> Create(ProductRequest request, CancellationToken ct)
@@ -36,6 +37,7 @@ public sealed class ProductsController(ProductService products, IValidator<Produ
     }
 
     [HttpPut("{id:guid}")]
+    [Authorize(Policy = AccessPolicies.BusinessWrite)]
     [ProducesResponseType<ProductResponse>(StatusCodes.Status200OK)]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status404NotFound)]
     [ProducesResponseType<ValidationProblemDetails>(StatusCodes.Status400BadRequest)]
@@ -47,6 +49,7 @@ public sealed class ProductsController(ProductService products, IValidator<Produ
     }
 
     [HttpDelete("{id:guid}")]
+    [Authorize(Policy = AccessPolicies.BusinessDelete)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Delete(Guid id, CancellationToken ct) =>

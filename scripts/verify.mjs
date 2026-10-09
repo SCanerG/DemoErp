@@ -1,4 +1,4 @@
-// Run against the development Compose stack. Creates and cleans up its own records.
+// Run against a disposable Compose stack. Synthetic audit records are retained.
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
 import { setTimeout as delay } from 'node:timers/promises';
@@ -37,7 +37,7 @@ try {
   await waitHealthy();
   assert.equal((await fetch(frontend)).status, 200);
   assert.equal((await fetch(`${frontend}/products/new`)).status, 200);
-  assert.equal(sql('SELECT COUNT(*) FROM "__EFMigrationsHistory";'), '2');
+  assert.equal(sql('SELECT COUNT(*) FROM "__EFMigrationsHistory";'), '6');
   assert.equal(sql("SELECT character_maximum_length FROM information_schema.columns WHERE table_name = 'Users' AND column_name = 'Email';"), '254');
   assert.equal(sql("SELECT numeric_precision || ',' || numeric_scale FROM information_schema.columns WHERE table_name = 'Products' AND column_name = 'Price';"), '12,2');
   assert.equal(sql("SELECT COUNT(*) FROM pg_indexes WHERE tablename = 'Users' AND indexname = 'IX_Users_Email' AND indexdef LIKE 'CREATE UNIQUE INDEX%';"), '1');
@@ -53,6 +53,8 @@ try {
   assert.equal((await request('/api/products')).status, 401);
   token = undefined;
   console.log('PASS unauthorized and invalid-token protection on product endpoints');
+  assert.equal((await request('/api/ai/status', 'GET', undefined, false)).status, 401);
+  assert.equal((await request('/api/ai/chat', 'POST', { message: 'Sales?', language: 'en' }, false)).status, 401);
 
   const badRegistration = await request('/api/auth/register', 'POST', { name: ' ', email: 'bad', password: 'short' }, false);
   assert.equal(badRegistration.status, 400);
@@ -67,7 +69,20 @@ try {
   assert.ok(login.data.accessToken && login.data.user.id);
   assert.ok(!JSON.stringify(login.data).includes('passwordHash'));
   token = login.data.accessToken;
-  console.log('PASS registration, normalization, duplicate rejection, password hash, login');
+  assert.equal(login.data.user.role, 'Viewer');
+  const aiState = await request('/api/ai/status');
+  assert.equal(aiState.status, 200); assert.deepEqual(aiState.data, { enabled: false, configured: false, available: false });
+  const disabledAi = await request('/api/ai/chat', 'POST', { message: 'Sales?', language: 'en' });
+  assert.equal(disabledAi.status, 503); assert.equal(disabledAi.data.code, 'aiDisabled');
+  console.log('PASS AI anonymous protection, Viewer safe status and default-disabled chat without provider credentials');
+  assert.equal((await request('/api/categories', 'POST', { name: 'Forbidden', description: '', isActive: true })).status, 403);
+  const bootstrap = await request('/api/auth/login', 'POST', { email: process.env.BOOTSTRAP_ADMIN_EMAIL, password: process.env.BOOTSTRAP_ADMIN_PASSWORD }, false);
+  assert.equal(bootstrap.status, 200); token = bootstrap.data.accessToken;
+  assert.equal((await request('/api/users/' + login.data.user.id + '/role', 'PUT', { role: 'Admin' })).status, 200);
+  token = login.data.accessToken; assert.equal((await request('/api/products')).status, 401);
+  const adminLogin = await request('/api/auth/login', 'POST', { email, password }, false);
+  assert.equal(adminLogin.status, 200); token = adminLogin.data.accessToken;
+  console.log('PASS Viewer registration, authorization, explicit Admin promotion, old token revocation and login');
 
   const category = await request('/api/categories', 'POST', { name: 'Verification category', description: '', isActive: true });
   assert.equal(category.status, 201); categoryId = category.data.id;
@@ -129,7 +144,21 @@ try {
   assert.equal((await request(`/api/customers/${customerId}`, 'DELETE')).status, 409);
   assert.equal((await request(`/api/products/${orderProductIds[0]}`, 'DELETE')).status, 409);
   assert.equal((await request(`/api/orders/${orderId}/status`, 'PUT', { status: 'Completed' })).status, 409);
+  for (const id of orderProductIds) {
+    assert.equal((await request(`/api/inventory/${id}`)).data.quantityOnHand, 0);
+    assert.equal((await request(`/api/inventory/${id}/stock-in`, 'POST', { quantity: 10, reason: 'Verification supply' })).status, 200);
+  }
+  const stockId = orderProductIds[0];
+  assert.equal((await request(`/api/inventory/${stockId}/stock-out`, 'POST', { quantity: 11, reason: 'Insufficient stock test' })).status, 409);
+  assert.equal((await request(`/api/inventory/${stockId}/stock-out`, 'POST', { quantity: 1, reason: 'Verification issue' })).status, 200);
+  assert.equal((await request(`/api/inventory/${stockId}/adjust`, 'POST', { direction: 'Increase', quantity: 2, reason: 'Verification correction' })).status, 200);
+  assert.equal((await request(`/api/inventory/${stockId}/adjust`, 'POST', { direction: 'Decrease', quantity: 1, reason: 'Verification correction' })).status, 200);
+  assert.equal((await request(`/api/inventory/${stockId}/minimum-level`, 'PUT', { minimumStockLevel: 5 })).status, 200);
+  assert.equal((await request(`/api/inventory/${stockId}/movements`)).data.length, 4);
   assert.equal((await request(`/api/orders/${orderId}/status`, 'PUT', { status: 'Confirmed' })).data.status, 'Confirmed');
+  assert.equal((await request(`/api/inventory/${stockId}`)).data.quantityOnHand, 8);
+  assert.equal((await request(`/api/orders/${orderId}/status`, 'PUT', { status: 'Confirmed' })).status, 200);
+  assert.equal((await request(`/api/inventory/${stockId}`)).data.quantityOnHand, 8);
   assert.equal(sql("SELECT COUNT(*) FROM pg_indexes WHERE indexname IN ('IX_Products_CategoryId','IX_Orders_CustomerId','IX_OrderItems_OrderId','IX_OrderItems_ProductId','IX_Orders_OrderNumber');"), '5');
   console.log('PASS business relations, category/customer safeguards, authoritative order total, transitions and indexes');
 
@@ -142,6 +171,12 @@ try {
   assert.equal(persistedOrder.data.customerName, 'Verification customer'); assert.equal(persistedOrder.data.items.length, 2);
   assert.equal((await request(`/api/customers/${customerId}`)).data.phone, '5557654321');
   console.log('PASS category/customer/order/items persistence after restart');
+  assert.equal((await request(`/api/inventory/${stockId}`)).data.quantityOnHand, 8);
+  assert.equal((await request(`/api/orders/${orderId}/status`, 'PUT', { status: 'Cancelled' })).data.status, 'Cancelled');
+  assert.equal((await request(`/api/orders/${orderId}/status`, 'PUT', { status: 'Cancelled' })).status, 200);
+  assert.equal((await request(`/api/inventory/${stockId}`)).data.quantityOnHand, 10);
+  assert.equal((await request(`/api/inventory/${stockId}/movements`)).data.filter(m => m.movementType === 'OrderCancellationReturn').length, 1);
+  console.log('PASS inventory operations, audit persistence, idempotent confirmation/cancellation and stock return');
   console.log('PASS user and product persistence after all containers restart');
 
   try {
@@ -168,11 +203,6 @@ try {
   console.log('PASS no test password, password hash, or JWT in backend logs');
   console.log('API verification completed successfully. Browser verification is separate.');
 } finally {
-  // Admin cleanup applies only to the UUID returned for this script's own order; the application has no order-delete endpoint.
-  if (orderId && /^[0-9a-f-]{36}$/i.test(orderId)) sql(`DELETE FROM "Orders" WHERE "Id" = '${orderId}';`);
-  for (const id of orderProductIds) await request(`/api/products/${id}`, 'DELETE').catch(() => {});
-  if (customerId) await request(`/api/customers/${customerId}`, 'DELETE').catch(() => {});
-  if (productId) await request(`/api/products/${productId}`, 'DELETE').catch(() => {});
-  if (categoryId) await request(`/api/categories/${categoryId}`, 'DELETE').catch(() => {});
-  sql(`DELETE FROM "Users" WHERE "Email" = '${email}';`);
+  // Immutable inventory history intentionally retains its referenced user/order/product.
+  console.log('Synthetic verification data is retained for audit integrity. Use a disposable Compose stack.');
 }

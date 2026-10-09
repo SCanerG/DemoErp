@@ -9,7 +9,25 @@ Use Swagger's **Authorize** control with the login token. All business endpoints
 require `Authorization: Bearer <token>`; registration/login and `/health` are public.
 UUID route parameters are named `{id}` below.
 
-## Authentication
+Reads allow all three roles. Operational writes allow Admin/Manager; business deletes
+allow Admin only. User/audit endpoints are Admin-only. Missing/revoked authentication
+returns 401; insufficient permission returns 403. [Complete matrix](AUTHORIZATION.md).
+
+## AI assistant — Bearer and BusinessRead required
+
+| Method | Path | Contract |
+| --- | --- | --- |
+| GET | `/ai/status` | enabled, configured, available booleans; no external provider request |
+| POST | `/ai/chat` | message (1–2,000 characters), language (`en`/`tr`) → answer, language, generatedAtUtc, sources, requestId |
+
+Sources contain actual executed tool names, fixed labels/report paths and validated
+parameters. No history/system roles or frontend model selection are supported.
+Feature defaults off (503 aiDisabled); unconfigured provider returns 503 aiNotConfigured.
+Other AI errors use safe ProblemDetails codes. Quotas default to 10/user/minute and
+100/user/UTC day, five tools/two tool rounds and a 30-second request deadline.
+[Full contracts, tools, limits and errors](AI_ARCHITECTURE.md).
+
+## Authentication endpoints
 
 | Method | Path | Request | Success |
 | --- | --- | --- | --- |
@@ -19,6 +37,8 @@ UUID route parameters are named `{id}` below.
 Registration does not log the user in. Invalid login returns 401, duplicate email
 409 and validation 400. Both endpoints share a 20 requests/IP/minute limiter (429).
 There are no refresh, logout or password-reset API endpoints; UI logout is local.
+Registration always creates Viewer and ignores untrusted role/status fields. Login
+requires an active account; every protected request checks SecurityVersion and role.
 
 ## Products — Bearer required
 
@@ -87,7 +107,34 @@ Pending → Confirmed/Cancelled and Confirmed → Completed/Cancelled. Repeating
 current status is idempotent; terminal statuses cannot transition. There is no
 order delete or general order-edit endpoint.
 
+## Inventory — Bearer required
+
+| Method | Path (under `/api`) |
+| --- | --- |
+| GET | `/inventory` |
+| GET | `/inventory/{productId}` |
+| GET | `/inventory/{productId}/movements` |
+| POST | `/inventory/{productId}/stock-in` |
+| POST | `/inventory/{productId}/stock-out` |
+| POST | `/inventory/{productId}/adjust` |
+| PUT | `/inventory/{productId}/minimum-level` |
+
+[Request contracts and inventory rules](INVENTORY.md#api-and-ui).
+All mutations return 200 inventory DTO; invalid input 400, missing records 404,
+insufficient stock/overflow/concurrency conflicts 409. There is no direct balance
+PUT or movement edit/delete endpoint.
+
+Order detail additionally exposes `inventoryWasDeducted`. Pending orders do not
+reserve stock; confirmation atomically checks/deducts it. Confirmed cancellation
+returns recorded deductions; completing does not deduct again. Legacy confirmed
+orders with no deduction history return no invented stock on cancellation.
+
 ## Infrastructure and errors
+
+Admin endpoints: GET/POST `/users`, GET/PUT `/users/{id}`, PUT `/users/{id}/role`,
+PUT `/users/{id}/status`; GET `/audit-logs` and `/audit-logs/{id}`. User DTOs never
+include hashes. Audit list accepts page/pageSize/userId/action/entityName/from/to.
+See [user contracts/rules](AUTHORIZATION.md) and [audit contracts/filters](AUDIT_LOGGING.md).
 
 `GET /health` checks database connectivity (200 healthy / 503 unavailable).
 Validation errors use 400 ProblemDetails with field errors. Authentication uses
@@ -95,3 +142,10 @@ Validation errors use 400 ProblemDetails with field errors. Authentication uses
 500 with trace ID. Known business errors also include a code for localized UI feedback.
 Response DTOs never contain password hashes. Lists are unpaginated and business data
 is shared across authenticated users.
+
+## Dashboard and reports
+
+BusinessRead protects all five `/api/dashboard/*` reads, four `/api/reports/*`
+paged reports and their four `/export` reads. `GET /api/orders/{id}` and status
+responses add nullable `completedAt`. Existing endpoints/policies remain intact.
+[Complete endpoint/filter/sorting/paging/CSV contract and examples](REPORTING.md).

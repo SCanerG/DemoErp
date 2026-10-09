@@ -23,6 +23,6 @@ for (const [port, host] of [
 }
 const tests = process.env.PORTFOLIO_CAPTURE
   ? spawn('node', ['scripts/capture-screenshots.mjs'], { stdio: 'inherit' })
-  : spawn('npm', ['run', 'test:e2e'], { stdio: 'inherit' });
+  : spawn('npm', ['run', 'test:e2e', '--', ...process.argv.slice(2)], { stdio: 'inherit' });
 tests.on('error', error => { console.error(error.message); process.exit(1); });
 tests.on('exit', code => { servers.forEach(server => server.close()); process.exit(code ?? 1); });

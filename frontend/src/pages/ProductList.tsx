@@ -1,3 +1,4 @@
+import { Can } from '../permissions';
 import { t } from '../i18n';
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
@@ -12,14 +13,14 @@ export function ProductList() {
   const [deleting, setDeleting] = useState<Product | null>(null);
   const products = useQuery({ queryKey: ['products'], queryFn: ({ signal }) => api<Product[]>('/products', { signal }) });
   const mutation = useMutation({ mutationFn: (id: string) => api<void>(`/products/${id}`, { method: 'DELETE' }),
-    onSuccess: async (_, id) => { queryClient.removeQueries({ queryKey: ['products', id] }); await queryClient.invalidateQueries({ queryKey: ['products'] }); setDeleting(null); } });
+    onSuccess: async (_, id) => { queryClient.removeQueries({ queryKey: ['products', id] }); await queryClient.invalidateQueries({ queryKey: ['products'] }); await queryClient.invalidateQueries({ queryKey: ['inventory'] }); setDeleting(null); } });
   if (products.isPending) return <Loading />;
   if (products.isError) return <QueryError error={products.error} retry={() => void products.refetch()} />;
   const activeCount = products.data.filter(p => p.isActive).length;
   const confirmDelete = (product: Product) => { mutation.reset(); setDeleting(product); };
   return <>
     <div className="page-heading"><div><p className="eyebrow">{t("YOUR WORKSPACE")}</p><h1>{t("Products")}</h1><p>{t("A home for everything in your catalog.")}</p></div>
-      <Link className="button" to="/products/new"><span aria-hidden="true">＋</span> {t("New product")}</Link></div>
+      <Can permission="write"><Link className="button" to="/products/new"><span aria-hidden="true">＋</span> {t("New product")}</Link></Can></div>
     <div className="stats-grid">
       <div className="stat"><span>{t("Total products")}</span><strong>{products.data.length}<span className="stat-icon" aria-hidden="true">▦</span></strong></div>
       <div className="stat"><span>{t("Active products")}</span><strong>{activeCount}<span className="stat-icon text-emerald-700" aria-hidden="true">↗</span></strong></div>
@@ -27,7 +28,7 @@ export function ProductList() {
     </div>
     <section className="panel overflow-hidden p-0">
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 px-6 py-5"><h2 className="font-semibold">{t("All products")} <span className="ml-2 text-sm font-normal text-slate-400">{products.data.length}</span></h2><span className="text-xs text-slate-500">{t("Latest additions first")}</span></div>
-      {products.data.length === 0 ? <div className="px-6 py-16 text-center"><div className="empty-icon" aria-hidden="true">▦</div><h2 className="mt-5 text-xl font-semibold">{t("Your catalog is a clean slate")}</h2><p className="mb-6 mt-2 text-slate-500">{t("Add your first product to bring it to life.")}</p><Link className="button" to="/products/new">{t("Create your first product")}</Link></div>
+      {products.data.length === 0 ? <div className="px-6 py-16 text-center"><div className="empty-icon" aria-hidden="true">▦</div><h2 className="mt-5 text-xl font-semibold">{t("Your catalog is a clean slate")}</h2><p className="mb-6 mt-2 text-slate-500">{t("Add your first product to bring it to life.")}</p><Can permission="write"><Link className="button" to="/products/new">{t("Create your first product")}</Link></Can></div>
         : <><div className="hidden overflow-x-auto md:block"><table><thead><tr><th>{t("Product name")}</th><th>{t("Category")}</th><th>{t("Price")}</th><th>{t("Status")}</th><th>{t("Created")}</th><th className="text-right">{t("Actions")}</th></tr></thead>
           <tbody>{products.data.map(product => <tr key={product.id}>
             <td><Link className="font-semibold hover:text-emerald-700" to={`/products/${product.id}`}>{product.name}</Link><p className="mt-1 max-w-64 truncate text-xs text-slate-500">{product.description || t("No description")}</p></td>
@@ -52,7 +53,7 @@ export function ProductList() {
 function ProductActions({ product, onDelete, mobile = false }: { product: Product; onDelete: () => void; mobile?: boolean }) {
   return <div className={mobile ? 'mobile-product-actions' : 'flex justify-end gap-4'}>
     <Link className="text-link" to={`/products/${product.id}`}>{t("View")}</Link>
-    <Link className="text-link" to={`/products/${product.id}/edit`}>{t("Edit")}</Link>
-    <button className="text-red-600 hover:underline" aria-label={`${t("Delete")} ${product.name}`} onClick={onDelete}>{t("Delete")}</button>
+    <Can permission="write"><Link className="text-link" to={`/products/${product.id}/edit`}>{t("Edit")}</Link></Can>
+    <Can permission="delete"><button className="text-red-600 hover:underline" aria-label={`${t("Delete")} ${product.name}`} onClick={onDelete}>{t("Delete")}</button></Can>
   </div>;
 }

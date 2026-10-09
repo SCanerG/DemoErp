@@ -23,7 +23,7 @@ test('all business empty/loading/error screens and navigation localize in Turkis
   await page.goto('/auth/login');
   await page.evaluate(() => {
     localStorage.setItem('catalog.language', 'tr');
-    sessionStorage.setItem('catalog.session', JSON.stringify({ accessToken: 'locale-fixture', expiresAt: new Date(Date.now() + 3600000).toISOString(), user: { id: 'fixture', name: 'Reviewer', email: 'reviewer@example.com' } }));
+    sessionStorage.setItem('catalog.session', JSON.stringify({ accessToken: 'locale-fixture', expiresAt: new Date(Date.now() + 3600000).toISOString(), user: { id: 'fixture', name: 'Reviewer', email: 'reviewer@example.com', role: 'Admin', isActive: true, createdAt: '2026-10-01T00:00:00Z', updatedAt: null } }));
   });
   await page.setViewportSize({ width: 390, height: 844 });
   for (const [route, heading] of [['categories', 'Kategoriler'], ['customers', 'Müşteriler'], ['orders', 'Siparişler']]) {

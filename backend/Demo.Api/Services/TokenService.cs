@@ -25,11 +25,13 @@ public sealed class TokenService(IOptions<JwtOptions> configuredOptions)
         var token = new JwtSecurityToken(
             issuer: options.Issuer, audience: options.Audience,
             claims: [new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
+                new Claim("role", user.Role.ToString()),
+                new Claim("sv", user.SecurityVersion.ToString(System.Globalization.CultureInfo.InvariantCulture)),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())],
             notBefore: DateTime.UtcNow, expires: expiresAt.UtcDateTime,
             signingCredentials: new SigningCredentials(
                 new SymmetricSecurityKey(Encoding.UTF8.GetBytes(options.Secret)), SecurityAlgorithms.HmacSha256));
         return new LoginResponse(new JwtSecurityTokenHandler().WriteToken(token), expiresAt,
-            new UserResponse(user.Id, user.Name, user.Email));
+            new UserResponse(user.Id, user.Name, user.Email, user.Role, user.IsActive, user.CreatedAt, user.UpdatedAt));
     }
 }

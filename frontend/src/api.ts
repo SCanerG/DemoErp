@@ -18,7 +18,7 @@ export class ApiError extends Error {
 const baseUrl = import.meta.env.VITE_API_BASE_URL;
 if (!baseUrl) throw new Error('VITE_API_BASE_URL is required. See .env.example.');
 
-export async function api<T>(path: string, options: RequestInit = {}): Promise<T> {
+export async function api<T>(path: string, options: RequestInit = {}, format: 'json' | 'blob' = 'json'): Promise<T> {
   const session = sessionStore.get();
   const headers = new Headers(options.headers);
   if (options.body) headers.set('Content-Type', 'application/json');
@@ -38,6 +38,7 @@ export async function api<T>(path: string, options: RequestInit = {}): Promise<T
     throw new ApiError(response.status, problem);
   }
   if (response.status === 204) return undefined as T;
+  if (format === 'blob') return response.blob() as Promise<T>;
   return response.json() as Promise<T>;
 }
 
@@ -46,6 +47,7 @@ export function errorText(error: unknown): string {
     if (error.problem.code) return t(error.problem.code);
     if (error.status === 400) return t('Check the submitted fields.');
     if (error.status === 401) return t(error.problem.detail === 'Email or password is incorrect.' ? 'Email or password is incorrect.' : 'Please sign in again.');
+    if (error.status === 403) return t('You do not have permission to perform this action.');
     if (error.status === 409) return t('This email is already registered.');
     if (error.status === 404) return t('Record not found');
     if (error.status === 429) return t('Wait a minute and try again.');

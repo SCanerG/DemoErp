@@ -25,6 +25,20 @@ services:
       Jwt__Issuer: ${JWT_ISSUER:-catalog-api}
       Jwt__Audience: ${JWT_AUDIENCE:-catalog-web}
       Jwt__LifetimeMinutes: ${JWT_LIFETIME_MINUTES:-60}
+      Bootstrap__Enabled: ${BOOTSTRAP_ADMIN_ENABLED:-false}
+      Bootstrap__Name: ${BOOTSTRAP_ADMIN_NAME:-}
+      Bootstrap__Email: ${BOOTSTRAP_ADMIN_EMAIL:-}
+      Bootstrap__Password: ${BOOTSTRAP_ADMIN_PASSWORD:-}
+      AiAssistant__Enabled: ${AI_ENABLED:-false}
+      AiAssistant__Provider: ${AI_PROVIDER:-OpenAI}
+      AiAssistant__Model: ${AI_MODEL:-gpt-4.1-mini-2025-04-14}
+      AiAssistant__Endpoint: ${AI_ENDPOINT:-https://api.openai.com/v1}
+      AiAssistant__ApiKey: ${AI_API_KEY:-}
+      AiAssistant__TimeoutSeconds: ${AI_TIMEOUT_SECONDS:-30}
+      AiAssistant__MaxOutputTokens: ${AI_MAX_OUTPUT_TOKENS:-1000}
+      AiAssistant__MaxToolCalls: ${AI_MAX_TOOL_CALLS:-5}
+      AiAssistant__RequestsPerMinute: ${AI_REQUESTS_PER_MINUTE:-10}
+      AiAssistant__RequestsPerDay: ${AI_REQUESTS_PER_DAY:-100}
       Cors__Origins__0: ${FRONTEND_ORIGIN:-http://localhost:3000}
     ports:
       - "127.0.0.1:${BACKEND_PORT:-5080}:8080"

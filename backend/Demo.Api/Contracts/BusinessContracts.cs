@@ -12,7 +12,7 @@ public sealed record OrderRequest(Guid CustomerId, List<OrderItemRequest> Items)
 public sealed record OrderStatusRequest([property: JsonRequired] OrderStatus Status);
 public sealed record OrderSummary(Guid Id, string OrderNumber, Guid CustomerId, string CustomerName, OrderStatus Status, DateTimeOffset OrderDate, decimal TotalAmount, int ItemCount);
 public sealed record OrderItemResponse(Guid Id, Guid ProductId, string ProductName, int Quantity, decimal UnitPrice, decimal LineTotal);
-public sealed record OrderResponse(Guid Id, string OrderNumber, Guid CustomerId, string CustomerName, OrderStatus Status, DateTimeOffset OrderDate, decimal TotalAmount, DateTimeOffset CreatedAt, DateTimeOffset? UpdatedAt, List<OrderItemResponse> Items);
+public sealed record OrderResponse(Guid Id, string OrderNumber, Guid CustomerId, string CustomerName, OrderStatus Status, DateTimeOffset OrderDate, decimal TotalAmount, DateTimeOffset CreatedAt, DateTimeOffset? UpdatedAt, List<OrderItemResponse> Items, bool InventoryWasDeducted = false, DateTimeOffset? CompletedAt = null);
 public sealed class CategoryValidator : AbstractValidator<CategoryRequest>
 {
     public CategoryValidator() { RuleFor(x => x.Name).NotEmpty().MaximumLength(150); RuleFor(x => x.Description).NotNull().MaximumLength(2000); }

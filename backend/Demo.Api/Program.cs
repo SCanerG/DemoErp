@@ -56,6 +56,16 @@ builder.Services.AddScoped<ProductService>();
 builder.Services.AddScoped<CategoryService>();
 builder.Services.AddScoped<CustomerService>();
 builder.Services.AddScoped<OrderService>();
+builder.Services.AddScoped<ReportingService>();
+builder.Services.AddSingleton(sp => Demo.Api.AI.AiAssistantOptions.Read(sp.GetRequiredService<IConfiguration>()));
+builder.Services.AddSingleton<Demo.Api.AI.AiRequestQuota>();
+builder.Services.AddHttpClient<Demo.Api.AI.IAiModelClient, Demo.Api.AI.OpenAiModelClient>(client => client.Timeout = Timeout.InfiniteTimeSpan);
+builder.Services.AddScoped<Demo.Api.AI.AiToolExecutor>();
+builder.Services.AddScoped<Demo.Api.AI.AiAssistantService>();
+builder.Services.AddScoped<InventoryService>();
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<UserService>();
+builder.Services.AddScoped<AdminBootstrap>();
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer();
 builder.Services.AddOptions<JwtBearerOptions>(JwtBearerDefaults.AuthenticationScheme)
     .Configure<IOptions<JwtOptions>>((options, configured) =>
@@ -69,10 +79,27 @@ builder.Services.AddOptions<JwtBearerOptions>(JwtBearerDefaults.AuthenticationSc
         ValidateLifetime = true, RequireExpirationTime = true,
         ValidateIssuerSigningKey = true,
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwt.Secret)),
-        ValidAlgorithms = [SecurityAlgorithms.HmacSha256], ClockSkew = TimeSpan.Zero
+        ValidAlgorithms = [SecurityAlgorithms.HmacSha256], ClockSkew = TimeSpan.Zero,
+        RoleClaimType = "role", NameClaimType = "name"
+    };
+    options.Events = new JwtBearerEvents
+    {
+        OnTokenValidated = async context =>
+        {
+            if (!Guid.TryParse(context.Principal?.FindFirst("sub")?.Value, out var id)
+                || !int.TryParse(context.Principal?.FindFirst("sv")?.Value, out var version))
+            { context.Fail("Invalid session"); return; }
+            var db = context.HttpContext.RequestServices.GetRequiredService<AppDbContext>();
+            var user = await db.Users.AsNoTracking().Where(u => u.Id == id)
+                .Select(u => new { u.IsActive, u.SecurityVersion, u.Role, u.Name }).SingleOrDefaultAsync(context.HttpContext.RequestAborted);
+            if (user is null || !user.IsActive || user.SecurityVersion != version
+                || context.Principal?.FindFirst("role")?.Value != user.Role.ToString())
+            { context.Fail("Revoked session"); return; }
+            ((System.Security.Claims.ClaimsIdentity)context.Principal!.Identity!).AddClaim(new("name", user.Name));
+        }
     };
 });
-builder.Services.AddAuthorization();
+builder.Services.AddAuthorization(AccessPolicies.Register);
 var allowedOrigins = builder.Configuration.GetSection("Cors:Origins").Get<string[]>() ?? [];
 builder.Services.AddCors(options => options.AddDefaultPolicy(policy =>
     policy.WithOrigins(allowedOrigins).AllowAnyHeader().AllowAnyMethod()));
@@ -130,6 +157,7 @@ try
                 await Task.Delay(TimeSpan.FromSeconds(3));
             }
         }
+        await scope.ServiceProvider.GetRequiredService<AdminBootstrap>().Run(CancellationToken.None);
         app.Logger.LogInformation("Database migrations applied; starting API");
     }
     await app.RunAsync();

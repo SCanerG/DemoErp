@@ -26,10 +26,10 @@ public sealed class ApiExceptionHandler(ILogger<ApiExceptionHandler> logger, IPr
             { Status = 400, Title = "Validation failed" };
         }
         else if ((exception is DbUpdateException ? exception.InnerException : exception) is PostgresException pg
-            && pg.SqlState is PostgresErrorCodes.ForeignKeyViolation or PostgresErrorCodes.SerializationFailure)
+            && pg.SqlState is PostgresErrorCodes.ForeignKeyViolation or PostgresErrorCodes.SerializationFailure or PostgresErrorCodes.DeadlockDetected or PostgresErrorCodes.UniqueViolation)
         {
             context.Response.StatusCode = 409;
-            var code = pg.SqlState == PostgresErrorCodes.SerializationFailure ? "orderChanged" : "recordReferenced";
+            var code = pg.SqlState is PostgresErrorCodes.SerializationFailure or PostgresErrorCodes.DeadlockDetected or PostgresErrorCodes.UniqueViolation ? "concurrentUpdate" : "recordReferenced";
             problem = new ProblemDetails { Status = 409, Title = "Business rule violation", Detail = code };
             problem.Extensions["code"] = code;
         }

@@ -8,7 +8,7 @@ const product = { id: '00000000-0000-0000-0000-000000000123', name: 'Studio note
 test('mobile catalog exposes all actions without scrolling horizontally', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/auth/login');
-  await page.evaluate(() => sessionStorage.setItem('catalog.session', JSON.stringify({ accessToken: 'ui-fixture', expiresAt: new Date(Date.now() + 3600000).toISOString(), user: { id: 'fixture', name: 'UI fixture', email: 'fixture@example.com' } })));
+  await page.evaluate(() => sessionStorage.setItem('catalog.session', JSON.stringify({ accessToken: 'ui-fixture', expiresAt: new Date(Date.now() + 3600000).toISOString(), user: { id: 'fixture', name: 'UI fixture', email: 'fixture@example.com', role: 'Admin', isActive: true, createdAt: '2026-10-01T00:00:00Z', updatedAt: null } })));
   await page.route('**/api/products', route => route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify([product]) }));
   await page.goto('/products');
   const card = page.getByRole('list', { name: 'Products', exact: true }).getByRole('listitem');
@@ -29,7 +29,7 @@ test('mobile catalog exposes all actions without scrolling horizontally', async 
 
 test('delete dialog traps keyboard focus, closes on Escape, and restores focus', async ({ page }) => {
   await page.goto('/auth/login');
-  await page.evaluate(() => sessionStorage.setItem('catalog.session', JSON.stringify({ accessToken: 'ui-fixture', expiresAt: new Date(Date.now() + 3600000).toISOString(), user: { id: 'fixture', name: 'UI fixture', email: 'fixture@example.com' } })));
+  await page.evaluate(() => sessionStorage.setItem('catalog.session', JSON.stringify({ accessToken: 'ui-fixture', expiresAt: new Date(Date.now() + 3600000).toISOString(), user: { id: 'fixture', name: 'UI fixture', email: 'fixture@example.com', role: 'Admin', isActive: true, createdAt: '2026-10-01T00:00:00Z', updatedAt: null } })));
   await page.route('**/api/products', route => route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify([product]) }));
   await page.goto('/products');
   const trigger = page.getByRole('button', { name: 'Delete Studio notebook' });

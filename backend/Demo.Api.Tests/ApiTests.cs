@@ -19,6 +19,8 @@ namespace Demo.Api.Tests;
 
 public sealed class ApiTests(ApiFixture fixture) : IClassFixture<ApiFixture>
 {
+    private static readonly System.Text.Json.JsonSerializerOptions Json = new(System.Text.Json.JsonSerializerDefaults.Web)
+        { Converters = { new System.Text.Json.Serialization.JsonStringEnumConverter() } };
     private const string Password = "TestPassword123!";
     private static string Email() => $"{Guid.NewGuid():N}@example.com";
 
@@ -65,9 +67,15 @@ public sealed class ApiTests(ApiFixture fixture) : IClassFixture<ApiFixture>
         var email = Email();
         Assert.Equal(HttpStatusCode.Created, (await fixture.Client.PostAsJsonAsync("/api/auth/register",
             new RegisterRequest("Tester", email, Password), cancellationToken: TestContext.Current.CancellationToken)).StatusCode);
+        using (var scope = fixture.App.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            (await db.Users.SingleAsync(u => u.Email == email, TestContext.Current.CancellationToken)).Role = UserRole.Admin;
+            await db.SaveChangesAsync(TestContext.Current.CancellationToken);
+        }
         var login = await fixture.Client.PostAsJsonAsync("/api/auth/login", new LoginRequest(email, Password), cancellationToken: TestContext.Current.CancellationToken);
         login.EnsureSuccessStatusCode();
-        var session = await login.Content.ReadFromJsonAsync<LoginResponse>(cancellationToken: TestContext.Current.CancellationToken);
+        var session = await login.Content.ReadFromJsonAsync<LoginResponse>(Json, cancellationToken: TestContext.Current.CancellationToken);
         Assert.NotNull(session);
         var client = fixture.App.CreateClient();
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", session.AccessToken);
@@ -83,7 +91,7 @@ public sealed class ApiTests(ApiFixture fixture) : IClassFixture<ApiFixture>
         var email = Email();
         var response = await fixture.Client.PostAsJsonAsync("/api/auth/register", new RegisterRequest(" Tester ", email.ToUpperInvariant(), Password), cancellationToken: TestContext.Current.CancellationToken);
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
-        var user = await response.Content.ReadFromJsonAsync<UserResponse>(cancellationToken: TestContext.Current.CancellationToken);
+        var user = await response.Content.ReadFromJsonAsync<UserResponse>(Json, cancellationToken: TestContext.Current.CancellationToken);
         Assert.NotNull(user);
         Assert.Equal(email, user.Email);
         Assert.Equal("Tester", user.Name);
@@ -127,7 +135,7 @@ public sealed class ApiTests(ApiFixture fixture) : IClassFixture<ApiFixture>
         Assert.Equal(wrongProblem?.Title, unknownProblem?.Title);
         var valid = await fixture.Client.PostAsJsonAsync("/api/auth/login", new LoginRequest(email.ToUpperInvariant(), Password), cancellationToken: TestContext.Current.CancellationToken);
         Assert.Equal(HttpStatusCode.OK, valid.StatusCode);
-        var session = await valid.Content.ReadFromJsonAsync<LoginResponse>(cancellationToken: TestContext.Current.CancellationToken);
+        var session = await valid.Content.ReadFromJsonAsync<LoginResponse>(Json, cancellationToken: TestContext.Current.CancellationToken);
         Assert.NotNull(session);
         Assert.True(session.ExpiresAt > DateTimeOffset.UtcNow);
         Assert.DoesNotContain(session.AccessToken, string.Join('\n', fixture.App.Logs.Messages));

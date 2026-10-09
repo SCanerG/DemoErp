@@ -32,6 +32,7 @@ public sealed class Order
     public OrderStatus Status { get; set; } = OrderStatus.Pending;
     public DateTimeOffset OrderDate { get; set; } = DateTimeOffset.UtcNow;
     public decimal TotalAmount { get; set; }
+    public DateTimeOffset? CompletedAt { get; set; }
     public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
     public DateTimeOffset? UpdatedAt { get; set; }
     public List<OrderItem> Items { get; set; } = [];

@@ -1,6 +1,6 @@
 # Architecture
 
-[README](../README.md) · [Database](DATABASE.md) · [API](API.md) · [Development](DEVELOPMENT.md)
+[README](../README.md) · [Database](DATABASE.md) · [API](API.md) · [Development](DEVELOPMENT.md) · [Inventory](INVENTORY.md)
 
 The repository contains one ASP.NET Core API project and one React application.
 `Domain`, `Contracts`, `Services` and `Data` are directories within `Demo.Api`;
@@ -23,9 +23,15 @@ creates a scoped context/services per request; token generation is a singleton
 using validated JWT options. EF tracking and transactions provide the persistence
 boundary without additional repository or unit-of-work wrappers.
 
+The optional [AI Business Assistant](AI_ARCHITECTURE.md) adds a bounded, read-only
+orchestrator and fixed tool registry above the existing ReportingService. Its
+IAiModelClient adapter uses the official OpenAI .NET SDK; credentials stay in backend
+configuration. The feature is off by default and adds no database schema or chat storage.
+
 Read operations use `AsNoTracking` and explicit DTO projections, including category
 names, counts and order-line product names. Order reads avoid per-line queries.
-Lists currently return all rows; pagination and load testing are not implemented.
+Business lists currently return all rows; audit history uses server pagination and
+filters. Load testing is not implemented.
 TanStack Query owns server state and mutation invalidation. React Hook Form/Zod
 provide immediate form feedback; the backend remains authoritative.
 
@@ -34,8 +40,10 @@ provide immediate form feedback; the backend remains authoritative.
 Registration normalizes email; a unique database index handles races. Identity's
 PBKDF2 hasher uses 210,000 iterations. JWT Bearer validates HS256, signature,
 issuer, audience and expiry. Authentication requests are limited to 20/IP/minute.
-Safe DTOs exclude password hashes. Business records are shared by authenticated
-users, with no role or tenant partitioning.
+Safe DTOs exclude password hashes. Business records remain shared without tenants,
+while explicit Admin/Manager/Viewer policies restrict operations. Every protected
+request reads the user's active flag, role and SecurityVersion to reject stale tokens.
+See [security flow and bootstrap](SECURITY.md) and [permission matrix](AUTHORIZATION.md).
 
 Browser sessions use sessionStorage with a memory fallback. Current-session 401
 or expiry clears authentication/cache; late responses for a replaced token do not
@@ -54,9 +62,50 @@ prices, allocates a sequence number and saves the order and all items. A failure
 rolls back every business write. Sequence allocation is not rolled back, so gaps
 are expected. Unit prices are snapshots; names remain live references.
 
-Conditional status updates detect concurrent transitions. Product/category/customer
-edits use last write wins. Referenced records cannot be physically deleted; inactive
-records remain readable. There is no order deletion API.
+Order status changes use a ReadCommitted transaction and an Order row lock, then
+deterministically ordered Inventory row locks. Confirmation deducts stock and records
+movements; confirmed cancellation reverses actual deductions. Repeated statuses do
+not change stock. A filtered unique movement index adds duplicate protection.
+Product/category/customer edits use last write wins. Referenced records, including
+products with stock history, cannot be physically deleted. There is no order deletion
+API. [Inventory locks, transactions and legacy-order handling](INVENTORY.md).
+
+## Administration and audit
+
+UserService serializes administrative changes with a PostgreSQL advisory transaction
+lock and rechecks the actor under that lock. Self-demotion/deactivation and removal
+of the last active Admin are blocked. A one-time configuration bootstrap creates a
+new Admin after migrations, without promoting existing accounts. It is disabled by
+default and has a persisted marker for restart safety.
+
+AppDbContext.SaveChangesAsync stages explicit allowlisted AuditLog entries with
+business writes. Existing transaction boundaries are preserved; EF implicit
+transactions cover ordinary tracked CRUD. Product updates lock the product row for
+accurate before values. InventoryMovement remains the quantity ledger. Audit reads
+are Admin-only, filtered and paginated. [Fields, diagrams and boundaries](AUDIT_LOGGING.md).
+
+## Reporting reads
+
+DashboardController and ReportsController reuse BusinessRead and a scoped
+ReportingService alongside the existing services. GroupBy/Select produce scalar
+PostgreSQL aggregates and DTOs; sorting uses explicit expressions with stable IDs,
+and filtering/pagination remain in SQL. CompletedAt is maintained by the existing
+OrderService transaction. No CQRS, repository wrapper, caching service or reporting
+engine was introduced. The React reporting module is lazy loaded and uses one
+charting library, Recharts, with TanStack Query for server state. Business mutations
+invalidate report/dashboard caches centrally.
+
+```mermaid
+flowchart LR
+    UI[React Dashboard] --> API[Reporting API]
+    API --> LINQ[EF Core Query]
+    LINQ --> DB[(PostgreSQL)]
+    DB --> DTO[DTO Response]
+    DTO --> UI
+```
+
+[Reporting data flow and business definitions](REPORTING.md) ·
+[Actual SQL plans and performance trade-offs](PERFORMANCE.md).
 
 ## Localization and deployment
 

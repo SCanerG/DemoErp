@@ -1,3 +1,4 @@
+import { promoteRegistered } from './admin-helper';
 import { test, expect } from '@playwright/test';
 
 test('registration, authentication, product lifecycle, and protected routes', async ({ page }) => {
@@ -16,13 +17,15 @@ test('registration, authentication, product lifecycle, and protected routes', as
   await page.getByLabel('Confirm password').fill(password);
   await page.getByRole('button', { name: 'Create account' }).click();
   await expect(page.getByText('Account created. Sign in to continue.')).toBeVisible();
+  await promoteRegistered(page.request, email);
   await page.getByLabel('Email address').fill(email);
   await page.getByLabel('Password', { exact: true }).fill('incorrect-password');
   await page.getByRole('button', { name: 'Sign in', exact: true }).click();
   await expect(page.getByRole('alert')).toContainText('Email or password is incorrect.');
   await page.getByLabel('Password', { exact: true }).fill(password);
   await page.getByRole('button', { name: 'Sign in', exact: true }).click();
-  await expect(page).toHaveURL(/\/products$/);
+  await expect(page).toHaveURL(/\/dashboard$/);
+  await page.getByRole('navigation').getByRole('link', { name: 'Products', exact: true }).click();
   const session = await page.evaluate(() => JSON.parse(sessionStorage.getItem('catalog.session')!));
   const apiBase = process.env.API_URL ?? 'http://localhost:5080';
   const categoryResponse = await page.request.post(`${apiBase}/api/categories`, { headers: { Authorization: `Bearer ${session.accessToken}` }, data: { name: `Browser category ${Date.now()}`, description: '', isActive: true } });
@@ -80,7 +83,7 @@ test('registration, authentication, product lifecycle, and protected routes', as
 
 test('expired stored session redirects, mobile auth fits, and network errors display', async ({ page }) => {
   await page.goto('/auth/login');
-  await page.evaluate(() => sessionStorage.setItem('catalog.session', JSON.stringify({ accessToken: 'expired', expiresAt: '2000-01-01T00:00:00Z', user: { id: 'expired', name: 'Expired', email: 'expired@example.com' } })));
+  await page.evaluate(() => sessionStorage.setItem('catalog.session', JSON.stringify({ accessToken: 'expired', expiresAt: '2000-01-01T00:00:00Z', user: { id: 'expired', name: 'Expired', email: 'expired@example.com', role: 'Admin', isActive: true, createdAt: '2026-10-01T00:00:00Z', updatedAt: null } })));
   await page.goto('/products');
   await expect(page).toHaveURL(/\/auth\/login$/);
   await page.setViewportSize({ width: 390, height: 844 });
@@ -95,7 +98,7 @@ test('expired stored session redirects, mobile auth fits, and network errors dis
 
 test('invalid bearer token clears session after a protected API 401', async ({ page }) => {
   await page.goto('/auth/login');
-  await page.evaluate(() => sessionStorage.setItem('catalog.session', JSON.stringify({ accessToken: 'invalid-token', expiresAt: new Date(Date.now() + 3600000).toISOString(), user: { id: 'invalid', name: 'Invalid', email: 'invalid@example.com' } })));
+  await page.evaluate(() => sessionStorage.setItem('catalog.session', JSON.stringify({ accessToken: 'invalid-token', expiresAt: new Date(Date.now() + 3600000).toISOString(), user: { id: 'invalid', name: 'Invalid', email: 'invalid@example.com', role: 'Admin', isActive: true, createdAt: '2026-10-01T00:00:00Z', updatedAt: null } })));
   await page.goto('/products');
   await expect(page).toHaveURL(/\/auth\/login$/);
   expect(await page.evaluate(() => sessionStorage.getItem('catalog.session'))).toBeNull();

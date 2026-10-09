@@ -18,7 +18,7 @@ type RegisterInput = z.infer<typeof registerSchema>;
 
 export function AuthPage({ registerMode = false }: { registerMode?: boolean }) {
   const auth = useAuth();
-  if (auth.session) return <Navigate to="/products" replace />;
+  if (auth.session) return <Navigate to="/dashboard" replace />;
   return <main className="auth-shell">
     <aside className="auth-aside">
       <Link to="/auth/login" className="brand text-white"><span className="brand-icon">{t("C")}</span> {t("Catalog")}<span className="brand-dot">.</span></Link>
@@ -50,7 +50,7 @@ function LoginForm() {
   const [params] = useSearchParams();
   const { register, handleSubmit, formState: { errors } } = useForm<LoginInput>({ resolver: zodResolver(loginSchema) });
   const mutation = useMutation({ mutationFn: (value: LoginInput) => api<Session>('/auth/login', { method: 'POST', body: JSON.stringify(value) }),
-    onSuccess: session => { auth.login(session); navigate('/products', { replace: true }); } });
+    onSuccess: session => { auth.login(session); navigate('/dashboard', { replace: true }); } });
   return <form className="space-y-5" noValidate onSubmit={handleSubmit(value => mutation.mutate(value))}>
     {params.has('registered') && <p className="notice" role="status">{t("Account created. Sign in to continue.")}</p>}
     <ErrorNotice error={mutation.error} />

@@ -3,7 +3,7 @@ import { z } from 'zod';
 
 const sessionSchema = z.object({
   accessToken: z.string().min(1), expiresAt: z.string().refine(value => Date.parse(value) > Date.now()),
-  user: z.object({ id: z.string().min(1), name: z.string().min(1), email: z.string().email() }),
+  user: z.object({ id: z.string().min(1), name: z.string().min(1), email: z.string().email(), role: z.enum(['Admin', 'Manager', 'Viewer']), isActive: z.boolean(), createdAt: z.string(), updatedAt: z.string().nullable() }),
 });
 
 const key = 'catalog.session';

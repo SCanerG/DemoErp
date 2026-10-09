@@ -26,7 +26,7 @@ public sealed class AuthService(AppDbContext db, IPasswordHasher<User> hasher, T
             db.Entry(user).State = EntityState.Detached;
             return null;
         }
-        return new UserResponse(user.Id, user.Name, user.Email);
+        return new UserResponse(user.Id, user.Name, user.Email, user.Role, user.IsActive, user.CreatedAt, user.UpdatedAt);
     }
 
     public async Task<LoginResponse?> Login(LoginRequest request, CancellationToken ct)
@@ -40,7 +40,7 @@ public sealed class AuthService(AppDbContext db, IPasswordHasher<User> hasher, T
             return null;
         }
         var result = hasher.VerifyHashedPassword(user, user.PasswordHash, request.Password);
-        if (result == PasswordVerificationResult.Failed) return null;
+        if (result == PasswordVerificationResult.Failed || !user.IsActive) return null;
         if (result == PasswordVerificationResult.SuccessRehashNeeded)
         {
             user.PasswordHash = hasher.HashPassword(user, request.Password);

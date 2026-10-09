@@ -24,7 +24,9 @@ public sealed class CategoryService(AppDbContext db)
     public async Task<bool> Delete(Guid id, CancellationToken ct)
     {
         if (await db.Products.AnyAsync(p => p.CategoryId == id, ct)) throw new BusinessException("categoryReferenced", 409);
-        return await db.Categories.Where(c => c.Id == id).ExecuteDeleteAsync(ct) > 0;
+        var category = await db.Categories.FindAsync([id], ct);
+        if (category is null) return false;
+        db.Categories.Remove(category); await db.SaveChangesAsync(ct); return true;
     }
 }
 public sealed class CustomerService(AppDbContext db)
@@ -44,7 +46,9 @@ public sealed class CustomerService(AppDbContext db)
     public async Task<bool> Delete(Guid id, CancellationToken ct)
     {
         if (await db.Orders.AnyAsync(o => o.CustomerId == id, ct)) throw new BusinessException("customerReferenced", 409);
-        return await db.Customers.Where(c => c.Id == id).ExecuteDeleteAsync(ct) > 0;
+        var customer = await db.Customers.FindAsync([id], ct);
+        if (customer is null) return false;
+        db.Customers.Remove(customer); await db.SaveChangesAsync(ct); return true;
     }
 }
 public sealed class OrderService(AppDbContext db)
@@ -53,7 +57,8 @@ public sealed class OrderService(AppDbContext db)
         .Select(o => new OrderSummary(o.Id, o.OrderNumber, o.CustomerId, o.Customer.Name, o.Status, o.OrderDate, o.TotalAmount, o.Items.Count)).ToListAsync(ct);
     public Task<OrderResponse?> Get(Guid id, CancellationToken ct) => db.Orders.AsNoTracking().Where(o => o.Id == id)
         .Select(o => new OrderResponse(o.Id, o.OrderNumber, o.CustomerId, o.Customer.Name, o.Status, o.OrderDate, o.TotalAmount, o.CreatedAt, o.UpdatedAt,
-            o.Items.OrderBy(i => i.Id).Select(i => new OrderItemResponse(i.Id, i.ProductId, i.Product.Name, i.Quantity, i.UnitPrice, i.LineTotal)).ToList())).SingleOrDefaultAsync(ct);
+            o.Items.OrderBy(i => i.Id).Select(i => new OrderItemResponse(i.Id, i.ProductId, i.Product.Name, i.Quantity, i.UnitPrice, i.LineTotal)).ToList(),
+            db.InventoryMovements.Any(m => m.ReferenceId == o.Id && m.MovementType == MovementType.OrderDeduction), o.CompletedAt)).SingleOrDefaultAsync(ct);
     public async Task<OrderResponse> Create(OrderRequest request, CancellationToken ct)
     {
         // One snapshot for customer/product checks; all writes commit together. Disposal rolls back on any failure.
@@ -77,9 +82,10 @@ public sealed class OrderService(AppDbContext db)
         await transaction.CommitAsync(ct);
         return (await Get(order.Id, ct))!;
     }
-    public async Task<OrderResponse?> ChangeStatus(Guid id, OrderStatus status, CancellationToken ct)
+    public async Task<OrderResponse?> ChangeStatus(Guid id, OrderStatus status, Guid userId, CancellationToken ct)
     {
-        var order = await db.Orders.FindAsync([id], ct);
+        await using var transaction = await db.Database.BeginTransactionAsync(ct);
+        var order = await db.Orders.FromSqlInterpolated($"SELECT * FROM \"Orders\" WHERE \"Id\" = {id} FOR UPDATE").SingleOrDefaultAsync(ct);
         if (order is null) return null;
         if (order.Status == status) return await Get(id, ct);
         var allowed = order.Status switch
@@ -89,10 +95,34 @@ public sealed class OrderService(AppDbContext db)
             _ => false
         };
         if (!allowed) throw new BusinessException("invalidTransition", 409);
-        // Compare the status read above so concurrent updates cannot bypass transition rules.
-        var count = await db.Orders.Where(o => o.Id == id && o.Status == order.Status)
-            .ExecuteUpdateAsync(set => set.SetProperty(o => o.Status, status).SetProperty(o => o.UpdatedAt, DateTimeOffset.UtcNow), ct);
-        if (count == 0) throw new BusinessException("orderChanged", 409);
+        if (order.Status == OrderStatus.Pending && status == OrderStatus.Confirmed)
+        {
+            var lines = await db.OrderItems.Where(i => i.OrderId == id).GroupBy(i => i.ProductId)
+                .Select(group => new { ProductId = group.Key, Quantity = group.Sum(i => (long)i.Quantity) }).ToListAsync(ct);
+            if (lines.Count == 0) throw new BusinessException("invalidTransition", 409);
+            foreach (var line in lines.OrderBy(i => i.ProductId))
+            {
+                var inventory = await InventoryService.Lock(db, line.ProductId, ct) ?? throw new BusinessException("inventoryNotFound", 404);
+                InventoryService.Apply(db, inventory, line.Quantity, MovementType.OrderDeduction, userId, "Order confirmation", id);
+            }
+        }
+        else if (order.Status == OrderStatus.Confirmed && status == OrderStatus.Cancelled)
+        {
+            // Return ONLY actual deductions. Pre-inventory confirmed orders have no
+            // deductions to reverse; cancellation must not create fictitious stock.
+            var deductions = await db.InventoryMovements.Where(m => m.ReferenceId == id && m.MovementType == MovementType.OrderDeduction)
+                .Select(m => new { m.ProductId, m.Quantity }).ToListAsync(ct);
+            foreach (var line in deductions.OrderBy(i => i.ProductId))
+            {
+                var inventory = await InventoryService.Lock(db, line.ProductId, ct) ?? throw new BusinessException("inventoryNotFound", 404);
+                InventoryService.Apply(db, inventory, line.Quantity, MovementType.OrderCancellationReturn, userId, "Order cancellation", id);
+            }
+        }
+        order.Status = status;
+        order.UpdatedAt = DateTimeOffset.UtcNow;
+        if (status == OrderStatus.Completed) order.CompletedAt = order.UpdatedAt;
+        await db.SaveChangesAsync(ct);
+        await transaction.CommitAsync(ct);
         return await Get(id, ct);
     }
 }

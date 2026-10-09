@@ -1,8 +1,14 @@
 import { test, expect } from '@playwright/test';
 
+// These tests isolate session/storage and catalog UI; analytics requests are intentionally unavailable.
+test.beforeEach(async ({ page }) => {
+  await page.route('**/api/dashboard/**', route => route.abort());
+  await page.route('**/api/reports/**', route => route.abort());
+});
+
 test('catalog handles loading, empty results, errors, and retry', async ({ page }) => {
   await page.goto('/auth/login');
-  await page.evaluate(() => sessionStorage.setItem('catalog.session', JSON.stringify({ accessToken: 'ui-state-fixture', expiresAt: new Date(Date.now() + 3600000).toISOString(), user: { id: 'state-fixture', name: 'UI fixture', email: 'fixture@example.com' } })));
+  await page.evaluate(() => sessionStorage.setItem('catalog.session', JSON.stringify({ accessToken: 'ui-state-fixture', expiresAt: new Date(Date.now() + 3600000).toISOString(), user: { id: 'state-fixture', name: 'UI fixture', email: 'fixture@example.com', role: 'Admin', isActive: true, createdAt: '2026-10-01T00:00:00Z', updatedAt: null } })));
   let release: () => void = () => {};
   const ready = new Promise<void>(resolve => { release = resolve; });
   await page.route('**/api/products', async route => {
@@ -34,7 +40,7 @@ test('malformed stored session redirects safely and malformed API errors remain 
   await expect(page.getByRole('heading', { name: 'Welcome back' })).toBeVisible();
   await page.evaluate(() => sessionStorage.setItem('catalog.session', JSON.stringify({
     accessToken: 'fixture', expiresAt: new Date(Date.now() + 3600000).toISOString(),
-    user: { id: 'fixture', name: 'Tester', email: 'tester@example.com' },
+    user: { id: 'fixture', name: 'Tester', email: 'tester@example.com', role: 'Admin', isActive: true, createdAt: '2026-10-01T00:00:00Z', updatedAt: null },
   })));
   await page.route('**/api/products', route => route.fulfill({ status: 500, contentType: 'application/json', body: 'null' }));
   await page.goto('/products');
@@ -49,14 +55,14 @@ test('unavailable session storage still permits login and logout in memory', asy
   });
   await page.route('**/api/auth/login', route => route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({
     accessToken: 'fixture', expiresAt: new Date(Date.now() + 3600000).toISOString(),
-    user: { id: 'fixture', name: 'Tester', email: 'tester@example.com' },
+    user: { id: 'fixture', name: 'Tester', email: 'tester@example.com', role: 'Admin', isActive: true, createdAt: '2026-10-01T00:00:00Z', updatedAt: null },
   }) }));
   await page.route('**/api/products', route => route.fulfill({ status: 200, contentType: 'application/json', body: '[]' }));
   await page.goto('/auth/login');
   await page.getByLabel('Email address').fill('tester@example.com');
   await page.getByLabel('Password', { exact: true }).fill('TestPassword123!');
   await page.getByRole('button', { name: 'Sign in', exact: true }).click();
-  await expect(page).toHaveURL(/\/products$/);
+  await expect(page).toHaveURL(/\/dashboard$/);
   await page.getByRole('button', { name: 'Sign out' }).click();
   await expect(page).toHaveURL(/\/auth\/login/);
 });
@@ -80,19 +86,21 @@ test('late unauthorized response from a previous session does not clear a newer 
   await page.goto('/auth/login');
   await page.evaluate(() => sessionStorage.setItem('catalog.session', JSON.stringify({
     accessToken: 'old-session', expiresAt: new Date(Date.now() + 3600000).toISOString(),
-    user: { id: 'fixture', name: 'Tester', email: 'tester@example.com' },
+    user: { id: 'fixture', name: 'Tester', email: 'tester@example.com', role: 'Admin', isActive: true, createdAt: '2026-10-01T00:00:00Z', updatedAt: null },
   })));
   await page.goto('/products');
   await expect(page.getByRole('status')).toContainText('Loading your catalog');
   await page.getByRole('button', { name: 'Sign out' }).click();
   await page.route('**/api/auth/login', route => route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({
     accessToken: 'new-session', expiresAt: new Date(Date.now() + 3600000).toISOString(),
-    user: { id: 'fixture', name: 'Tester', email: 'tester@example.com' },
+    user: { id: 'fixture', name: 'Tester', email: 'tester@example.com', role: 'Admin', isActive: true, createdAt: '2026-10-01T00:00:00Z', updatedAt: null },
   }) }));
   await page.route('**/api/products', route => route.fulfill({ status: 200, contentType: 'application/json', body: '[]' }));
   await page.getByLabel('Email address').fill('tester@example.com');
   await page.getByLabel('Password', { exact: true }).fill('TestPassword123!');
   await page.getByRole('button', { name: 'Sign in', exact: true }).click();
+  await expect(page).toHaveURL(/\/dashboard$/);
+  await page.getByRole('navigation').getByRole('link', { name: 'Products', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Your catalog is a clean slate' })).toBeVisible();
   await page.evaluate(async () => {
     (window as unknown as { releaseOldResponse: () => void }).releaseOldResponse();

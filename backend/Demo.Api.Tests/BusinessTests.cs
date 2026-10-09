@@ -25,6 +25,9 @@ public sealed class BusinessTests(ApiFixture fixture) : IClassFixture<ApiFixture
         using var scope = fixture.App.Services.CreateScope();
         var auth = scope.ServiceProvider.GetRequiredService<AuthService>();
         await auth.Register(new("Business", email, "BusinessPassword123!"), Ct);
+        var setupDb = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        (await setupDb.Users.SingleAsync(u => u.Email == email, Ct)).Role = UserRole.Admin;
+        await setupDb.SaveChangesAsync(Ct);
         var login = await auth.Login(new(email, "BusinessPassword123!"), Ct);
         client.DefaultRequestHeaders.Authorization = new("Bearer", login!.AccessToken);
     }
@@ -120,6 +123,7 @@ public sealed class BusinessTests(ApiFixture fixture) : IClassFixture<ApiFixture
         var first = (await responses[0].Content.ReadFromJsonAsync<OrderResponse>(Json, Ct))!;
         var second = (await responses[1].Content.ReadFromJsonAsync<OrderResponse>(Json, Ct))!;
         Assert.NotEqual(first.OrderNumber, second.OrderNumber);
+        Assert.Equal(HttpStatusCode.OK, (await client.PostAsJsonAsync($"/api/inventory/{data.First.Id}/stock-in", new StockRequest(10, "Status test supply"), Ct)).StatusCode);
         Assert.Equal(HttpStatusCode.Conflict, (await client.PutAsJsonAsync($"/api/orders/{first.Id}/status", new { status = "Completed" }, Ct)).StatusCode);
         Assert.Equal(HttpStatusCode.OK, (await client.PutAsJsonAsync($"/api/orders/{first.Id}/status", new { status = "Confirmed" }, Ct)).StatusCode);
         Assert.Equal(HttpStatusCode.OK, (await client.PutAsJsonAsync($"/api/orders/{first.Id}/status", new { status = "Completed" }, Ct)).StatusCode);
