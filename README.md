@@ -16,6 +16,20 @@ different, private manufacturing ERP; its samples and visuals are superseded her
 The current application does not include manufacturing, barcode or desktop modules.
 Verification includes builds, PostgreSQL integration tests and browser acceptance tests.
 
+## Demo accounts
+
+Use these accounts to explore the prepared demo database:
+
+| Role | Email | Application role |
+| --- | --- | --- |
+| Administrator | `admin@example.com` | `Admin` |
+| Viewer | `viewer@example.com` | `Viewer` |
+| Operations manager | `operation@example.com` | `Manager` |
+
+**Password for all three accounts:** `qwe123456789`
+
+These are public demo credentials for synthetic data only. A fresh installation does not automatically create these accounts; provision them through Admin setup and user management. Do not reuse these credentials in production.
+
 ## Dashboard and reporting
 
 Sign-in opens an executive dashboard with eight database-driven KPIs, UTC sales

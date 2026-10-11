@@ -12,6 +12,20 @@ Bu kaynak ağacı bağımsız demonun tamamını içerir. Eski commitlerde anlat
 üretim ERP’si, Windows/Android istemcileri ve barkod modülleri bu uygulamanın parçası
 değildir. Eski geçmiş korunur; güncel README mevcut kodu anlatır.
 
+## Demo hesapları
+
+Hazırlanmış demo veritabanını incelemek için aşağıdaki hesapları kullanabilirsiniz:
+
+| Kullanıcı | E-posta | Uygulama rolü |
+| --- | --- | --- |
+| Yönetici | `admin@example.com` | `Admin` |
+| Görüntüleyici | `viewer@example.com` | `Viewer` |
+| Operasyon sorumlusu | `operation@example.com` | `Manager` |
+
+**Üç hesabın ortak şifresi:** `qwe123456789`
+
+Bu herkese açık demo giriş bilgileri yalnızca sentetik veriler içindir. Yeni kurulumlarda bu hesaplar otomatik oluşturulmaz; Admin kurulumu ve kullanıcı yönetimi üzerinden oluşturulmalıdır. Bu bilgileri üretim ortamında kullanmayın.
+
 ## Gösterge paneli ve raporlar
 
 Girişten sonra sekiz gerçek veri kartı, satış eğilimi, sipariş durum dağılımı, en çok
