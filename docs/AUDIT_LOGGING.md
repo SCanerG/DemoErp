@@ -1,5 +1,9 @@
 # Audit logging
 
+Phase 9 adds BillOfMaterials/ProductionOrder to entity filters and BomActivate, BomDeactivate, ProductionRelease, ProductionStart, ProductionComplete, ProductionCancel to actions. Explicit allowed changes, authenticated actor and correlation id commit with business transactions. Notes and secrets are excluded; movements retain quantity history. [Manufacturing audit and rollback](MANUFACTURING.md).
+
+Phase 8 adds Warehouse, WarehouseInventory and StockTransfer audit entities, WarehouseDefaultChange, TransferComplete and TransferCancel actions. Completion records products/quantities and actor/time in the same transaction as balances and movements. [Details](WAREHOUSE_MANAGEMENT.md).
+
 [README](../README.md) · [Security](SECURITY.md) · [Authorization](AUTHORIZATION.md)
 
 AuditLog records committed business/access operations. InventoryMovement remains
@@ -116,3 +120,15 @@ labels are localized. There are no edit/delete audit controls.
 Tests verify actor/changed fields, safe contents, role/stock/order events, failed
 business operations without success entries, PostgreSQL immutability, pagination/
 filters and actual failing audit INSERTs for product, role, stock and order changes.
+
+## Phase 7 procurement integration
+
+[Procurement and supplier management](PROCUREMENT.md) documents the actual PO
+lifecycle, restrictive EF relationships, cost snapshots, atomic receipt/stock/audit
+writes, PostgreSQL order-then-inventory locks, user/key idempotency, permissions and
+UI behavior. The existing modules and AI tool definitions remain unchanged.
+The current procurement summary is separate from sales totals and excludes Draft/
+Cancelled outstanding units; the procurement report uses PO creation dates.
+Receipt stock history uses PurchaseReceipt with a dedicated GoodsReceipt FK,
+preserving the existing sales Order reference. Procurement audit actions are
+visible through the existing Admin audit list and entity/action filters.

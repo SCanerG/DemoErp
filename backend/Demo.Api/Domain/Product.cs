@@ -3,6 +3,7 @@ namespace Demo.Api.Domain;
 public sealed class Product
 {
     public Guid Id { get; set; } = Guid.NewGuid();
+    public ProductType ProductType { get; set; } = ProductType.RawMaterial;
     public Guid CategoryId { get; set; }
     public Category Category { get; set; } = null!;
     public List<OrderItem> OrderItems { get; set; } = [];

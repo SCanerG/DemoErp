@@ -2,6 +2,7 @@ name: Build and test
 
 on:
   push:
+    branches: [main]
   pull_request:
   workflow_dispatch:
 
@@ -35,4 +36,37 @@ jobs:
           cache: npm
           cache-dependency-path: frontend/package-lock.json
       - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm test
       - run: npm run build
+      - run: npm audit --audit-level=high
+
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      COMPOSE_PROJECT_NAME: demoerp-ci
+      BOOTSTRAP_ADMIN_ENABLED: 'true'
+      BOOTSTRAP_ADMIN_EMAIL: smoke@example.com
+      BOOTSTRAP_ADMIN_NAME: CI smoke reviewer
+      # Public test-only credential: used exclusively in this disposable runner.
+      BOOTSTRAP_ADMIN_PASSWORD: CI-Synthetic-Smoke-Only-2026!
+      FRONTEND_URL: http://localhost:3000
+      API_URL: http://localhost:5080
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: docker compose up -d --build --wait
+      - run: npm ci
+        working-directory: frontend
+      - run: npx playwright install --with-deps chromium
+        working-directory: frontend
+      - run: npm run test:smoke && npm run test:a11y
+        working-directory: frontend
+      - if: always()
+        run: docker compose down

@@ -1,5 +1,9 @@
 # Authorization and user management
 
+Phase 9 reuses BusinessRead, BusinessWrite, BusinessDelete, InventoryManage and UserManage policies. Admin-only BOM activation/deactivation/draft deletion; Admin/Manager recipe drafts and production transitions; Viewer availability/reports. Backend checks current JWT role/security version on every request. [Manufacturing permission matrix](MANUFACTURING.md).
+
+Phase 8: only Admin manages warehouse create/edit/status/default. Admin and Manager manage transfers and warehouse stock; Viewer reads all warehouse/transfer/report endpoints. [Details](WAREHOUSE_MANAGEMENT.md).
+
 [README](../README.md) · [Security](SECURITY.md) · [Audit logging](AUDIT_LOGGING.md)
 
 The application has one predefined enum role per user: Viewer, Manager or Admin.

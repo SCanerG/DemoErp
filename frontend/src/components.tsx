@@ -7,7 +7,7 @@ export function ErrorNotice({ error }: { error: unknown }) {
   return error ? <div className="notice error" role="alert">{errorText(error)}</div> : null;
 }
 
-export function Loading() { return <div className="panel py-12 text-center" role="status">{t("Loading your catalog…")}</div>; }
+export function Loading() { return <div className="panel loading-skeleton" role="status" aria-busy="true"><span className="sr-only">{t("Loading workspace…")}</span><div className="skeleton" /><div className="skeleton" /><div className="skeleton" /></div>; }
 
 export function QueryError({ error, retry, back = '/products' }: { error: unknown; retry: () => void; back?: string }) {
   const missing = error instanceof ApiError && error.status === 404;
@@ -29,3 +29,12 @@ export function StatusBadge({ active }: { active: boolean }) {
 
 export const priceFormat = { format: (value: number) => new Intl.NumberFormat(getLanguage() === 'tr' ? 'tr-TR' : 'en-US', { style: 'currency', currency: 'USD' }).format(value) };
 export function dateFormat(value: string) { return new Date(value).toLocaleDateString(getLanguage() === 'tr' ? 'tr-TR' : 'en-US', { month: 'short', day: 'numeric', year: 'numeric' }); }
+
+export function BusinessStatus({ status }: { status: string }) {
+  return <span className={`badge status-${status}`}>{t(status)}</span>;
+}
+export function DashboardSkeleton() {
+  return <div role="status" aria-busy="true"><span className="sr-only">{t('Loading workspace…')}</span><div className="kpi-grid">{Array.from({ length: 8 }, (_, i) => <div className="kpi-card loading-skeleton" key={i} aria-hidden="true"><div className="skeleton" /><div className="skeleton" /><div className="skeleton" /></div>)}</div><div className="dashboard-charts" aria-hidden="true"><div className="panel chart-box skeleton" /><div className="panel chart-box skeleton" /></div></div>;
+}
+
+export function dateTimeFormat(value: string) { return new Date(value).toLocaleString(getLanguage() === 'tr' ? 'tr-TR' : 'en-US'); }

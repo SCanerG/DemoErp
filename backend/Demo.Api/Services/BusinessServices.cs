@@ -58,18 +58,20 @@ public sealed class OrderService(AppDbContext db)
     public Task<OrderResponse?> Get(Guid id, CancellationToken ct) => db.Orders.AsNoTracking().Where(o => o.Id == id)
         .Select(o => new OrderResponse(o.Id, o.OrderNumber, o.CustomerId, o.Customer.Name, o.Status, o.OrderDate, o.TotalAmount, o.CreatedAt, o.UpdatedAt,
             o.Items.OrderBy(i => i.Id).Select(i => new OrderItemResponse(i.Id, i.ProductId, i.Product.Name, i.Quantity, i.UnitPrice, i.LineTotal)).ToList(),
-            db.InventoryMovements.Any(m => m.ReferenceId == o.Id && m.MovementType == MovementType.OrderDeduction), o.CompletedAt)).SingleOrDefaultAsync(ct);
+            db.InventoryMovements.Any(m => m.ReferenceId == o.Id && m.MovementType == MovementType.OrderDeduction), o.CompletedAt, o.WarehouseId, o.Warehouse.Name)).SingleOrDefaultAsync(ct);
     public async Task<OrderResponse> Create(OrderRequest request, CancellationToken ct)
     {
         // One snapshot for customer/product checks; all writes commit together. Disposal rolls back on any failure.
         await using var transaction = await db.Database.BeginTransactionAsync(IsolationLevel.RepeatableRead, ct);
+        var warehouse = await InventoryService.ResolveWarehouse(db, request.WarehouseId, ct);
+        await InventoryService.LockWarehouses(db, [warehouse], ct);
         if (!await db.Customers.AnyAsync(c => c.Id == request.CustomerId && c.IsActive, ct)) throw new BusinessException("customerUnavailable");
         var ids = request.Items.Select(i => i.ProductId).ToArray();
         var products = await db.Products.AsNoTracking().Where(p => ids.Contains(p.Id)).Select(p => new { p.Id, p.Price, p.IsActive }).ToDictionaryAsync(p => p.Id, ct);
         if (products.Count != ids.Length) throw new BusinessException("productUnavailable");
         if (products.Values.Any(p => !p.IsActive)) throw new BusinessException("productInactive");
         var number = await db.Database.SqlQueryRaw<long>("SELECT nextval('\"OrderNumbers\"') AS \"Value\"").SingleAsync(ct);
-        var order = new Order { CustomerId = request.CustomerId, OrderNumber = $"ORD-{DateTime.UtcNow:yyyyMMdd}-{number:D6}" };
+        var order = new Order { WarehouseId = warehouse, CustomerId = request.CustomerId, OrderNumber = $"ORD-{DateTime.UtcNow:yyyyMMdd}-{number:D6}" };
         foreach (var line in request.Items)
         {
             var price = products[line.ProductId].Price;
@@ -100,9 +102,11 @@ public sealed class OrderService(AppDbContext db)
             var lines = await db.OrderItems.Where(i => i.OrderId == id).GroupBy(i => i.ProductId)
                 .Select(group => new { ProductId = group.Key, Quantity = group.Sum(i => (long)i.Quantity) }).ToListAsync(ct);
             if (lines.Count == 0) throw new BusinessException("invalidTransition", 409);
+            await InventoryService.LockWarehouses(db, [order.WarehouseId], ct);
+            await InventoryService.LockProducts(db, lines.Select(i => i.ProductId), ct);
             foreach (var line in lines.OrderBy(i => i.ProductId))
             {
-                var inventory = await InventoryService.Lock(db, line.ProductId, ct) ?? throw new BusinessException("inventoryNotFound", 404);
+                var inventory = await InventoryService.LockBalance(db, order.WarehouseId, line.ProductId, ct);
                 InventoryService.Apply(db, inventory, line.Quantity, MovementType.OrderDeduction, userId, "Order confirmation", id);
             }
         }
@@ -111,10 +115,12 @@ public sealed class OrderService(AppDbContext db)
             // Return ONLY actual deductions. Pre-inventory confirmed orders have no
             // deductions to reverse; cancellation must not create fictitious stock.
             var deductions = await db.InventoryMovements.Where(m => m.ReferenceId == id && m.MovementType == MovementType.OrderDeduction)
-                .Select(m => new { m.ProductId, m.Quantity }).ToListAsync(ct);
-            foreach (var line in deductions.OrderBy(i => i.ProductId))
+                .Select(m => new { m.ProductId, m.Quantity, m.WarehouseId }).ToListAsync(ct);
+            await InventoryService.LockWarehouses(db, deductions.Select(i => i.WarehouseId), ct, requireActive: false);
+            await InventoryService.LockProducts(db, deductions.Select(i => i.ProductId), ct);
+            foreach (var line in deductions.OrderBy(i => i.WarehouseId).ThenBy(i => i.ProductId))
             {
-                var inventory = await InventoryService.Lock(db, line.ProductId, ct) ?? throw new BusinessException("inventoryNotFound", 404);
+                var inventory = await InventoryService.LockBalance(db, line.WarehouseId, line.ProductId, ct);
                 InventoryService.Apply(db, inventory, line.Quantity, MovementType.OrderCancellationReturn, userId, "Order cancellation", id);
             }
         }

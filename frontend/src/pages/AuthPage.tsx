@@ -21,22 +21,22 @@ export function AuthPage({ registerMode = false }: { registerMode?: boolean }) {
   if (auth.session) return <Navigate to="/dashboard" replace />;
   return <main className="auth-shell">
     <aside className="auth-aside">
-      <Link to="/auth/login" className="brand text-white"><span className="brand-icon">{t("C")}</span> {t("Catalog")}<span className="brand-dot">.</span></Link>
-      <div><p className="eyebrow text-emerald-200">{t("YOUR PRODUCT WORKSPACE")}</p>
-        <h1 className="mt-5 text-5xl font-semibold leading-tight">{t("A little order.")}<br />{t("A lot of clarity.")}</h1>
-        <p className="mt-6 max-w-sm leading-7 text-emerald-100/75">{t("Keep your products in one place. Create, update, and manage your catalog with a simple workspace built for focus.")}</p>
+      <Link to="/auth/login" className="brand text-white"><span className="brand-icon">D</span> DemoErp<span className="brand-dot">.</span></Link>
+      <div><p className="eyebrow text-emerald-200">{t("Business workspace")}</p>
+        <h2 className="mt-5 text-4xl font-semibold leading-tight">{t("One workspace. Connected operations.")}</h2>
+        <p className="mt-6 max-w-sm leading-7 text-emerald-100/75">{t("Manage sales, procurement, inventory and production with a clear view of your business.")}</p>
       </div>
       <p className="text-sm text-emerald-100/60">{t("Simple tools. Thoughtful details.")}</p>
     </aside>
     <section className="auth-content">
       <div className="w-full max-w-sm">
         <div className="mb-6 flex justify-end"><LanguageSelector /></div>
-        <Link to="/auth/login" className="brand mb-10 lg:hidden">{t("Catalog.")}</Link>
+        <Link to="/auth/login" className="brand mb-10 lg:hidden">DemoErp</Link>
         <p className="eyebrow">{t("LET’S GET STARTED")}</p>
-        <h2 className="mt-3 text-3xl font-semibold tracking-tight">{registerMode ? t("Create your account") : t("Welcome back")}</h2>
-        <p className="mb-8 mt-3 text-slate-500">{registerMode ? t("Your catalog starts here.") : t("Sign in to your product workspace.")}</p>
+        <h1 className="mt-3 text-3xl font-semibold tracking-tight">{registerMode ? t("Create your account") : t("Welcome back")}</h1>
+        <p className="mb-8 mt-3 text-slate-500">{registerMode ? t("Your catalog starts here.") : t("Sign in to your business workspace.")}</p>
         {registerMode ? <RegisterForm /> : <LoginForm />}
-        <p className="mt-7 text-sm text-slate-500">{registerMode ? t("Already have an account?") : t("New to Catalog?")}{' '}
+        <p className="mt-7 text-sm text-slate-500">{registerMode ? t("Already have an account?") : t("New to DemoErp?")}{' '}
           <Link className="text-link" to={registerMode ? '/auth/login' : '/auth/register'}>{registerMode ? t("Sign in") : t("Create an account")}</Link>
         </p>
       </div>

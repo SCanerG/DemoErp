@@ -1,5 +1,40 @@
 # PostgreSQL reporting performance
 
+## Phase 10 query review — 2026-10-11
+
+A new isolated PostgreSQL 17.11 database used the same deterministic 500 categories, 5,000 products, 2,000 customers, 20,000 orders, 80,000 order lines and 100,000 movements. The original fixture was seeded at the historical reporting migration and then upgraded through all nine migrations. No workload ran against the primary application database.
+
+The production preview previously materialized every warehouse balance into a dictionary although only BOM materials were needed. `ManufacturingService.Preview` now filters the query to the recipe's material IDs before materialization. The existing unique `(WarehouseId, ProductId)` index supports this query; no new index or migration was justified.
+
+| Query | Warm median ms | Review |
+| --- | ---: | --- |
+| Preview before: whole warehouse | 0.421 | Sequential scan; 5,000 rows, 57 shared hit blocks |
+| Preview after: five material IDs | 0.031 | Existing composite index; five rows, 11 shared hit blocks |
+| Completed-sales total | 0.176 | Existing reporting query; no Phase 10 change |
+| Top products | 12.073 | Existing aggregate; no improvement claim |
+| Customer summary | 1.613 | Existing aggregate; no improvement claim |
+| Filtered orders | 0.293 | Existing date index; unchanged |
+| Inventory joins | 3.136 | Current warehouse aggregation; unchanged |
+| Movement history | 0.069 | Existing product/date access; unchanged |
+
+One discarded warmup and seven warm `EXPLAIN (ANALYZE, BUFFERS, FORMAT JSON)` runs per captured EF command. Rows/buffers above come from the saved final plan; medians use all seven samples. Zero shared read blocks in the preview plans indicates warm cache; these results do not measure network, dictionary allocation, HTTP latency or cold storage. Hardware/environment variance makes comparison with the historical Phase 5 timings below inappropriate. [Actual measurements](performance/phase10/measurements.json), [before SQL](performance/phase10/preview-before.sql), [before plan](performance/phase10/preview-before.plan.json), [after SQL](performance/phase10/preview-after.sql), [after plan](performance/phase10/preview-after.plan.json).
+
+Reproduce with a **fresh, disposable**, local PostgreSQL database named `reporting_benchmark`, then set `ConnectionStrings__Default` for it:
+
+```sh
+dotnet run --project scripts/performance -- --baseline --seed
+dotnet run --project scripts/performance -- --measure --output docs/performance/phase10
+```
+
+The tool rejects another database name or a non-loopback host; it refuses seeding if any business data exists. Do not attempt the historical `--baseline` migration against an upgraded database; create a separate new benchmark database. Existing foreign-key, partial uniqueness, movement/history and reporting indexes were retained to protect their invariants and access paths. Index removal/addition would add write cost and migration risk without demonstrated benefit here.
+
+### Frontend bundle measurement
+
+Route-level lazy imports remove unrelated business screens from the initial entry bundle. Both baseline and final are built with their own locked dependencies using `npm ci` and `npm run build`; the initial JavaScript entry changed from 589.77 kB (169.82 kB gzip) to 416.88 kB (129.08 kB gzip), a 29.3% reduction in emitted minified entry size. Other chunks are loaded separately, so this is not a claim that total application code shrank by that percentage. Reporting remains a separate chart chunk below Vite's 500 kB advisory threshold. These are emitted bundle sizes, not page-load latency measurements.
+
+---
+
+
 Measured on 2026-10-09 in a separate local `reporting_benchmark` database, never in
 the application's persistent database. Baseline was captured before adding the
 ReportingIndexes migration. The same EF query shapes, filters and data were used

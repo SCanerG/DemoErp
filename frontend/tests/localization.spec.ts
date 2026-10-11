@@ -30,7 +30,9 @@ test('all business empty/loading/error screens and navigation localize in Turkis
     await page.route(`**/api/${route}`, request => request.fulfill({ status: 200, contentType: 'application/json', body: '[]' }));
     await page.goto(`/${route}`); await expect(page.getByRole('heading', { name: heading, exact: true })).toBeVisible(); await expect(page.getByRole('heading', { name: 'Henüz kayıt yok', exact: true })).toBeVisible();
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  await page.getByRole('button', { name: 'Menüyü aç', exact: true }).click();
     await expect(page.getByRole('navigation').getByRole('link', { name: heading, exact: true })).toHaveAttribute('aria-current', 'page');
+  await page.getByRole('button', { name: 'Menüyü kapat', exact: true }).click();
     await page.unroute(`**/api/${route}`);
     await page.route(`**/api/${route}`, request => request.fulfill({ status: 500, contentType: 'application/problem+json', body: JSON.stringify({ title: 'An unexpected error occurred', detail: 'Please try again later.' }) }));
     await page.reload(); await expect(page.getByRole('heading', { name: 'Kayıtlar yüklenemedi', exact: true })).toBeVisible(); await expect(page.getByText('Lütfen daha sonra tekrar deneyin.', { exact: true })).toBeVisible();

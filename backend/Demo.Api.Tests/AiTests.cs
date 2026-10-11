@@ -66,10 +66,10 @@ public sealed class AiTests(ApiFixture fixture) : IClassFixture<ApiFixture>
         var customer = new Customer { Name = "Private customer name", Email = "private-contact@example.com", Phone = "secret-phone", Address = "secret-address" };
         db.AddRange(category, product, customer);
         foreach (var (completion, total) in new (DateTimeOffset?, decimal)[] { (Start, 20), (Start.AddDays(2), 30), (Start.AddDays(3), 40), (Start.AddTicks(-1), 50), (null, 60) })
-            db.Orders.Add(new Order { OrderNumber = $"AI-{Guid.NewGuid():N}", CustomerId = customer.Id, Status = OrderStatus.Completed,
+            db.Orders.Add(new Order { WarehouseId = Guid.Parse("80000000-0000-0000-0000-000000000001"), OrderNumber = $"AI-{Guid.NewGuid():N}", CustomerId = customer.Id, Status = OrderStatus.Completed,
                 OrderDate = Start, CompletedAt = completion, TotalAmount = total, Items = [new() { ProductId = product.Id, Quantity = 2, UnitPrice = total / 2, LineTotal = total }] });
         await db.SaveChangesAsync(Ct);
-        var inventory = await db.Inventories.SingleAsync(i => i.ProductId == product.Id, Ct);
+        var inventory = await db.WarehouseInventories.SingleAsync(i => i.ProductId == product.Id, Ct);
         inventory.QuantityOnHand = 3; inventory.MinimumStockLevel = 5; await db.SaveChangesAsync(Ct); return product.Id;
     }
     [Theory]
@@ -325,7 +325,7 @@ public sealed class AiTests(ApiFixture fixture) : IClassFixture<ApiFixture>
         using var scope = fixture.App.Services.CreateScope(); var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         var category = new Category { Name = "Bounded AI data" }; db.Add(category);
         var products = Enumerable.Range(0, 12).Select(i => new Product { Name = $"Bounded product {i}", CategoryId = category.Id, Price = 1 }).ToList(); db.AddRange(products); await db.SaveChangesAsync(Ct);
-        var ids = products.Select(p => p.Id).ToList(); var stocks = await db.Inventories.Where(i => ids.Contains(i.ProductId)).ToListAsync(Ct);
+        var ids = products.Select(p => p.Id).ToList(); var stocks = await db.WarehouseInventories.Where(i => ids.Contains(i.ProductId)).ToListAsync(Ct);
         foreach (var stock in stocks) { stock.QuantityOnHand = 1; stock.MinimumStockLevel = 2; } await db.SaveChangesAsync(Ct);
         var fake = new FakeModel(); fake.Turns.Enqueue(new(null, null, [Call("get_low_stock_products", "{\"limit\":10}")])); fake.Turns.Enqueue(Final());
         using var app = App(fake); var session = await Session(); using var client = Authorized(app, session.Token); Assert.Equal(HttpStatusCode.OK, (await Chat(client)).StatusCode);

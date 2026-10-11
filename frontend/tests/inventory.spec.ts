@@ -58,7 +58,9 @@ test('inventory operations, pending shortage, confirmation/cancellation, audit l
   await page.goto(`/inventory/${product.id}`); await expect(page.getByTestId('stock-quantity')).toHaveText('10');
   await expect(page.getByText('Order cancellation return', { exact: true }).filter({ visible: true })).toBeVisible();
   await page.getByRole('button', { name: 'TR', exact: true }).click(); await page.setViewportSize({ width: 390, height: 844 });
+  await page.getByRole('button', { name: 'Menüyü aç', exact: true }).click();
   await expect(page.getByRole('navigation').getByRole('link', { name: 'Stok', exact: true })).toHaveAttribute('aria-current', 'page');
+  await page.getByRole('button', { name: 'Menüyü kapat', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Hareket geçmişi', exact: true })).toBeVisible();
   await expect(page.getByText('Sipariş iptal iadesi', { exact: true }).filter({ visible: true })).toBeVisible();
   await page.getByRole('button', { name: 'İşlemi uygula', exact: true }).click();
@@ -68,6 +70,7 @@ test('inventory operations, pending shortage, confirmation/cancellation, audit l
   await page.getByRole('button', { name: 'TR', exact: true }).click();
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   if (process.env.CAPTURE_SCREENSHOTS) await page.screenshot({ path: '../.tools/phase3/inventory-detail-tr-mobile.png', fullPage: true });
+  await page.getByRole('button', { name: 'Menüyü aç', exact: true }).click();
   await page.getByRole('navigation').getByRole('link', { name: 'Stok', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Stok', exact: true })).toBeVisible();
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);

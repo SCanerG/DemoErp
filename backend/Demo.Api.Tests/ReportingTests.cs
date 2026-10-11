@@ -44,13 +44,13 @@ public sealed class ReportingTests(ApiFixture fixture) : IClassFixture<ApiFixtur
             (OrderStatus.Completed, End, 40), (OrderStatus.Completed, Start.AddTicks(-1), 50),
             (OrderStatus.Completed, null, 60), (OrderStatus.Pending, null, 70), (OrderStatus.Cancelled, null, 80) })
         {
-            var order = new Order { CustomerId = customer.Id, OrderNumber = $"R-{Guid.NewGuid():N}", Status = status,
+            var order = new Order { WarehouseId = Guid.Parse("80000000-0000-0000-0000-000000000001"), CustomerId = customer.Id, OrderNumber = $"R-{Guid.NewGuid():N}", Status = status,
                 OrderDate = Start.AddHours(1), CompletedAt = completion, TotalAmount = total,
                 Items = [new OrderItem { ProductId = product.Id, Quantity = 2, UnitPrice = total / 2, LineTotal = total }] };
             db.Orders.Add(order);
         }
         await db.SaveChangesAsync(Ct);
-        var inventory = await db.Inventories.SingleAsync(i => i.ProductId == product.Id, Ct);
+        var inventory = await db.WarehouseInventories.SingleAsync(i => i.ProductId == product.Id, Ct);
         inventory.QuantityOnHand = 3; inventory.MinimumStockLevel = 5;
         await db.SaveChangesAsync(Ct);
         return (product.Id, customer.Id);
@@ -166,7 +166,7 @@ public sealed class ReportingTests(ApiFixture fixture) : IClassFixture<ApiFixtur
         using var scope = fixture.App.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         var customer = new Customer { Name = "Completion lifecycle" };
-        var order = new Order { Customer = customer, OrderNumber = $"C-{Guid.NewGuid():N}", Status = OrderStatus.Confirmed };
+        var order = new Order { WarehouseId = Guid.Parse("80000000-0000-0000-0000-000000000001"), Customer = customer, OrderNumber = $"C-{Guid.NewGuid():N}", Status = OrderStatus.Confirmed };
         db.Orders.Add(order); await db.SaveChangesAsync(Ct);
         var auth = scope.ServiceProvider.GetRequiredService<AuthService>();
         var email = $"completion-{Guid.NewGuid():N}@example.com";

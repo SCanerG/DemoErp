@@ -28,7 +28,7 @@ export async function api<T>(path: string, options: RequestInit = {}, format: 'j
   try { response = await fetch(`${baseUrl.replace(/\/$/, '')}${path}`, { ...options, headers }); }
   catch (error) {
     if (options.signal?.aborted) throw error;
-    throw new Error('Unable to reach the server. Check your connection and try again.');
+    throw new Error('Unable to reach the server. Check your connection and try again.', { cause: error });
   }
   if (!response.ok) {
     const parsed = problemSchema.safeParse(await response.json().catch(() => null));

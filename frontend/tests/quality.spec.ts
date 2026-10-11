@@ -1,0 +1,32 @@
+import { test, expect } from '@playwright/test';
+import { adminSession } from './admin-helper';
+
+test('smoke: login navigation localization sidebar and logout', async ({ page, request }) => {
+  const session = await adminSession(request);
+  await page.goto('/auth/login');
+  await page.getByLabel('Email address').fill(process.env.BOOTSTRAP_ADMIN_EMAIL!);
+  await page.getByLabel('Password', { exact: true }).fill(process.env.BOOTSTRAP_ADMIN_PASSWORD!);
+  await page.getByRole('button', { name: 'Sign in', exact: true }).click();
+  await expect(page.getByRole('heading', { name: 'Dashboard', exact: true })).toBeVisible();
+  await expect(page.locator('.kpi-card')).toHaveCount(8);
+  await page.getByRole('button', { name: 'Collapse navigation' }).click();
+  await page.getByRole('navigation', { name: 'Main', exact: true }).getByRole('link', { name: 'Products', exact: true }).click();
+  await expect(page.getByRole('heading', { name: 'Products', exact: true })).toBeVisible();
+  await page.getByRole('button', { name: 'TR', exact: true }).click();
+  await expect(page.getByRole('heading', { name: 'Ürünler', exact: true })).toBeVisible();
+  await page.getByRole('button', { name: 'EN', exact: true }).click();
+  await page.setViewportSize({ width: 390, height: 844 });
+  const open = page.getByRole('button', { name: 'Open navigation', exact: true });
+  await open.click();
+  await expect(page.getByRole('dialog', { name: 'Main' })).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(open).toBeFocused();
+  await open.click();
+  await page.getByRole('dialog').getByRole('link', { name: 'Orders', exact: true }).click();
+  await expect(page.getByRole('heading', { name: 'Orders', exact: true })).toBeVisible();
+  await expect(page.getByRole('dialog')).not.toBeVisible();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  expect(session.user.role).toBe('Admin');
+  await page.getByRole('button', { name: 'Sign out', exact: true }).click();
+  await expect(page.getByRole('heading', { name: 'Welcome back', exact: true })).toBeVisible();
+});

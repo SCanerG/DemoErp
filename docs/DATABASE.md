@@ -1,5 +1,14 @@
 # Database
 
+## Phase 10 review
+
+No table, sequence, enum or index migration was needed. All nine migrations and existing stock/history constraints remain in place. The only business query change bounds manufacturing preview stock to the recipe's materials; the existing warehouse/product index is sufficient. [Measured plans](PERFORMANCE.md). Application data is backed up and all 23 existing business tables/views are compared before/after runtime upgrade; browser fixtures and benchmarks use separate databases.
+
+
+Phase 9 adds BillOfMaterials, BillOfMaterialsItems, ProductionOrders, ProductionOrderMaterials, ProductionNumbers, Products.ProductType (safe RawMaterial default) and InventoryMovements.ProductionOrderId with a real FK and per-order unique movement index. Partial active-BOM uniqueness, positive/bounded integer quantities, historical Restrict FKs, immutable snapshot/state guards and deferred traceability validation protect manufacturing. Migration 20261010091341_Manufacturing is additive; [schema and upgrade details](MANUFACTURING.md).
+
+Phase 8 adds Warehouses, WarehouseInventories, StockTransfers, StockTransferItems, the TransferNumbers sequence, warehouse FKs on Orders/GoodsReceipts/InventoryMovements, typed movement transfer FKs, and receipt FingerprintVersion. `Inventories` is now a sum view over warehouse balances; original rows are frozen in `LegacyInventories`. [Current schema invariants and preserved-data migration](WAREHOUSE_MANAGEMENT.md). Earlier table definitions below are historical where superseded.
+
 [README](../README.md) · [Architecture](ARCHITECTURE.md) · [API](API.md)
 
 Phase 3 adds Inventories (required one-to-one product record) and InventoryMovements
@@ -8,8 +17,8 @@ Phase 3 adds Inventories (required one-to-one product record) and InventoryMovem
 record ownership, movement CreatedByUserId does reference Users.
 
 PostgreSQL 17 is accessed through EF Core/Npgsql. All entity keys are UUIDs.
-Users authenticate callers and have no ownership foreign keys to business records;
-inventory movements reference their authenticated actor for auditing.
+Users authenticate callers. Existing catalog/sales records have no owner FK;
+procurement documents and inventory movements reference their authenticated creator.
 Users also have Role (Viewer migration default), IsActive, SecurityVersion, UpdatedAt
 and an internal IsBootstrapAccount marker. Role/version checks constrain valid values.
 AuditLogs reference an optional actor User FK and store allowlisted jsonb old/new
@@ -122,3 +131,14 @@ The integration migration test upgrades an actual PostgreSQL database with a leg
 product and checks preservation and model consistency. Price snapshots remain
 unchanged after product-price edits; product/customer names reflect later edits.
 Sequence numbers may have gaps and do not reset daily; the number's date uses UTC.
+
+## Phase 7 schema extension
+
+The seventh migration, `20261010072904_Procurement`, adds five tables and two number
+sequences. Suppliers → PurchaseOrders → PurchaseOrderItems; PurchaseOrders →
+GoodsReceipts → GoodsReceiptItems → PurchaseOrderItems, with Product and creator
+User FKs, all Restrict. InventoryMovements retains its Orders FK and adds a
+separate nullable GoodsReceiptId FK plus PurchaseReceipt type/checks. Unique code,
+document, product-per-order, receipt-item and user/key indexes; cost/quantity
+checks; immutable receipt triggers; existing data untouched.
+[Complete ERD, constraints and index rationale](PROCUREMENT.md#relationships-and-migration).

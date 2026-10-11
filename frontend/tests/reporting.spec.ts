@@ -40,7 +40,8 @@ test('real reporting aggregates, date filters, pagination, CSV, Viewer access an
   await page.getByRole('button', { name: 'TR', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Gösterge Paneli', exact: true })).toBeVisible();
   await page.setViewportSize({ width: 390, height: 844 });
-  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  // Recharts applies ResizeObserver measurements asynchronously after viewport changes.
+  await expect.poll(()=>page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
   await page.screenshot({ path: '../.tools/phase5/dashboard-tr-mobile.png', fullPage: true });
   await page.getByRole('button', { name: 'EN', exact: true }).click(); await page.setViewportSize({ width: 1280, height: 800 });
   await page.getByRole('link', { name: 'View reports', exact: true }).click();

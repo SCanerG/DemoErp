@@ -141,10 +141,10 @@ public sealed class InventoryTests(ApiFixture fixture) : IClassFixture<ApiFixtur
         var movementId = (await Movements(data.Product.Id)).Single().Id;
         Assert.Equal("23514", (await Assert.ThrowsAsync<PostgresException>(() => db.Database.ExecuteSqlInterpolatedAsync($"UPDATE \"InventoryMovements\" SET \"Reason\" = 'Changed' WHERE \"Id\" = {movementId}", Ct))).SqlState);
         Assert.Equal("23514", (await Assert.ThrowsAsync<PostgresException>(() => db.Database.ExecuteSqlInterpolatedAsync($"DELETE FROM \"InventoryMovements\" WHERE \"Id\" = {movementId}", Ct))).SqlState);
-        Assert.Equal("23514", (await Assert.ThrowsAsync<PostgresException>(() => db.Database.ExecuteSqlInterpolatedAsync($"UPDATE \"Inventories\" SET \"QuantityOnHand\" = -1 WHERE \"ProductId\" = {data.Product.Id}", Ct))).SqlState);
-        Assert.Equal("23514", (await Assert.ThrowsAsync<PostgresException>(() => db.Database.ExecuteSqlInterpolatedAsync($"DELETE FROM \"Inventories\" WHERE \"ProductId\" = {data.Product.Id}", Ct))).SqlState);
+        Assert.Equal("23514", (await Assert.ThrowsAsync<PostgresException>(() => db.Database.ExecuteSqlInterpolatedAsync($"UPDATE \"WarehouseInventories\" SET \"QuantityOnHand\" = -1 WHERE \"ProductId\" = {data.Product.Id}", Ct))).SqlState);
+        Assert.Equal("23514", (await Assert.ThrowsAsync<PostgresException>(() => db.Database.ExecuteSqlInterpolatedAsync($"DELETE FROM \"WarehouseInventories\" WHERE \"ProductId\" = {data.Product.Id}", Ct))).SqlState);
         var extra = Guid.NewGuid();
-        Assert.Equal("23505", (await Assert.ThrowsAsync<PostgresException>(() => db.Database.ExecuteSqlInterpolatedAsync($"INSERT INTO \"Inventories\" VALUES ({extra}, {data.Product.Id}, 0, 0, CURRENT_TIMESTAMP)", Ct))).SqlState);
+        Assert.Equal("23505", (await Assert.ThrowsAsync<PostgresException>(() => db.Database.ExecuteSqlInterpolatedAsync($"INSERT INTO \"WarehouseInventories\" (\"Id\",\"WarehouseId\",\"ProductId\",\"QuantityOnHand\",\"MinimumStockLevel\",\"UpdatedAt\") VALUES ({extra}, {Guid.Parse("80000000-0000-0000-0000-000000000001")}, {data.Product.Id}, 0, 0, CURRENT_TIMESTAMP)", Ct))).SqlState);
         await Stock(data.Product.Id, "stock-out", 5);
         Assert.Equal(HttpStatusCode.Conflict, (await client.DeleteAsync($"/api/products/{data.Product.Id}", Ct)).StatusCode);
         Assert.Equal(2, (await Movements(data.Product.Id)).Count);
@@ -194,7 +194,7 @@ public sealed class InventoryTests(ApiFixture fixture) : IClassFixture<ApiFixtur
     public async Task Duplicate_legacy_order_lines_are_aggregated_into_one_deduction()
     {
         var data = await Seed(10);
-        var order = new Order { CustomerId = data.Customer.Id, OrderNumber = $"LEGACY-{Guid.NewGuid():N}", TotalAmount = 12.5m,
+        var order = new Order { WarehouseId = Guid.Parse("80000000-0000-0000-0000-000000000001"), CustomerId = data.Customer.Id, OrderNumber = $"LEGACY-{Guid.NewGuid():N}", TotalAmount = 12.5m,
             Items = [new() { ProductId = data.Product.Id, Quantity = 2, UnitPrice = 2.5m, LineTotal = 5m }, new() { ProductId = data.Product.Id, Quantity = 3, UnitPrice = 2.5m, LineTotal = 7.5m }] };
         using (var scope = fixture.App.Services.CreateScope()) { var db = scope.ServiceProvider.GetRequiredService<AppDbContext>(); db.Orders.Add(order); await db.SaveChangesAsync(Ct); }
         Assert.Equal(HttpStatusCode.OK, (await Status(order.Id, "Confirmed")).StatusCode);

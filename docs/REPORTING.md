@@ -1,5 +1,9 @@
 # Executive dashboard and reporting
 
+Phase 9 adds separate manufacturing lifecycle KPIs on the dashboard, /reports/material-requirements and /reports/material-shortages. These use current selected-source-warehouse stock per Draft/Released order and SQL pagination; they do not reserve/allocate stock or represent full MRP. [Reporting semantics](MANUFACTURING.md).
+
+Phase 8 adds `/api/reports/warehouses`. Company stock/minimum are SUMs over warehouse balances; company low stock is `0 < SUM(quantity) <= SUM(minimum)`. Warehouse low stock is evaluated per pair; out-of-stock includes missing zero pairs. Metrics cover all warehouses/products including inactive records. [Warehouse reporting definitions](WAREHOUSE_MANAGEMENT.md).
+
 The authenticated landing page is `/dashboard`. Reports are available at
 `/reports/sales`, `/reports/products`, `/reports/customers` and `/reports/inventory`.
 All three existing roles use BusinessRead for viewing and exporting. They receive
@@ -169,3 +173,15 @@ import as UTF-8 with comma as the delimiter; the UI locale does not change CSV s
 
 See [measured plans, trade-offs and reproduction](PERFORMANCE.md) and
 [authorization](AUTHORIZATION.md).
+
+## Phase 7 procurement integration
+
+[Procurement and supplier management](PROCUREMENT.md) documents the actual PO
+lifecycle, restrictive EF relationships, cost snapshots, atomic receipt/stock/audit
+writes, PostgreSQL order-then-inventory locks, user/key idempotency, permissions and
+UI behavior. The existing modules and AI tool definitions remain unchanged.
+The current procurement summary is separate from sales totals and excludes Draft/
+Cancelled outstanding units; the procurement report uses PO creation dates.
+Receipt stock history uses PurchaseReceipt with a dedicated GoodsReceipt FK,
+preserving the existing sales Order reference. Procurement audit actions are
+visible through the existing Admin audit list and entity/action filters.

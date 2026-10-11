@@ -16,10 +16,11 @@ const orderProductIds = [];
 const docker = (...args) => execFileSync('docker', ['compose', ...args], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] });
 const sql = query => docker('exec', '-T', 'postgres', 'sh', '-c', 'psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -Atc "$1"', 'verify', query).trim();
 
-async function request(path, method = 'GET', body, authenticated = true) {
+async function request(path, method = 'GET', body, authenticated = true, extraHeaders = {}) {
   const response = await fetch(`${base}${path}`, { method, headers: {
     ...(body === undefined ? {} : { 'Content-Type': 'application/json' }),
     ...(authenticated && token ? { Authorization: `Bearer ${token}` } : {}),
+    ...extraHeaders,
   }, ...(body === undefined ? {} : { body: JSON.stringify(body) }) });
   const content = await response.text();
   return { status: response.status, data: content ? JSON.parse(content) : undefined, headers: response.headers };
@@ -37,7 +38,7 @@ try {
   await waitHealthy();
   assert.equal((await fetch(frontend)).status, 200);
   assert.equal((await fetch(`${frontend}/products/new`)).status, 200);
-  assert.equal(sql('SELECT COUNT(*) FROM "__EFMigrationsHistory";'), '6');
+  assert.equal(sql('SELECT COUNT(*) FROM "__EFMigrationsHistory";'), '9');
   assert.equal(sql("SELECT character_maximum_length FROM information_schema.columns WHERE table_name = 'Users' AND column_name = 'Email';"), '254');
   assert.equal(sql("SELECT numeric_precision || ',' || numeric_scale FROM information_schema.columns WHERE table_name = 'Products' AND column_name = 'Price';"), '12,2');
   assert.equal(sql("SELECT COUNT(*) FROM pg_indexes WHERE tablename = 'Users' AND indexname = 'IX_Users_Email' AND indexdef LIKE 'CREATE UNIQUE INDEX%';"), '1');
@@ -177,6 +178,62 @@ try {
   assert.equal((await request(`/api/inventory/${stockId}`)).data.quantityOnHand, 10);
   assert.equal((await request(`/api/inventory/${stockId}/movements`)).data.filter(m => m.movementType === 'OrderCancellationReturn').length, 1);
   console.log('PASS inventory operations, audit persistence, idempotent confirmation/cancellation and stock return');
+  const supplierInput = { supplierCode: `V-${Date.now()}`, name: 'Verification supplier', contactPerson: 'Private contact', email: 'supplier@example.com', phone: '', address: '', taxNumber: '' };
+  const supplier = await request('/api/suppliers', 'POST', supplierInput); assert.equal(supplier.status, 201);
+  assert.equal((await request(`/api/suppliers/${supplier.data.id}`, 'PUT', { ...supplierInput, contactPerson: 'Changed private contact' })).status, 200);
+  assert.equal((await request(`/api/suppliers/${supplier.data.id}/status`, 'PUT', { isActive: false })).status, 200);
+  assert.equal((await request(`/api/suppliers/${supplier.data.id}/status`, 'PUT', { isActive: true })).status, 200);
+  const poInput = { supplierId: supplier.data.id, expectedDeliveryDate: null, notes: '', items: [{ productId: stockId, quantityOrdered: 10, unitCost: 2.25 }] };
+  const po = await request('/api/purchase-orders', 'POST', poInput); assert.equal(po.status, 201); assert.equal(po.data.totalAmount, 22.5);
+  assert.equal((await request(`/api/purchase-orders/${po.data.id}`, 'PUT', { ...poInput, notes: 'Metadata change' })).status, 200);
+  assert.equal((await request(`/api/inventory/${stockId}`)).data.quantityOnHand, 10);
+  assert.equal((await request(`/api/purchase-orders/${po.data.id}/submit`, 'POST')).status, 200);
+  const receiptPath = `/api/purchase-orders/${po.data.id}/receipts`;
+  const receiptHeaders = { 'Idempotency-Key': crypto.randomUUID() };
+  const receiptInput = { notes: 'Delivery', items: [{ purchaseOrderItemId: po.data.items[0].id, quantityReceived: 6 }] };
+  const partial = await request(receiptPath, 'POST', receiptInput, true, receiptHeaders); assert.equal(partial.status, 201); assert.ok(partial.headers.get('location').endsWith(partial.data.id));
+  assert.equal((await request(`/api/purchase-orders/${po.data.id}`)).data.status, 'PartiallyReceived');
+  const replay = await request(receiptPath, 'POST', receiptInput, true, receiptHeaders); assert.equal(replay.status, 200); assert.equal(replay.data.id, partial.data.id);
+  assert.equal((await request(`/api/inventory/${stockId}`)).data.quantityOnHand, 16);
+  assert.equal((await request(receiptPath, 'POST', { ...receiptInput, items: [{ purchaseOrderItemId: po.data.items[0].id, quantityReceived: 4 }] }, true, { 'Idempotency-Key': crypto.randomUUID() })).status, 201);
+  assert.equal((await request(`/api/purchase-orders/${po.data.id}`)).data.status, 'Received'); assert.equal((await request(`/api/inventory/${stockId}`)).data.quantityOnHand, 20);
+  const movements = (await request(`/api/inventory/${stockId}/movements`)).data.filter(m => m.movementType === 'PurchaseReceipt'); assert.equal(movements.length, 2); assert.ok(movements.every(m => m.goodsReceiptId && !m.referenceId));
+  const cancel = await request('/api/purchase-orders', 'POST', poInput); assert.equal(cancel.status, 201); assert.equal((await request(`/api/purchase-orders/${cancel.data.id}/cancel`, 'POST')).status, 200);
+  for (const action of ['Create', 'Update', 'Activate', 'Deactivate']) assert.equal(sql(`SELECT COUNT(*) > 0 FROM "AuditLogs" WHERE "EntityId"='${supplier.data.id}' AND "Action"='${action}'`), 't');
+  for (const action of ['Create', 'Update', 'PurchaseSubmit', 'PurchaseReceive']) assert.equal(sql(`SELECT COUNT(*) > 0 FROM "AuditLogs" WHERE "EntityId"='${po.data.id}' AND "Action"='${action}'`), 't');
+  assert.equal(sql(`SELECT COUNT(*) FROM "AuditLogs" WHERE "EntityId"='${cancel.data.id}' AND "Action"='PurchaseCancel'`), '1');
+  assert.equal(sql(`SELECT COUNT(*) FROM "AuditLogs" WHERE "EntityId"='${partial.data.id}' AND "Action"='GoodsReceiptPost'`), '1');
+  assert.equal((await request(`/api/reports/procurement?supplierId=${supplier.data.id}&status=Received`)).data.totalCount, 1);
+  assert.equal((await request('/api/dashboard/procurement-summary')).status, 200);
+  console.log('PASS supplier CRUD/status, PO cost snapshots, no draft stock, partial/full receipt, replay, movement FK, all procurement audit actions and SQL reports');
+  const warehouseInput = { code: `WH-${Date.now()}`, name: 'Verification warehouse', description: '', location: '' };
+  const warehouse = await request('/api/warehouses', 'POST', warehouseInput); assert.equal(warehouse.status, 201);
+  const main = (await request('/api/warehouses?isDefault=true')).data.items[0]; assert.ok(main && main.isActive);
+  const transferInput = { sourceWarehouseId: main.id, destinationWarehouseId: warehouse.data.id, notes: '', items: [{ productId: stockId, quantity: 7 }] };
+  const transfer = await request('/api/stock-transfers', 'POST', transferInput); assert.equal(transfer.status, 201);
+  assert.equal((await request(`/api/inventory/${stockId}`)).data.quantityOnHand, 20);
+  assert.equal((await request(`/api/stock-transfers/${transfer.data.id}/complete`, 'POST')).status, 200);
+  assert.equal((await request(`/api/stock-transfers/${transfer.data.id}/complete`, 'POST')).status, 200);
+  assert.equal((await request(`/api/warehouses/${main.id}/inventory/${stockId}`)).data.quantityOnHand, 13);
+  assert.equal((await request(`/api/warehouses/${warehouse.data.id}/inventory/${stockId}`)).data.quantityOnHand, 7);
+  assert.equal((await request(`/api/inventory/${stockId}`)).data.quantityOnHand, 20);
+  const transferMovements = (await request(`/api/inventory/${stockId}/movements`)).data.filter(m => m.stockTransferId === transfer.data.id); assert.equal(transferMovements.length, 2);
+  assert.equal((await request('/api/audit-logs?entityName=StockTransfer&action=TransferComplete')).data.items.filter(a => a.entityId === transfer.data.id).length, 1);
+  assert.equal((await request('/api/reports/warehouses')).status, 200);
+  assert.equal((await request(`/api/warehouses/${warehouse.data.id}/status`, 'PUT', {isActive:false})).status, 409);
+  console.log('PASS warehouses, default lookup, atomic/idempotent transfer, global conservation, two movements, completion audit, deactivation protection and warehouse report');
+  const finished = await request('/api/products', 'POST', {name:`Manufactured ${Date.now()}`,description:'',price:15,isActive:true,categoryId,productType:'FinishedGood'}); assert.equal(finished.status,201);
+  const recipe = await request('/api/boms','POST',{productId:finished.data.id,version:'V1',name:'Verification recipe',baseQuantity:1,items:[{materialProductId:stockId,quantityRequired:2}]}); assert.equal(recipe.status,201);
+  assert.equal((await request(`/api/boms/${recipe.data.id}/activate`,'POST')).status,200);
+  const production = await request('/api/production-orders','POST',{productId:finished.data.id,billOfMaterialsId:recipe.data.id,plannedQuantity:3,sourceWarehouseId:main.id,destinationWarehouseId:warehouse.data.id,plannedStartDate:null,plannedEndDate:null,notes:''}); assert.equal(production.status,201); assert.equal(production.data.materials[0].quantityRequired,6);
+  assert.equal((await request(`/api/production-orders/${production.data.id}/release`,'POST')).status,200);
+  for(const command of ['start','start','complete','complete']) assert.equal((await request(`/api/production-orders/${production.data.id}/${command}`,'POST')).status,200);
+  assert.equal((await request(`/api/warehouses/${main.id}/inventory/${stockId}`)).data.quantityOnHand,7);
+  assert.equal((await request(`/api/warehouses/${warehouse.data.id}/inventory/${finished.data.id}`)).data.quantityOnHand,3);
+  const manufacturingMovements=(await request(`/api/production-orders/${production.data.id}/movements`)).data; assert.equal(manufacturingMovements.length,2); assert.ok(manufacturingMovements.every(m=>m.productionOrderId===production.data.id));
+  assert.equal((await request('/api/reports/manufacturing')).status,200); assert.equal((await request('/api/reports/material-requirements')).status,200);
+  assert.equal((await request(`/api/audit-logs?entityName=ProductionOrder&action=ProductionComplete`)).data.items.filter(a=>a.entityId===production.data.id).length,1);
+  console.log('PASS BOM activation, material snapshot, atomic production consumption/output, repeated commands, typed movement references, warehouse balances, manufacturing audit and reports');
   console.log('PASS user and product persistence after all containers restart');
 
   try {

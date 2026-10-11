@@ -8,7 +8,7 @@ public sealed record InventoryResponse(Guid Id, Guid ProductId, string ProductNa
     int QuantityOnHand, int MinimumStockLevel, DateTimeOffset UpdatedAt);
 public sealed record MovementResponse(Guid Id, Guid ProductId, MovementType MovementType, int Quantity, int QuantityBefore,
     int QuantityAfter, string ReferenceType, Guid? ReferenceId, string? OrderNumber, string Reason, DateTimeOffset CreatedAt,
-    Guid CreatedByUserId, string PerformedBy);
+    Guid CreatedByUserId, string PerformedBy, Guid? GoodsReceiptId = null, string? ReceiptNumber = null, Guid WarehouseId = default, string WarehouseName = "", Guid? StockTransferId = null, string? TransferNumber = null, Guid? ProductionOrderId = null, string? ProductionOrderNumber = null);
 public sealed record StockRequest(int Quantity, string Reason);
 public sealed record AdjustmentRequest([property: JsonRequired] AdjustmentDirection Direction, int Quantity, string Reason);
 public sealed record MinimumLevelRequest([property: JsonRequired] int MinimumStockLevel);

@@ -58,6 +58,6 @@ test('business workflow, EN/TR switching, persistence, and authoritative order d
   await page.reload(); await expect(page.locator('.badge')).toHaveText('Tamamlandı'); await expect(page.getByRole('button', { name: 'Çıkış' })).toBeVisible();
   await page.setViewportSize({ width: 390, height: 844 }); expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   if (process.env.CAPTURE_SCREENSHOTS) await page.screenshot({ path: '../.tools/order-detail-tr.png', fullPage: true });
-  await page.getByRole('button', { name: 'EN', exact: true }).click(); await page.getByRole('navigation').getByRole('link', { name: 'Orders', exact: true }).click(); await expect(page.getByRole('listitem').filter({ hasText: `Acme ${suffix}` })).toContainText('Completed');
+  await page.getByRole('button', { name: 'EN', exact: true }).click(); await page.getByRole('button', { name: 'Open navigation', exact: true }).click(); await page.getByRole('navigation').getByRole('link', { name: 'Orders', exact: true }).click(); await expect(page.getByRole('listitem').filter({ hasText: `Acme ${suffix}` })).toContainText('Completed');
   await page.goto(orderUrl); await expect(page.locator('.order-total')).toContainText('$350.50');
 });

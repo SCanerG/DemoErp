@@ -7,12 +7,12 @@ namespace Demo.Api.Contracts;
 public sealed record RegisterRequest(string Name, string Email, string Password);
 public sealed record LoginRequest(string Email, string Password);
 public sealed record ProductRequest(string Name, string Description,
-    [property: JsonRequired] decimal Price, [property: JsonRequired] bool IsActive, Guid CategoryId = default);
+    [property: JsonRequired] decimal Price, [property: JsonRequired] bool IsActive, Guid CategoryId = default, [property: JsonConverter(typeof(ProductTypeJsonConverter))] Demo.Api.Domain.ProductType ProductType = Demo.Api.Domain.ProductType.RawMaterial);
 public sealed record UserResponse(Guid Id, string Name, string Email, Demo.Api.Domain.UserRole Role = Demo.Api.Domain.UserRole.Viewer,
     bool IsActive = true, DateTimeOffset CreatedAt = default, DateTimeOffset? UpdatedAt = null);
 public sealed record LoginResponse(string AccessToken, DateTimeOffset ExpiresAt, UserResponse User);
 public sealed record ProductResponse(Guid Id, string Name, string Description, decimal Price,
-    bool IsActive, DateTimeOffset CreatedAt, DateTimeOffset? UpdatedAt, Guid CategoryId, string CategoryName);
+    bool IsActive, DateTimeOffset CreatedAt, DateTimeOffset? UpdatedAt, Guid CategoryId, string CategoryName, [property: JsonConverter(typeof(ProductTypeJsonConverter))] Demo.Api.Domain.ProductType ProductType = Demo.Api.Domain.ProductType.RawMaterial);
 
 public sealed class RegisterValidator : AbstractValidator<RegisterRequest>
 {
@@ -48,7 +48,10 @@ public sealed class ProductValidator : AbstractValidator<ProductRequest>
     {
         RuleFor(x => x.Name).NotEmpty().MaximumLength(150);
         RuleFor(x => x.CategoryId).NotEmpty();
+        RuleFor(x => x.ProductType).IsInEnum();
         RuleFor(x => x.Description).NotNull().MaximumLength(2000);
         RuleFor(x => x.Price).InclusiveBetween(0m, 9999999999.99m).PrecisionScale(12, 2, true);
     }
 }
+
+public sealed class ProductTypeJsonConverter() : JsonStringEnumConverter<Demo.Api.Domain.ProductType>(allowIntegerValues: false);

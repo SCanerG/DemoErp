@@ -1,0 +1,242 @@
+{
+  "MeasuredAt": "2026-10-11T18:43:21.180033+00:00",
+  "Runtime": "10.0.12",
+  "PostgreSql": "17.11",
+  "Method": "Actual EF command \u002B typed parameters, EXPLAIN ANALYZE BUFFERS JSON. One discarded warmup, seven warm executions. No cold-cache claim.",
+  "Rows": {
+    "Categories": 500,
+    "Products": 5000,
+    "Customers": 2000,
+    "Orders": 20000,
+    "OrderItems": 80000,
+    "Movements": 100000
+  },
+  "Measurements": [
+    {
+      "Query": "sales-total",
+      "MedianMs": 0.176,
+      "SamplesMs": [
+        0.212,
+        0.176,
+        0.169,
+        0.18,
+        0.181,
+        0.155,
+        0.137
+      ],
+      "Parameters": [
+        {
+          "ParameterName": "@filter_Start",
+          "Value": "2025-09-01T00:00:00+00:00",
+          "Type": "TimestampTz"
+        },
+        {
+          "ParameterName": "@filter_End",
+          "Value": "2025-10-01T00:00:00+00:00",
+          "Type": "TimestampTz"
+        }
+      ]
+    },
+    {
+      "Query": "top-products",
+      "MedianMs": 12.073,
+      "SamplesMs": [
+        12.086,
+        12.011,
+        12.258,
+        12.391,
+        11.916,
+        12.073,
+        11.808
+      ],
+      "Parameters": [
+        {
+          "ParameterName": "@start",
+          "Value": "2025-09-01T00:00:00+00:00",
+          "Type": "TimestampTz"
+        },
+        {
+          "ParameterName": "@end",
+          "Value": "2025-10-01T00:00:00+00:00",
+          "Type": "TimestampTz"
+        },
+        {
+          "ParameterName": "@p",
+          "Value": 10,
+          "Type": "Integer"
+        }
+      ]
+    },
+    {
+      "Query": "customer-summary",
+      "MedianMs": 1.613,
+      "SamplesMs": [
+        1.681,
+        1.544,
+        1.643,
+        1.582,
+        1.724,
+        1.613,
+        1.569
+      ],
+      "Parameters": [
+        {
+          "ParameterName": "@start",
+          "Value": "2025-09-01T00:00:00+00:00",
+          "Type": "TimestampTz"
+        },
+        {
+          "ParameterName": "@end",
+          "Value": "2025-10-01T00:00:00+00:00",
+          "Type": "TimestampTz"
+        },
+        {
+          "ParameterName": "@start2",
+          "Value": "2025-09-01T00:00:00+00:00",
+          "Type": "TimestampTz"
+        },
+        {
+          "ParameterName": "@end3",
+          "Value": "2025-10-01T00:00:00+00:00",
+          "Type": "TimestampTz"
+        },
+        {
+          "ParameterName": "@p",
+          "Value": 20,
+          "Type": "Integer"
+        }
+      ]
+    },
+    {
+      "Query": "filtered-orders",
+      "MedianMs": 0.293,
+      "SamplesMs": [
+        0.298,
+        0.288,
+        0.276,
+        0.282,
+        0.302,
+        0.483,
+        0.293
+      ],
+      "Parameters": [
+        {
+          "ParameterName": "@start",
+          "Value": "2025-09-01T00:00:00+00:00",
+          "Type": "TimestampTz"
+        },
+        {
+          "ParameterName": "@end",
+          "Value": "2025-10-01T00:00:00+00:00",
+          "Type": "TimestampTz"
+        },
+        {
+          "ParameterName": "@filter_Status",
+          "Value": "Pending",
+          "Type": "Varchar"
+        },
+        {
+          "ParameterName": "@p",
+          "Value": 20,
+          "Type": "Integer"
+        }
+      ]
+    },
+    {
+      "Query": "inventory-joins",
+      "MedianMs": 3.136,
+      "SamplesMs": [
+        3.19,
+        3.344,
+        3.136,
+        3.039,
+        3.057,
+        3.122,
+        3.187
+      ],
+      "Parameters": [
+        {
+          "ParameterName": "@filter_CategoryId",
+          "Value": "379c0f89-7db0-fa7e-004f-65f52cce2e75",
+          "Type": "Uuid"
+        },
+        {
+          "ParameterName": "@p",
+          "Value": 20,
+          "Type": "Integer"
+        }
+      ]
+    },
+    {
+      "Query": "movement-history",
+      "MedianMs": 0.069,
+      "SamplesMs": [
+        0.072,
+        0.107,
+        0.069,
+        0.063,
+        0.071,
+        0.067,
+        0.066
+      ],
+      "Parameters": [
+        {
+          "ParameterName": "@productId",
+          "Value": "42f1e2fa-04bc-46d2-bd22-d11514db6623",
+          "Type": "Uuid"
+        }
+      ]
+    },
+    {
+      "Query": "preview-before",
+      "MedianMs": 0.421,
+      "SamplesMs": [
+        0.535,
+        0.421,
+        0.482,
+        0.434,
+        0.412,
+        0.403,
+        0.403
+      ],
+      "Parameters": [
+        {
+          "ParameterName": "@warehouseId",
+          "Value": "80000000-0000-0000-0000-000000000001",
+          "Type": "Uuid"
+        }
+      ]
+    },
+    {
+      "Query": "preview-after",
+      "MedianMs": 0.031,
+      "SamplesMs": [
+        0.042,
+        0.033,
+        0.038,
+        0.029,
+        0.031,
+        0.028,
+        0.029
+      ],
+      "Parameters": [
+        {
+          "ParameterName": "@warehouseId",
+          "Value": "80000000-0000-0000-0000-000000000001",
+          "Type": "Uuid"
+        },
+        {
+          "ParameterName": "@materialIds",
+          "Value": [
+            "42f1e2fa-04bc-46d2-bd22-d11514db6623",
+            "07be8445-2cc6-57aa-bb55-b10dfd13c8ff",
+            "fb6b355a-2ee2-69a2-6225-6d8ef6f0de10",
+            "2731e44f-51d6-20a4-957d-26a99aa11492",
+            "bb570e6e-7131-d4ae-9ca7-abbbb10aeb70"
+          ],
+          "Type": "-2147483621"
+        }
+      ]
+    }
+  ]
+}

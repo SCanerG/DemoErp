@@ -21,6 +21,15 @@ public sealed class ApiFixture : IAsyncLifetime
         App = new TestApplication(database.GetConnectionString());
         Client = App.CreateClient(); // Real startup applies the committed migrations.
     }
+    public Task StopDatabase() => database.StopAsync();
+    public async Task StartDatabase()
+    {
+        await database.StartAsync();
+        Client.Dispose();
+        await App.DisposeAsync();
+        App = new TestApplication(database.GetConnectionString());
+        Client = App.CreateClient();
+    }
     public async ValueTask DisposeAsync()
     {
         Client?.Dispose();
@@ -56,6 +65,6 @@ public sealed class CapturedLogs : ILoggerProvider
         public IDisposable? BeginScope<TState>(TState state) where TState : notnull => null;
         public bool IsEnabled(LogLevel logLevel) => true;
         public void Log<TState>(LogLevel level, EventId id, TState state, Exception? exception,
-            Func<TState, Exception?, string> formatter) => messages.Enqueue(formatter(state, exception));
+            Func<TState, Exception?, string> formatter) => messages.Enqueue(formatter(state, exception) + (exception is null ? "" : "\n" + exception.ToString()));
     }
 }

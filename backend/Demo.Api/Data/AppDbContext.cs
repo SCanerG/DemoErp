@@ -5,6 +5,14 @@ namespace Demo.Api.Data;
 
 public sealed class AppDbContext(DbContextOptions<AppDbContext> options, IHttpContextAccessor? http = null) : DbContext(options)
 {
+    public DbSet<BillOfMaterials> BillOfMaterials => Set<BillOfMaterials>();
+    public DbSet<BillOfMaterialsItem> BillOfMaterialsItems => Set<BillOfMaterialsItem>();
+    public DbSet<ProductionOrder> ProductionOrders => Set<ProductionOrder>();
+    public DbSet<ProductionOrderMaterial> ProductionOrderMaterials => Set<ProductionOrderMaterial>();
+    public DbSet<Warehouse> Warehouses => Set<Warehouse>();
+    public DbSet<WarehouseInventory> WarehouseInventories => Set<WarehouseInventory>();
+    public DbSet<StockTransfer> StockTransfers => Set<StockTransfer>();
+    public DbSet<StockTransferItem> StockTransferItems => Set<StockTransferItem>();
     public DbSet<User> Users => Set<User>();
     public DbSet<Product> Products => Set<Product>();
     public DbSet<Category> Categories => Set<Category>();
@@ -14,6 +22,11 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options, IHttpCo
     public DbSet<Inventory> Inventories => Set<Inventory>();
     public DbSet<InventoryMovement> InventoryMovements => Set<InventoryMovement>();
     public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
+    public DbSet<Supplier> Suppliers => Set<Supplier>();
+    public DbSet<PurchaseOrder> PurchaseOrders => Set<PurchaseOrder>();
+    public DbSet<PurchaseOrderItem> PurchaseOrderItems => Set<PurchaseOrderItem>();
+    public DbSet<GoodsReceipt> GoodsReceipts => Set<GoodsReceipt>();
+    public DbSet<GoodsReceiptItem> GoodsReceiptItems => Set<GoodsReceiptItem>();
 
     public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
@@ -26,16 +39,23 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options, IHttpCo
         {
             string[] fields = entry.Entity switch
             {
-                Product => ["Name", "Price", "IsActive", "CategoryId"],
+                Product => ["Name", "Price", "IsActive", "CategoryId", "ProductType"],
+                Domain.BillOfMaterials => ["ProductId", "Version", "BaseQuantity", "IsActive", "ActivatedAt"],
+                ProductionOrder => ["ProductionOrderNumber", "ProductId", "BillOfMaterialsId", "PlannedQuantity", "ProducedQuantity", "SourceWarehouseId", "DestinationWarehouseId", "Status", "StartedAt", "CompletedAt", "StartedByUserId", "CompletedByUserId"],
                 Category => ["Name", "IsActive"],
                 Customer => ["Name", "IsActive"],
-                Order => ["Status", "CustomerId", "TotalAmount", "OrderNumber", "CompletedAt"],
+                Order => ["WarehouseId", "Status", "CustomerId", "TotalAmount", "OrderNumber", "CompletedAt"],
                 User => ["Name", "Email", "Role", "IsActive"],
-                Inventory => ["MinimumStockLevel"],
+                WarehouseInventory => ["WarehouseId", "ProductId", "MinimumStockLevel"],
+                Warehouse => ["Code", "Name", "Location", "IsActive", "IsDefault"],
+                StockTransfer => ["TransferNumber", "SourceWarehouseId", "DestinationWarehouseId", "Status", "CompletedAt", "CompletedByUserId"],
+                Supplier => ["SupplierCode", "Name", "IsActive"],
+                PurchaseOrder => ["PurchaseOrderNumber", "SupplierId", "Status", "ExpectedDeliveryDate", "TotalAmount"],
+                GoodsReceipt => ["ReceiptNumber", "PurchaseOrderId", "WarehouseId"],
                 _ => []
             };
             if (fields.Length == 0) continue;
-            if (entry.Entity is Inventory && entry.State == EntityState.Added) continue;
+            if (entry.Entity is WarehouseInventory && entry.State == EntityState.Added) continue;
             var changed = fields.Where(f => entry.State != EntityState.Modified || entry.Property(f).IsModified).ToArray();
             var action = entry.State == EntityState.Added ? "Create" : entry.State == EntityState.Deleted ? "Delete" : "Update";
             var entityId = (Guid)entry.Property("Id").CurrentValue!;
@@ -45,16 +65,35 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options, IHttpCo
             if (entry.Entity is Order && entry.State == EntityState.Modified && entry.Property("Status").IsModified)
                 action = (OrderStatus)entry.Property("Status").CurrentValue! switch
                 { OrderStatus.Confirmed => "OrderConfirm", OrderStatus.Completed => "OrderComplete", OrderStatus.Cancelled => "OrderCancel", _ => "Update" };
+            if (entry.Entity is Warehouse && entry.State == EntityState.Modified)
+                action = entry.Property("IsDefault").IsModified ? "WarehouseDefaultChange" : entry.Property("IsActive").IsModified ? (bool)entry.Property("IsActive").CurrentValue! ? "Activate" : "Deactivate" : action;
+            if (entry.Entity is StockTransfer transfer && entry.State == EntityState.Modified)
+                action = entry.Property("Status").IsModified ? transfer.Status == TransferStatus.Completed ? "TransferComplete" : "TransferCancel" : "Update";
+            if (entry.Entity is Supplier && entry.State == EntityState.Modified && entry.Property("IsActive").IsModified)
+                action = (bool)entry.Property("IsActive").CurrentValue! ? "Activate" : "Deactivate";
+            if (entry.Entity is PurchaseOrder && entry.State == EntityState.Modified)
+                action = entry.Property("Status").IsModified ? (PurchaseOrderStatus)entry.Property("Status").CurrentValue! switch
+                { PurchaseOrderStatus.Submitted => "PurchaseSubmit", PurchaseOrderStatus.Cancelled => "PurchaseCancel", _ => "PurchaseReceive" } : "Update";
+            if (entry.Entity is GoodsReceipt) action = "GoodsReceiptPost";
+            if (entry.Entity is Domain.BillOfMaterials && entry.State == EntityState.Modified && entry.Property("IsActive").IsModified)
+                action = (bool)entry.Property("IsActive").CurrentValue! ? "BomActivate" : "BomDeactivate";
+            if (entry.Entity is ProductionOrder po && entry.State == EntityState.Modified && entry.Property("Status").IsModified)
+                action = ("Production" + po.Status) switch { "ProductionReleased" => "ProductionRelease", "ProductionInProgress" => "ProductionStart", "ProductionCompleted" => "ProductionComplete", _ => "ProductionCancel" };
             object? extra = null;
-            if (entry.Entity is Inventory inventory)
+            // Metadata-only edits still produce an audit, without copying contact details/notes.
+            if (entry.Entity is Supplier or PurchaseOrder or Warehouse or StockTransfer or Domain.BillOfMaterials or ProductionOrder && entry.State == EntityState.Modified && changed.Length == 0)
+                extra = new { metadataChanged = true };
+            if (entry.Entity is StockTransfer completed && action == "TransferComplete")
+                extra = new { products = completed.Items.Select(i => new { i.ProductId, i.Quantity }).ToArray() };
+            if (entry.Entity is WarehouseInventory inventory)
             {
-                var movement = entries.Select(e => e.Entity).OfType<InventoryMovement>().SingleOrDefault(m => m.ProductId == inventory.ProductId && m.ReferenceType == "Manual");
+                var movement = entries.Select(e => e.Entity).OfType<InventoryMovement>().SingleOrDefault(m => m.ProductId == inventory.ProductId && m.WarehouseId == inventory.WarehouseId && m.ReferenceType == "Manual");
                 if (movement is not null)
                 {
                     action = movement.MovementType is MovementType.StockIn ? "StockIn" : movement.MovementType is MovementType.StockOut ? "StockOut" : "StockAdjustment";
-                    extra = new { movementId = movement.Id, direction = movement.MovementType.ToString() };
+                    extra = new { inventory.WarehouseId, movementId = movement.Id, direction = movement.MovementType.ToString() };
                 }
-                else if (changed.Length > 0) action = "MinimumLevelChange";
+                else if (changed.Length > 0) { action = "MinimumLevelChange"; extra = new { inventory.WarehouseId }; }
                 else continue; // Order quantity history belongs to InventoryMovements and Order audit.
                 entityId = inventory.ProductId;
             }
@@ -67,7 +106,7 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options, IHttpCo
             AuditLogs.Add(new AuditLog
             {
                 UserId = actorId, UserName = actor?.FindFirst("name")?.Value ?? "System / public registration",
-                Action = action, EntityName = entry.Entity is Inventory ? "Inventory" : entry.Metadata.ClrType.Name,
+                Action = action, EntityName = entry.Entity is WarehouseInventory ? "WarehouseInventory" : entry.Metadata.ClrType.Name,
                 EntityId = entityId, OldValues = before is null ? null : System.Text.Json.JsonSerializer.Serialize(before),
                 NewValues = after is null ? null : System.Text.Json.JsonSerializer.Serialize(after),
                 Description = action, CorrelationId = http?.HttpContext?.TraceIdentifier
@@ -78,6 +117,9 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options, IHttpCo
 
     protected override void OnModelCreating(ModelBuilder model)
     {
+        ProcurementModel.Configure(model);
+        WarehouseModel.Configure(model);
+        ManufacturingModel.Configure(model);
         model.HasSequence<long>("OrderNumbers");
         model.Entity<AuditLog>(entity =>
         {
@@ -98,7 +140,7 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options, IHttpCo
         {
             entity.HasOne(x => x.Product).WithOne(x => x.Inventory).HasForeignKey<Inventory>(x => x.ProductId).OnDelete(DeleteBehavior.Cascade);
             entity.HasIndex(x => x.ProductId).IsUnique();
-            entity.ToTable(t => t.HasCheckConstraint("CK_Inventories_Levels", "\"QuantityOnHand\" >= 0 AND \"MinimumStockLevel\" >= 0"));
+            entity.ToView("Inventories");
         });
         model.Entity<InventoryMovement>(entity =>
         {
@@ -108,13 +150,15 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options, IHttpCo
             entity.HasOne(x => x.Product).WithMany().HasForeignKey(x => x.ProductId).OnDelete(DeleteBehavior.Restrict);
             entity.HasOne(x => x.CreatedByUser).WithMany().HasForeignKey(x => x.CreatedByUserId).OnDelete(DeleteBehavior.Restrict);
             entity.HasOne(x => x.ReferenceOrder).WithMany().HasForeignKey(x => x.ReferenceId).OnDelete(DeleteBehavior.Restrict);
+            entity.HasOne(x => x.ReferenceReceipt).WithMany().HasForeignKey(x => x.GoodsReceiptId).OnDelete(DeleteBehavior.Restrict);
+            entity.HasIndex(x => new { x.GoodsReceiptId, x.ProductId }).IsUnique().HasFilter("\"GoodsReceiptId\" IS NOT NULL");
             entity.HasIndex(x => new { x.ProductId, x.CreatedAt });
             entity.HasIndex(x => new { x.ReferenceId, x.ProductId, x.MovementType }).IsUnique().HasFilter("\"ReferenceType\" = 'Order'");
             entity.ToTable(t =>
             {
                 t.HasCheckConstraint("CK_InventoryMovements_Quantity", "\"Quantity\" > 0 AND \"QuantityBefore\" >= 0 AND \"QuantityAfter\" >= 0");
-                t.HasCheckConstraint("CK_InventoryMovements_Delta", "(\"MovementType\" IN ('StockIn','AdjustmentIncrease','OrderCancellationReturn') AND \"QuantityAfter\"::bigint = \"QuantityBefore\"::bigint + \"Quantity\") OR (\"MovementType\" IN ('StockOut','AdjustmentDecrease','OrderDeduction') AND \"QuantityAfter\"::bigint = \"QuantityBefore\"::bigint - \"Quantity\")");
-                t.HasCheckConstraint("CK_InventoryMovements_Reference", "(\"ReferenceType\" = 'Manual' AND \"ReferenceId\" IS NULL AND \"MovementType\" IN ('StockIn','StockOut','AdjustmentIncrease','AdjustmentDecrease')) OR (\"ReferenceType\" = 'Order' AND \"ReferenceId\" IS NOT NULL AND \"MovementType\" IN ('OrderDeduction','OrderCancellationReturn'))");
+                t.HasCheckConstraint("CK_InventoryMovements_Delta", "(\"MovementType\" IN ('StockIn','AdjustmentIncrease','OrderCancellationReturn','PurchaseReceipt','TransferIn','ProductionOutput') AND \"QuantityAfter\"::bigint = \"QuantityBefore\"::bigint + \"Quantity\") OR (\"MovementType\" IN ('StockOut','AdjustmentDecrease','OrderDeduction','TransferOut','ProductionConsumption') AND \"QuantityAfter\"::bigint = \"QuantityBefore\"::bigint - \"Quantity\")");
+                t.HasCheckConstraint("CK_InventoryMovements_Reference", "\"ProductionOrderId\" IS NULL AND (\"StockTransferId\" IS NULL AND ((\"ReferenceType\" = 'Manual' AND \"ReferenceId\" IS NULL AND \"GoodsReceiptId\" IS NULL AND \"MovementType\" IN ('StockIn','StockOut','AdjustmentIncrease','AdjustmentDecrease')) OR (\"ReferenceType\" = 'Order' AND \"ReferenceId\" IS NOT NULL AND \"GoodsReceiptId\" IS NULL AND \"MovementType\" IN ('OrderDeduction','OrderCancellationReturn')) OR (\"ReferenceType\" = 'Receipt' AND \"ReferenceId\" IS NULL AND \"GoodsReceiptId\" IS NOT NULL AND \"MovementType\" = 'PurchaseReceipt')) OR (\"ReferenceType\" = 'Transfer' AND \"StockTransferId\" IS NOT NULL AND \"ReferenceId\" IS NULL AND \"GoodsReceiptId\" IS NULL AND \"MovementType\" IN ('TransferOut','TransferIn'))) OR (\"ProductionOrderId\" IS NOT NULL AND \"ReferenceType\" = 'Production' AND \"ReferenceId\" IS NULL AND \"GoodsReceiptId\" IS NULL AND \"StockTransferId\" IS NULL AND \"MovementType\" IN ('ProductionConsumption','ProductionOutput'))");
                 t.HasCheckConstraint("CK_InventoryMovements_Reason", "length(btrim(\"Reason\")) > 0");
             });
         });

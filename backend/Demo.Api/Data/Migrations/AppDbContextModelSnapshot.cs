@@ -22,7 +22,15 @@ namespace Demo.Api.Data.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.HasSequence("GoodsReceiptNumbers");
+
             modelBuilder.HasSequence("OrderNumbers");
+
+            modelBuilder.HasSequence("ProductionNumbers");
+
+            modelBuilder.HasSequence("PurchaseOrderNumbers");
+
+            modelBuilder.HasSequence("TransferNumbers");
 
             modelBuilder.Entity("Demo.Api.Domain.AuditLog", b =>
                 {
@@ -80,6 +88,92 @@ namespace Demo.Api.Data.Migrations
                     b.HasIndex("UserId", "CreatedAt");
 
                     b.ToTable("AuditLogs");
+                });
+
+            modelBuilder.Entity("Demo.Api.Domain.BillOfMaterials", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset?>("ActivatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("BaseQuantity")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("CreatedByUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("character varying(150)");
+
+                    b.Property<Guid>("ProductId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Version")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("character varying(40)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreatedByUserId");
+
+                    b.HasIndex("ProductId")
+                        .IsUnique()
+                        .HasFilter("\"IsActive\"");
+
+                    b.HasIndex("CreatedAt", "Id");
+
+                    b.HasIndex("ProductId", "Version")
+                        .IsUnique();
+
+                    b.ToTable("BillOfMaterials", t =>
+                        {
+                            t.HasCheckConstraint("CK_BillOfMaterials_Active", "NOT \"IsActive\" OR \"ActivatedAt\" IS NOT NULL");
+
+                            t.HasCheckConstraint("CK_BillOfMaterials_Base", "\"BaseQuantity\" > 0 AND length(btrim(\"Version\")) > 0");
+                        });
+                });
+
+            modelBuilder.Entity("Demo.Api.Domain.BillOfMaterialsItem", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("BillOfMaterialsId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("MaterialProductId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("QuantityRequired")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MaterialProductId");
+
+                    b.HasIndex("BillOfMaterialsId", "MaterialProductId")
+                        .IsUnique();
+
+                    b.ToTable("BillOfMaterialsItems", t =>
+                        {
+                            t.HasCheckConstraint("CK_BillOfMaterialsItems_Quantity", "\"QuantityRequired\" > 0");
+                        });
                 });
 
             modelBuilder.Entity("Demo.Api.Domain.Category", b =>
@@ -152,10 +246,94 @@ namespace Demo.Api.Data.Migrations
                     b.ToTable("Customers");
                 });
 
-            modelBuilder.Entity("Demo.Api.Domain.Inventory", b =>
+            modelBuilder.Entity("Demo.Api.Domain.GoodsReceipt", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("CreatedByUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("FingerprintVersion")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("IdempotencyKey")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Notes")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.Property<string>("PayloadFingerprint")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<Guid>("PurchaseOrderId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("ReceiptNumber")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<DateTimeOffset>("ReceivedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("WarehouseId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ReceiptNumber")
+                        .IsUnique();
+
+                    b.HasIndex("WarehouseId");
+
+                    b.HasIndex("CreatedByUserId", "IdempotencyKey")
+                        .IsUnique();
+
+                    b.HasIndex("PurchaseOrderId", "ReceivedAt");
+
+                    b.ToTable("GoodsReceipts");
+                });
+
+            modelBuilder.Entity("Demo.Api.Domain.GoodsReceiptItem", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("GoodsReceiptId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("PurchaseOrderItemId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("QuantityReceived")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PurchaseOrderItemId");
+
+                    b.HasIndex("GoodsReceiptId", "PurchaseOrderItemId")
+                        .IsUnique();
+
+                    b.ToTable("GoodsReceiptItems", t =>
+                        {
+                            t.HasCheckConstraint("CK_GoodsReceiptItems_Quantity", "\"QuantityReceived\" > 0");
+                        });
+                });
+
+            modelBuilder.Entity("Demo.Api.Domain.Inventory", b =>
+                {
+                    b.Property<Guid>("Id")
                         .HasColumnType("uuid");
 
                     b.Property<int>("MinimumStockLevel")
@@ -175,10 +353,9 @@ namespace Demo.Api.Data.Migrations
                     b.HasIndex("ProductId")
                         .IsUnique();
 
-                    b.ToTable("Inventories", t =>
-                        {
-                            t.HasCheckConstraint("CK_Inventories_Levels", "\"QuantityOnHand\" >= 0 AND \"MinimumStockLevel\" >= 0");
-                        });
+                    b.ToTable((string)null);
+
+                    b.ToView("Inventories", (string)null);
                 });
 
             modelBuilder.Entity("Demo.Api.Domain.InventoryMovement", b =>
@@ -193,12 +370,18 @@ namespace Demo.Api.Data.Migrations
                     b.Property<Guid>("CreatedByUserId")
                         .HasColumnType("uuid");
 
+                    b.Property<Guid?>("GoodsReceiptId")
+                        .HasColumnType("uuid");
+
                     b.Property<string>("MovementType")
                         .IsRequired()
                         .HasMaxLength(30)
                         .HasColumnType("character varying(30)");
 
                     b.Property<Guid>("ProductId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("ProductionOrderId")
                         .HasColumnType("uuid");
 
                     b.Property<int>("Quantity")
@@ -223,25 +406,45 @@ namespace Demo.Api.Data.Migrations
                         .HasMaxLength(10)
                         .HasColumnType("character varying(10)");
 
+                    b.Property<Guid?>("StockTransferId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("WarehouseId")
+                        .HasColumnType("uuid");
+
                     b.HasKey("Id");
 
                     b.HasIndex("CreatedByUserId");
 
+                    b.HasIndex("GoodsReceiptId", "ProductId")
+                        .IsUnique()
+                        .HasFilter("\"GoodsReceiptId\" IS NOT NULL");
+
                     b.HasIndex("ProductId", "CreatedAt");
+
+                    b.HasIndex("ProductionOrderId", "ProductId", "MovementType")
+                        .IsUnique()
+                        .HasFilter("\"ProductionOrderId\" IS NOT NULL");
 
                     b.HasIndex("ReferenceId", "ProductId", "MovementType")
                         .IsUnique()
                         .HasFilter("\"ReferenceType\" = 'Order'");
 
+                    b.HasIndex("StockTransferId", "ProductId", "MovementType")
+                        .IsUnique()
+                        .HasFilter("\"StockTransferId\" IS NOT NULL");
+
+                    b.HasIndex("WarehouseId", "CreatedAt", "Id");
+
                     b.ToTable("InventoryMovements", t =>
                         {
-                            t.HasCheckConstraint("CK_InventoryMovements_Delta", "(\"MovementType\" IN ('StockIn','AdjustmentIncrease','OrderCancellationReturn') AND \"QuantityAfter\"::bigint = \"QuantityBefore\"::bigint + \"Quantity\") OR (\"MovementType\" IN ('StockOut','AdjustmentDecrease','OrderDeduction') AND \"QuantityAfter\"::bigint = \"QuantityBefore\"::bigint - \"Quantity\")");
+                            t.HasCheckConstraint("CK_InventoryMovements_Delta", "(\"MovementType\" IN ('StockIn','AdjustmentIncrease','OrderCancellationReturn','PurchaseReceipt','TransferIn','ProductionOutput') AND \"QuantityAfter\"::bigint = \"QuantityBefore\"::bigint + \"Quantity\") OR (\"MovementType\" IN ('StockOut','AdjustmentDecrease','OrderDeduction','TransferOut','ProductionConsumption') AND \"QuantityAfter\"::bigint = \"QuantityBefore\"::bigint - \"Quantity\")");
 
                             t.HasCheckConstraint("CK_InventoryMovements_Quantity", "\"Quantity\" > 0 AND \"QuantityBefore\" >= 0 AND \"QuantityAfter\" >= 0");
 
                             t.HasCheckConstraint("CK_InventoryMovements_Reason", "length(btrim(\"Reason\")) > 0");
 
-                            t.HasCheckConstraint("CK_InventoryMovements_Reference", "(\"ReferenceType\" = 'Manual' AND \"ReferenceId\" IS NULL AND \"MovementType\" IN ('StockIn','StockOut','AdjustmentIncrease','AdjustmentDecrease')) OR (\"ReferenceType\" = 'Order' AND \"ReferenceId\" IS NOT NULL AND \"MovementType\" IN ('OrderDeduction','OrderCancellationReturn'))");
+                            t.HasCheckConstraint("CK_InventoryMovements_Reference", "\"ProductionOrderId\" IS NULL AND (\"StockTransferId\" IS NULL AND ((\"ReferenceType\" = 'Manual' AND \"ReferenceId\" IS NULL AND \"GoodsReceiptId\" IS NULL AND \"MovementType\" IN ('StockIn','StockOut','AdjustmentIncrease','AdjustmentDecrease')) OR (\"ReferenceType\" = 'Order' AND \"ReferenceId\" IS NOT NULL AND \"GoodsReceiptId\" IS NULL AND \"MovementType\" IN ('OrderDeduction','OrderCancellationReturn')) OR (\"ReferenceType\" = 'Receipt' AND \"ReferenceId\" IS NULL AND \"GoodsReceiptId\" IS NOT NULL AND \"MovementType\" = 'PurchaseReceipt')) OR (\"ReferenceType\" = 'Transfer' AND \"StockTransferId\" IS NOT NULL AND \"ReferenceId\" IS NULL AND \"GoodsReceiptId\" IS NULL AND \"MovementType\" IN ('TransferOut','TransferIn'))) OR (\"ProductionOrderId\" IS NOT NULL AND \"ReferenceType\" = 'Production' AND \"ReferenceId\" IS NULL AND \"GoodsReceiptId\" IS NULL AND \"StockTransferId\" IS NULL AND \"MovementType\" IN ('ProductionConsumption','ProductionOutput'))");
                         });
                 });
 
@@ -280,6 +483,9 @@ namespace Demo.Api.Data.Migrations
                     b.Property<DateTimeOffset?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<Guid>("WarehouseId")
+                        .HasColumnType("uuid");
+
                     b.HasKey("Id");
 
                     b.HasIndex("CompletedAt")
@@ -289,6 +495,8 @@ namespace Demo.Api.Data.Migrations
 
                     b.HasIndex("OrderNumber")
                         .IsUnique();
+
+                    b.HasIndex("WarehouseId");
 
                     b.HasIndex("OrderDate", "Id");
 
@@ -366,6 +574,13 @@ namespace Demo.Api.Data.Migrations
                         .HasPrecision(12, 2)
                         .HasColumnType("numeric(12,2)");
 
+                    b.Property<string>("ProductType")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasDefaultValue("RawMaterial");
+
                     b.Property<DateTimeOffset?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -376,6 +591,407 @@ namespace Demo.Api.Data.Migrations
                     b.ToTable("Products", t =>
                         {
                             t.HasCheckConstraint("CK_Products_Price", "\"Price\" >= 0");
+
+                            t.HasCheckConstraint("CK_Products_Type", "\"ProductType\" IN ('RawMaterial','FinishedGood')");
+                        });
+                });
+
+            modelBuilder.Entity("Demo.Api.Domain.ProductionOrder", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("BillOfMaterialsId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset?>("CompletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("CompletedByUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("CreatedByUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("DestinationWarehouseId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Notes")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
+
+                    b.Property<DateTimeOffset?>("PlannedEndDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("PlannedQuantity")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTimeOffset?>("PlannedStartDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("ProducedQuantity")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("ProductId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("ProductionOrderNumber")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<Guid>("SourceWarehouseId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset?>("StartedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("StartedByUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BillOfMaterialsId");
+
+                    b.HasIndex("CompletedByUserId");
+
+                    b.HasIndex("CreatedByUserId");
+
+                    b.HasIndex("DestinationWarehouseId");
+
+                    b.HasIndex("ProductId");
+
+                    b.HasIndex("ProductionOrderNumber")
+                        .IsUnique();
+
+                    b.HasIndex("SourceWarehouseId");
+
+                    b.HasIndex("StartedByUserId");
+
+                    b.HasIndex("CreatedAt", "Id");
+
+                    b.HasIndex("Status", "CreatedAt");
+
+                    b.ToTable("ProductionOrders", t =>
+                        {
+                            t.HasCheckConstraint("CK_ProductionOrders_Completion", "(\"Status\" = 'Completed' AND \"ProducedQuantity\" = \"PlannedQuantity\" AND \"CompletedAt\" IS NOT NULL AND \"CompletedByUserId\" IS NOT NULL) OR (\"Status\" <> 'Completed' AND \"ProducedQuantity\" = 0 AND \"CompletedAt\" IS NULL AND \"CompletedByUserId\" IS NULL)");
+
+                            t.HasCheckConstraint("CK_ProductionOrders_Dates", "\"PlannedEndDate\" IS NULL OR \"PlannedStartDate\" IS NULL OR \"PlannedEndDate\" >= \"PlannedStartDate\"");
+
+                            t.HasCheckConstraint("CK_ProductionOrders_Quantity", "\"PlannedQuantity\" > 0 AND \"ProducedQuantity\" >= 0 AND \"ProducedQuantity\" <= \"PlannedQuantity\"");
+
+                            t.HasCheckConstraint("CK_ProductionOrders_Start", "(\"Status\" IN ('InProgress','Completed')) = (\"StartedAt\" IS NOT NULL AND \"StartedByUserId\" IS NOT NULL)");
+
+                            t.HasCheckConstraint("CK_ProductionOrders_Status", "\"Status\" IN ('Draft','Released','InProgress','Completed','Cancelled')");
+                        });
+                });
+
+            modelBuilder.Entity("Demo.Api.Domain.ProductionOrderMaterial", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("MaterialProductId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("ProductionOrderId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("QuantityConsumed")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("QuantityRequired")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MaterialProductId");
+
+                    b.HasIndex("ProductionOrderId", "MaterialProductId")
+                        .IsUnique();
+
+                    b.ToTable("ProductionOrderMaterials", t =>
+                        {
+                            t.HasCheckConstraint("CK_ProductionOrderMaterials_Quantity", "\"QuantityRequired\" > 0 AND \"QuantityConsumed\" >= 0 AND \"QuantityConsumed\" <= \"QuantityRequired\"");
+                        });
+                });
+
+            modelBuilder.Entity("Demo.Api.Domain.PurchaseOrder", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("CreatedByUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset?>("ExpectedDeliveryDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Notes")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
+
+                    b.Property<DateTimeOffset>("OrderDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("PurchaseOrderNumber")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<Guid>("SupplierId")
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("TotalAmount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreatedByUserId");
+
+                    b.HasIndex("PurchaseOrderNumber")
+                        .IsUnique();
+
+                    b.HasIndex("SupplierId");
+
+                    b.HasIndex("OrderDate", "Id");
+
+                    b.HasIndex("Status", "OrderDate");
+
+                    b.ToTable("PurchaseOrders", t =>
+                        {
+                            t.HasCheckConstraint("CK_PurchaseOrders_Status", "\"Status\" IN ('Draft','Submitted','PartiallyReceived','Received','Cancelled')");
+
+                            t.HasCheckConstraint("CK_PurchaseOrders_Total", "\"TotalAmount\" >= 0");
+                        });
+                });
+
+            modelBuilder.Entity("Demo.Api.Domain.PurchaseOrderItem", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("LineTotal")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)");
+
+                    b.Property<Guid>("ProductId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("PurchaseOrderId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("QuantityOrdered")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("QuantityReceived")
+                        .HasColumnType("integer");
+
+                    b.Property<decimal>("UnitCost")
+                        .HasPrecision(12, 2)
+                        .HasColumnType("numeric(12,2)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProductId");
+
+                    b.HasIndex("PurchaseOrderId", "ProductId")
+                        .IsUnique();
+
+                    b.ToTable("PurchaseOrderItems", t =>
+                        {
+                            t.HasCheckConstraint("CK_PurchaseOrderItems_Cost", "\"UnitCost\" >= 0 AND \"LineTotal\" = \"QuantityOrdered\" * \"UnitCost\"");
+
+                            t.HasCheckConstraint("CK_PurchaseOrderItems_Quantities", "\"QuantityOrdered\" > 0 AND \"QuantityReceived\" >= 0 AND \"QuantityReceived\" <= \"QuantityOrdered\"");
+                        });
+                });
+
+            modelBuilder.Entity("Demo.Api.Domain.StockTransfer", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset?>("CompletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("CompletedByUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("CreatedByUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("DestinationWarehouseId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Notes")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
+
+                    b.Property<Guid>("SourceWarehouseId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<string>("TransferNumber")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CompletedByUserId");
+
+                    b.HasIndex("CreatedByUserId");
+
+                    b.HasIndex("DestinationWarehouseId");
+
+                    b.HasIndex("SourceWarehouseId");
+
+                    b.HasIndex("TransferNumber")
+                        .IsUnique();
+
+                    b.HasIndex("CreatedAt", "Id");
+
+                    b.HasIndex("Status", "CreatedAt");
+
+                    b.ToTable("StockTransfers", t =>
+                        {
+                            t.HasCheckConstraint("CK_StockTransfers_Completion", "(\"Status\" = 'Completed') = (\"CompletedAt\" IS NOT NULL AND \"CompletedByUserId\" IS NOT NULL)");
+
+                            t.HasCheckConstraint("CK_StockTransfers_Status", "\"Status\" IN ('Draft','Completed','Cancelled')");
+
+                            t.HasCheckConstraint("CK_StockTransfers_Warehouses", "\"SourceWarehouseId\" <> \"DestinationWarehouseId\"");
+                        });
+                });
+
+            modelBuilder.Entity("Demo.Api.Domain.StockTransferItem", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("ProductId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("StockTransferId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProductId");
+
+                    b.HasIndex("StockTransferId", "ProductId")
+                        .IsUnique();
+
+                    b.ToTable("StockTransferItems", t =>
+                        {
+                            t.HasCheckConstraint("CK_StockTransferItems_Quantity", "\"Quantity\" > 0");
+                        });
+                });
+
+            modelBuilder.Entity("Demo.Api.Domain.Supplier", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Address")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.Property<string>("ContactPerson")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("character varying(150)");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasMaxLength(254)
+                        .HasColumnType("character varying(254)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("character varying(150)");
+
+                    b.Property<string>("Phone")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("character varying(40)");
+
+                    b.Property<string>("SupplierCode")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("character varying(40)");
+
+                    b.Property<string>("TaxNumber")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("character varying(40)");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SupplierCode")
+                        .IsUnique();
+
+                    b.ToTable("Suppliers", t =>
+                        {
+                            t.HasCheckConstraint("CK_Suppliers_Code", "\"SupplierCode\" ~ '^[A-Z0-9][A-Z0-9_-]{0,39}$'");
+
+                            t.HasCheckConstraint("CK_Suppliers_Name", "length(btrim(\"Name\")) > 0");
                         });
                 });
 
@@ -436,6 +1052,99 @@ namespace Demo.Api.Data.Migrations
                         });
                 });
 
+            modelBuilder.Entity("Demo.Api.Domain.Warehouse", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("character varying(40)");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsDefault")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Location")
+                        .IsRequired()
+                        .HasMaxLength(250)
+                        .HasColumnType("character varying(250)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("character varying(150)");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Code")
+                        .IsUnique();
+
+                    b.HasIndex("IsDefault")
+                        .IsUnique()
+                        .HasFilter("\"IsDefault\"");
+
+                    b.HasIndex("Name", "Id");
+
+                    b.ToTable("Warehouses", t =>
+                        {
+                            t.HasCheckConstraint("CK_Warehouses_Code", "\"Code\" ~ '^[A-Z0-9][A-Z0-9_-]{0,39}$'");
+
+                            t.HasCheckConstraint("CK_Warehouses_DefaultActive", "NOT \"IsDefault\" OR \"IsActive\"");
+
+                            t.HasCheckConstraint("CK_Warehouses_Name", "length(btrim(\"Name\")) > 0");
+                        });
+                });
+
+            modelBuilder.Entity("Demo.Api.Domain.WarehouseInventory", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("MinimumStockLevel")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("ProductId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("QuantityOnHand")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("WarehouseId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProductId");
+
+                    b.HasIndex("WarehouseId", "ProductId")
+                        .IsUnique();
+
+                    b.ToTable("WarehouseInventories", t =>
+                        {
+                            t.HasCheckConstraint("CK_WarehouseInventories_Levels", "\"QuantityOnHand\" >= 0 AND \"MinimumStockLevel\" >= 0");
+                        });
+                });
+
             modelBuilder.Entity("Demo.Api.Domain.AuditLog", b =>
                 {
                     b.HasOne("Demo.Api.Domain.User", "User")
@@ -444,6 +1153,90 @@ namespace Demo.Api.Data.Migrations
                         .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Demo.Api.Domain.BillOfMaterials", b =>
+                {
+                    b.HasOne("Demo.Api.Domain.User", "CreatedByUser")
+                        .WithMany()
+                        .HasForeignKey("CreatedByUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Demo.Api.Domain.Product", "Product")
+                        .WithMany()
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("CreatedByUser");
+
+                    b.Navigation("Product");
+                });
+
+            modelBuilder.Entity("Demo.Api.Domain.BillOfMaterialsItem", b =>
+                {
+                    b.HasOne("Demo.Api.Domain.BillOfMaterials", "BillOfMaterials")
+                        .WithMany("Items")
+                        .HasForeignKey("BillOfMaterialsId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Demo.Api.Domain.Product", "MaterialProduct")
+                        .WithMany()
+                        .HasForeignKey("MaterialProductId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("BillOfMaterials");
+
+                    b.Navigation("MaterialProduct");
+                });
+
+            modelBuilder.Entity("Demo.Api.Domain.GoodsReceipt", b =>
+                {
+                    b.HasOne("Demo.Api.Domain.User", "CreatedByUser")
+                        .WithMany()
+                        .HasForeignKey("CreatedByUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Demo.Api.Domain.PurchaseOrder", "PurchaseOrder")
+                        .WithMany("Receipts")
+                        .HasForeignKey("PurchaseOrderId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Demo.Api.Domain.Warehouse", "Warehouse")
+                        .WithMany()
+                        .HasForeignKey("WarehouseId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("CreatedByUser");
+
+                    b.Navigation("PurchaseOrder");
+
+                    b.Navigation("Warehouse");
+                });
+
+            modelBuilder.Entity("Demo.Api.Domain.GoodsReceiptItem", b =>
+                {
+                    b.HasOne("Demo.Api.Domain.GoodsReceipt", "GoodsReceipt")
+                        .WithMany("Items")
+                        .HasForeignKey("GoodsReceiptId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Demo.Api.Domain.PurchaseOrderItem", "PurchaseOrderItem")
+                        .WithMany()
+                        .HasForeignKey("PurchaseOrderItemId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("GoodsReceipt");
+
+                    b.Navigation("PurchaseOrderItem");
                 });
 
             modelBuilder.Entity("Demo.Api.Domain.Inventory", b =>
@@ -465,22 +1258,51 @@ namespace Demo.Api.Data.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("Demo.Api.Domain.GoodsReceipt", "ReferenceReceipt")
+                        .WithMany()
+                        .HasForeignKey("GoodsReceiptId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("Demo.Api.Domain.Product", "Product")
                         .WithMany()
                         .HasForeignKey("ProductId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("Demo.Api.Domain.ProductionOrder", "ProductionOrder")
+                        .WithMany()
+                        .HasForeignKey("ProductionOrderId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("Demo.Api.Domain.Order", "ReferenceOrder")
                         .WithMany()
                         .HasForeignKey("ReferenceId")
                         .OnDelete(DeleteBehavior.Restrict);
 
+                    b.HasOne("Demo.Api.Domain.StockTransfer", "StockTransfer")
+                        .WithMany()
+                        .HasForeignKey("StockTransferId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Demo.Api.Domain.Warehouse", "Warehouse")
+                        .WithMany()
+                        .HasForeignKey("WarehouseId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.Navigation("CreatedByUser");
 
                     b.Navigation("Product");
 
+                    b.Navigation("ProductionOrder");
+
                     b.Navigation("ReferenceOrder");
+
+                    b.Navigation("ReferenceReceipt");
+
+                    b.Navigation("StockTransfer");
+
+                    b.Navigation("Warehouse");
                 });
 
             modelBuilder.Entity("Demo.Api.Domain.Order", b =>
@@ -491,7 +1313,15 @@ namespace Demo.Api.Data.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("Demo.Api.Domain.Warehouse", "Warehouse")
+                        .WithMany()
+                        .HasForeignKey("WarehouseId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.Navigation("Customer");
+
+                    b.Navigation("Warehouse");
                 });
 
             modelBuilder.Entity("Demo.Api.Domain.OrderItem", b =>
@@ -524,6 +1354,197 @@ namespace Demo.Api.Data.Migrations
                     b.Navigation("Category");
                 });
 
+            modelBuilder.Entity("Demo.Api.Domain.ProductionOrder", b =>
+                {
+                    b.HasOne("Demo.Api.Domain.BillOfMaterials", "BillOfMaterials")
+                        .WithMany()
+                        .HasForeignKey("BillOfMaterialsId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Demo.Api.Domain.User", "CompletedByUser")
+                        .WithMany()
+                        .HasForeignKey("CompletedByUserId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Demo.Api.Domain.User", "CreatedByUser")
+                        .WithMany()
+                        .HasForeignKey("CreatedByUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Demo.Api.Domain.Warehouse", "DestinationWarehouse")
+                        .WithMany()
+                        .HasForeignKey("DestinationWarehouseId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Demo.Api.Domain.Product", "Product")
+                        .WithMany()
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Demo.Api.Domain.Warehouse", "SourceWarehouse")
+                        .WithMany()
+                        .HasForeignKey("SourceWarehouseId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Demo.Api.Domain.User", "StartedByUser")
+                        .WithMany()
+                        .HasForeignKey("StartedByUserId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("BillOfMaterials");
+
+                    b.Navigation("CompletedByUser");
+
+                    b.Navigation("CreatedByUser");
+
+                    b.Navigation("DestinationWarehouse");
+
+                    b.Navigation("Product");
+
+                    b.Navigation("SourceWarehouse");
+
+                    b.Navigation("StartedByUser");
+                });
+
+            modelBuilder.Entity("Demo.Api.Domain.ProductionOrderMaterial", b =>
+                {
+                    b.HasOne("Demo.Api.Domain.Product", "MaterialProduct")
+                        .WithMany()
+                        .HasForeignKey("MaterialProductId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Demo.Api.Domain.ProductionOrder", "ProductionOrder")
+                        .WithMany("Materials")
+                        .HasForeignKey("ProductionOrderId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("MaterialProduct");
+
+                    b.Navigation("ProductionOrder");
+                });
+
+            modelBuilder.Entity("Demo.Api.Domain.PurchaseOrder", b =>
+                {
+                    b.HasOne("Demo.Api.Domain.User", "CreatedByUser")
+                        .WithMany()
+                        .HasForeignKey("CreatedByUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Demo.Api.Domain.Supplier", "Supplier")
+                        .WithMany("PurchaseOrders")
+                        .HasForeignKey("SupplierId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("CreatedByUser");
+
+                    b.Navigation("Supplier");
+                });
+
+            modelBuilder.Entity("Demo.Api.Domain.PurchaseOrderItem", b =>
+                {
+                    b.HasOne("Demo.Api.Domain.Product", "Product")
+                        .WithMany()
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Demo.Api.Domain.PurchaseOrder", "PurchaseOrder")
+                        .WithMany("Items")
+                        .HasForeignKey("PurchaseOrderId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Product");
+
+                    b.Navigation("PurchaseOrder");
+                });
+
+            modelBuilder.Entity("Demo.Api.Domain.StockTransfer", b =>
+                {
+                    b.HasOne("Demo.Api.Domain.User", "CompletedByUser")
+                        .WithMany()
+                        .HasForeignKey("CompletedByUserId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Demo.Api.Domain.User", "CreatedByUser")
+                        .WithMany()
+                        .HasForeignKey("CreatedByUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Demo.Api.Domain.Warehouse", "DestinationWarehouse")
+                        .WithMany()
+                        .HasForeignKey("DestinationWarehouseId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Demo.Api.Domain.Warehouse", "SourceWarehouse")
+                        .WithMany()
+                        .HasForeignKey("SourceWarehouseId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("CompletedByUser");
+
+                    b.Navigation("CreatedByUser");
+
+                    b.Navigation("DestinationWarehouse");
+
+                    b.Navigation("SourceWarehouse");
+                });
+
+            modelBuilder.Entity("Demo.Api.Domain.StockTransferItem", b =>
+                {
+                    b.HasOne("Demo.Api.Domain.Product", "Product")
+                        .WithMany()
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Demo.Api.Domain.StockTransfer", "StockTransfer")
+                        .WithMany("Items")
+                        .HasForeignKey("StockTransferId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Product");
+
+                    b.Navigation("StockTransfer");
+                });
+
+            modelBuilder.Entity("Demo.Api.Domain.WarehouseInventory", b =>
+                {
+                    b.HasOne("Demo.Api.Domain.Product", "Product")
+                        .WithMany()
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Demo.Api.Domain.Warehouse", "Warehouse")
+                        .WithMany()
+                        .HasForeignKey("WarehouseId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Product");
+
+                    b.Navigation("Warehouse");
+                });
+
+            modelBuilder.Entity("Demo.Api.Domain.BillOfMaterials", b =>
+                {
+                    b.Navigation("Items");
+                });
+
             modelBuilder.Entity("Demo.Api.Domain.Category", b =>
                 {
                     b.Navigation("Products");
@@ -532,6 +1553,11 @@ namespace Demo.Api.Data.Migrations
             modelBuilder.Entity("Demo.Api.Domain.Customer", b =>
                 {
                     b.Navigation("Orders");
+                });
+
+            modelBuilder.Entity("Demo.Api.Domain.GoodsReceipt", b =>
+                {
+                    b.Navigation("Items");
                 });
 
             modelBuilder.Entity("Demo.Api.Domain.Order", b =>
@@ -545,6 +1571,28 @@ namespace Demo.Api.Data.Migrations
                         .IsRequired();
 
                     b.Navigation("OrderItems");
+                });
+
+            modelBuilder.Entity("Demo.Api.Domain.ProductionOrder", b =>
+                {
+                    b.Navigation("Materials");
+                });
+
+            modelBuilder.Entity("Demo.Api.Domain.PurchaseOrder", b =>
+                {
+                    b.Navigation("Items");
+
+                    b.Navigation("Receipts");
+                });
+
+            modelBuilder.Entity("Demo.Api.Domain.StockTransfer", b =>
+                {
+                    b.Navigation("Items");
+                });
+
+            modelBuilder.Entity("Demo.Api.Domain.Supplier", b =>
+                {
+                    b.Navigation("PurchaseOrders");
                 });
 #pragma warning restore 612, 618
         }

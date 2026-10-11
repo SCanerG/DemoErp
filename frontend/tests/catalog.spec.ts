@@ -55,7 +55,7 @@ test('registration, authentication, product lifecycle, and protected routes', as
   await page.getByLabel('Active product').uncheck();
   await page.getByRole('button', { name: 'Save changes' }).click();
   await expect(page.getByRole('heading', { name: `${name} updated`, exact: true })).toBeVisible();
-  await expect(page.locator('.badge')).toContainText('Inactive');
+  await expect(page.locator('.badge').filter({hasText:'Inactive'})).toContainText('Inactive');
   await page.getByRole('link', { name: 'Back to products' }).click();
   const row = page.getByRole('row').filter({ hasText: `${name} updated` });
   await expect(row).toContainText('$40.25');

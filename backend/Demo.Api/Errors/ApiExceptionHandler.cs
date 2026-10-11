@@ -25,6 +25,13 @@ public sealed class ApiExceptionHandler(ILogger<ApiExceptionHandler> logger, IPr
                 .ToDictionary(x => x.Key, x => x.Select(e => e.ErrorMessage).Distinct().ToArray()))
             { Status = 400, Title = "Validation failed" };
         }
+        else if ((exception is DbUpdateException ? exception.InnerException : exception) is PostgresException check
+            && check.SqlState == PostgresErrorCodes.CheckViolation && check.MessageText == "Company stock limit exceeded")
+        {
+            context.Response.StatusCode = 409;
+            problem = new ProblemDetails { Status = 409, Title = "Business rule violation", Detail = "stockLimit" };
+            problem.Extensions["code"] = "stockLimit";
+        }
         else if ((exception is DbUpdateException ? exception.InnerException : exception) is PostgresException pg
             && pg.SqlState is PostgresErrorCodes.ForeignKeyViolation or PostgresErrorCodes.SerializationFailure or PostgresErrorCodes.DeadlockDetected or PostgresErrorCodes.UniqueViolation)
         {

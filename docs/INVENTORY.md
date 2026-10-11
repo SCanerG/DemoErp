@@ -1,5 +1,9 @@
 # Inventory and order integration
 
+Phase 9 adds ProductionConsumption (negative delta) and ProductionOutput (positive delta), both with a real ProductionOrderId FK and warehouse id. The same lock ordering and Apply method are used by production, sales, receipts and transfers. Global Inventories stays a SUM view. [Manufacturing invariants](MANUFACTURING.md).
+
+Phase 8 supersedes the original one-balance storage: each product now has balances per warehouse; general inventory is their read-only sum. Manual writes select a warehouse; sales deduct their stored fulfillment warehouse, cancellation returns actual original movement warehouses, and receipts use their destination. [Current warehouse inventory specification](WAREHOUSE_MANAGEMENT.md).
+
 [README](../README.md) · [Database](DATABASE.md) · [Architecture](ARCHITECTURE.md) · [API](API.md)
 
 ## Model and integrity
@@ -211,3 +215,15 @@ would overflow; the order/balances stay unchanged until capacity is available.
    rollback behavior that EF InMemory cannot demonstrate.
 10. **How does React stay synchronized?** Server responses update detail data and
     related TanStack Query caches are invalidated; no optimistic stock updates.
+
+## Phase 7 procurement integration
+
+[Procurement and supplier management](PROCUREMENT.md) documents the actual PO
+lifecycle, restrictive EF relationships, cost snapshots, atomic receipt/stock/audit
+writes, PostgreSQL order-then-inventory locks, user/key idempotency, permissions and
+UI behavior. The existing modules and AI tool definitions remain unchanged.
+The current procurement summary is separate from sales totals and excludes Draft/
+Cancelled outstanding units; the procurement report uses PO creation dates.
+Receipt stock history uses PurchaseReceipt with a dedicated GoodsReceipt FK,
+preserving the existing sales Order reference. Procurement audit actions are
+visible through the existing Admin audit list and entity/action filters.

@@ -27,7 +27,9 @@ test('actual Viewer Manager Admin permissions, denied routes and mobile Turkish 
   await expect(self.getByRole('combobox')).toBeDisabled(); await expect(self.getByRole('button', { name: 'Deactivate', exact: true })).toBeDisabled();
   await page.setViewportSize({ width: 390, height: 844 }); await page.getByRole('button', { name: 'TR', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Kullanıcılar', exact: true })).toBeVisible();
+  await page.getByRole('button', { name: 'Menüyü aç', exact: true }).click();
   await expect(page.getByRole('navigation').getByRole('link', { name: 'İşlem Geçmişi', exact: true })).toBeVisible();
+  await page.getByRole('button', { name: 'Menüyü kapat', exact: true }).click();
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   await page.screenshot({ path: '../.tools/phase4/users-tr-mobile.png', fullPage: true });
 });

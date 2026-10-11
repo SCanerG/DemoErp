@@ -8,7 +8,7 @@ import { api } from '../api';
 import { ErrorNotice, FieldError, Loading, QueryError } from '../components';
 import type { Product, ProductInput, Category } from '../types';
 
-const schema = z.object({ name: z.string().trim().min(1, t("Enter a product name.")).max(150), description: z.string().trim().max(2000, t("Use no more than 2,000 characters.")),
+const schema = z.object({ productType: z.enum(['RawMaterial','FinishedGood']), name: z.string().trim().min(1, t("Enter a product name.")).max(150), description: z.string().trim().max(2000, t("Use no more than 2,000 characters.")),
   price: z.number({ error: t("Enter a valid price.") }).min(0, t("Price cannot be negative.")).max(9999999999.99, t("Price is too large."))
     // Check the same decimal representation sent in JSON, without floating-point rounding.
     .refine(value => /^\d+(?:\.\d{1,2})?$/.test(String(value)), t("Use no more than two decimal places.")), isActive: z.boolean(), categoryId: z.string().min(1, 'Select a category') });
@@ -30,9 +30,9 @@ function ProductForm({ product }: { product?: Product }) {
   const queryClient = useQueryClient();
   const categories = useQuery({ queryKey: ['categories'], queryFn: ({ signal }) => api<Category[]>('/categories', { signal }) });
   const { register, handleSubmit, formState: { errors, isDirty } } = useForm<ProductInput>({ resolver: zodResolver(schema),
-    defaultValues: product ? { name: product.name, description: product.description, price: product.price, isActive: product.isActive, categoryId: product.categoryId }
-      : { name: '', description: '', price: 0, isActive: true, categoryId: '' } });
-  const mutation = useMutation({ mutationFn: (value: ProductInput) => api<Product>(product ? `/products/${product.id}` : '/products', { method: product ? 'PUT' : 'POST', body: JSON.stringify(value) }),
+    defaultValues: product ? { name: product.name, description: product.description, price: product.price, isActive: product.isActive, categoryId: product.categoryId, productType: product.productType ?? 'RawMaterial' }
+      : { name: '', description: '', price: 0, isActive: true, categoryId: '', productType: 'RawMaterial' } });
+  const mutation = useMutation({ meta: { successNotification: true }, mutationFn: (value: ProductInput) => api<Product>(product ? `/products/${product.id}` : '/products', { method: product ? 'PUT' : 'POST', body: JSON.stringify(value) }),
     onSuccess: async value => {
       queryClient.setQueryData(['products', value.id], value);
       await queryClient.invalidateQueries({ queryKey: ['products'] });
@@ -46,6 +46,7 @@ function ProductForm({ product }: { product?: Product }) {
       <ErrorNotice error={mutation.error} />
       {categories.isPending ? <p role="status">{t('Loading…')}</p> : categories.isError ? <ErrorNotice error={categories.error} /> : <label className="field">{t('Category')} *<select {...register('categoryId')} aria-invalid={!!errors.categoryId}><option value="">{t('Select a category')}</option>{categories.data.filter(c => c.isActive || c.id === product?.categoryId).map(c => <option key={c.id} value={c.id}>{c.name}{c.isActive ? '' : ` (${t('Inactive')})`}</option>)}</select><FieldError message={errors.categoryId?.message} /></label>}
       {categories.data?.length === 0 && <Link className="text-link" to="/categories/new">{t('Create a category first.')}</Link>}
+      <label className="field">{t('Product classification')}<select {...register('productType')}><option value="RawMaterial">{t('Raw Material')}</option><option value="FinishedGood">{t('Finished Good')}</option></select><FieldError message={errors.productType?.message}/></label>
       <label className="field">{t("Product name *")}<input autoFocus maxLength={150} placeholder={t("e.g. Studio notebook")} {...register('name')} aria-invalid={!!errors.name} /><FieldError message={errors.name?.message} /></label>
       <label className="field">{t("Description")}<textarea rows={5} maxLength={2000} placeholder={t("A few details about this product…")} {...register('description')} aria-invalid={!!errors.description} /><span className="text-xs font-normal text-slate-500">{t("Optional · Up to 2,000 characters.")}</span><FieldError message={errors.description?.message} /></label>
       <label className="field max-w-xs">{t("Price (USD) *")}<input type="number" min="0" step="0.01" {...register('price', { valueAsNumber: true })} aria-invalid={!!errors.price} /><FieldError message={errors.price?.message} /></label>

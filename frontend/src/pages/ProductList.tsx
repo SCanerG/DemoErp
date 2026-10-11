@@ -12,7 +12,7 @@ export function ProductList() {
   const queryClient = useQueryClient();
   const [deleting, setDeleting] = useState<Product | null>(null);
   const products = useQuery({ queryKey: ['products'], queryFn: ({ signal }) => api<Product[]>('/products', { signal }) });
-  const mutation = useMutation({ mutationFn: (id: string) => api<void>(`/products/${id}`, { method: 'DELETE' }),
+  const mutation = useMutation({ meta: { successNotification: true }, mutationFn: (id: string) => api<void>(`/products/${id}`, { method: 'DELETE' }),
     onSuccess: async (_, id) => { queryClient.removeQueries({ queryKey: ['products', id] }); await queryClient.invalidateQueries({ queryKey: ['products'] }); await queryClient.invalidateQueries({ queryKey: ['inventory'] }); setDeleting(null); } });
   if (products.isPending) return <Loading />;
   if (products.isError) return <QueryError error={products.error} retry={() => void products.refetch()} />;
@@ -29,7 +29,7 @@ export function ProductList() {
     <section className="panel overflow-hidden p-0">
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 px-6 py-5"><h2 className="font-semibold">{t("All products")} <span className="ml-2 text-sm font-normal text-slate-400">{products.data.length}</span></h2><span className="text-xs text-slate-500">{t("Latest additions first")}</span></div>
       {products.data.length === 0 ? <div className="px-6 py-16 text-center"><div className="empty-icon" aria-hidden="true">▦</div><h2 className="mt-5 text-xl font-semibold">{t("Your catalog is a clean slate")}</h2><p className="mb-6 mt-2 text-slate-500">{t("Add your first product to bring it to life.")}</p><Can permission="write"><Link className="button" to="/products/new">{t("Create your first product")}</Link></Can></div>
-        : <><div className="hidden overflow-x-auto md:block"><table><thead><tr><th>{t("Product name")}</th><th>{t("Category")}</th><th>{t("Price")}</th><th>{t("Status")}</th><th>{t("Created")}</th><th className="text-right">{t("Actions")}</th></tr></thead>
+        : <><div className="hidden overflow-x-auto md:block" role="region" aria-label={t("Table data")} tabIndex={0}><table><thead><tr><th>{t("Product name")}</th><th>{t("Category")}</th><th>{t("Price")}</th><th>{t("Status")}</th><th>{t("Created")}</th><th className="text-right">{t("Actions")}</th></tr></thead>
           <tbody>{products.data.map(product => <tr key={product.id}>
             <td><Link className="font-semibold hover:text-emerald-700" to={`/products/${product.id}`}>{product.name}</Link><p className="mt-1 max-w-64 truncate text-xs text-slate-500">{product.description || t("No description")}</p></td>
             <td>{product.categoryName}</td><td className="whitespace-nowrap tabular-nums">{priceFormat.format(product.price)}</td><td><StatusBadge active={product.isActive} /></td><td className="whitespace-nowrap text-slate-500">{dateFormat(product.createdAt)}</td>

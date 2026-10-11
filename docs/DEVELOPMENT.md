@@ -132,3 +132,15 @@ Viewer authorization; migration tests preserve legacy CompletedAt nulls.
 Istanbul boundaries, filters, paging, exports, mobile layout and TR/EN states.
 The capture script now produces twenty screenshots including dashboard EN/TR,
 sales report EN and inventory report TR from synthetic API-created records.
+
+## Phase 7 procurement integration
+
+[Procurement and supplier management](PROCUREMENT.md) documents the actual PO
+lifecycle, restrictive EF relationships, cost snapshots, atomic receipt/stock/audit
+writes, PostgreSQL order-then-inventory locks, user/key idempotency, permissions and
+UI behavior. The existing modules and AI tool definitions remain unchanged.
+The current procurement summary is separate from sales totals and excludes Draft/
+Cancelled outstanding units; the procurement report uses PO creation dates.
+Receipt stock history uses PurchaseReceipt with a dedicated GoodsReceipt FK,
+preserving the existing sales Order reference. Procurement audit actions are
+visible through the existing Admin audit list and entity/action filters.

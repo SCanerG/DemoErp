@@ -1,0 +1,49 @@
+[
+  {
+    "Plan": {
+      "Node Type": "Index Scan",
+      "Parallel Aware": false,
+      "Async Capable": false,
+      "Scan Direction": "Forward",
+      "Index Name": "IX_WarehouseInventories_WarehouseId_ProductId",
+      "Relation Name": "WarehouseInventories",
+      "Alias": "w",
+      "Startup Cost": 0.28,
+      "Total Cost": 32.51,
+      "Plan Rows": 5,
+      "Plan Width": 64,
+      "Actual Startup Time": 0.011,
+      "Actual Total Time": 0.015,
+      "Actual Rows": 5,
+      "Actual Loops": 1,
+      "Index Cond": "((\"WarehouseId\" = '80000000-0000-0000-0000-000000000001'::uuid) AND (\"ProductId\" = ANY ('{42f1e2fa-04bc-46d2-bd22-d11514db6623,07be8445-2cc6-57aa-bb55-b10dfd13c8ff,fb6b355a-2ee2-69a2-6225-6d8ef6f0de10,2731e44f-51d6-20a4-957d-26a99aa11492,bb570e6e-7131-d4ae-9ca7-abbbb10aeb70}'::uuid[])))",
+      "Rows Removed by Index Recheck": 0,
+      "Shared Hit Blocks": 11,
+      "Shared Read Blocks": 0,
+      "Shared Dirtied Blocks": 0,
+      "Shared Written Blocks": 0,
+      "Local Hit Blocks": 0,
+      "Local Read Blocks": 0,
+      "Local Dirtied Blocks": 0,
+      "Local Written Blocks": 0,
+      "Temp Read Blocks": 0,
+      "Temp Written Blocks": 0
+    },
+    "Planning": {
+      "Shared Hit Blocks": 0,
+      "Shared Read Blocks": 0,
+      "Shared Dirtied Blocks": 0,
+      "Shared Written Blocks": 0,
+      "Local Hit Blocks": 0,
+      "Local Read Blocks": 0,
+      "Local Dirtied Blocks": 0,
+      "Local Written Blocks": 0,
+      "Temp Read Blocks": 0,
+      "Temp Written Blocks": 0
+    },
+    "Planning Time": 0.024,
+    "Triggers": [
+    ],
+    "Execution Time": 0.029
+  }
+]

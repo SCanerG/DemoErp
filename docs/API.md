@@ -1,5 +1,9 @@
 # API reference
 
+Phase 9 adds authenticated /api/boms CRUD/version activation, /api/production-orders CRUD/preview/dedicated lifecycle/material-availability/movements and /api/reports/manufacturing, material-requirements, material-shortages. Admin-only BOM activation/deactivation/deletion; Admin/Manager draft/production writes; Viewer reads. [Exact endpoint matrix, filters and validation](MANUFACTURING.md).
+
+Phase 8 adds authenticated `/api/warehouses`, `/api/stock-transfers`, `/api/products/{productId}/warehouse-stock`, and `/api/reports/warehouses`. Order and receipt requests accept optional `warehouseId` (default resolved once); their detail DTOs and movement DTOs include warehouse identity. [Complete warehouse endpoints and permission matrix](WAREHOUSE_MANAGEMENT.md).
+
 [README](../README.md) · [Architecture](ARCHITECTURE.md) · [Database](DATABASE.md)
 
 Default base URL: `http://localhost:5080/api`.
@@ -149,3 +153,38 @@ BusinessRead protects all five `/api/dashboard/*` reads, four `/api/reports/*`
 paged reports and their four `/export` reads. `GET /api/orders/{id}` and status
 responses add nullable `completedAt`. Existing endpoints/policies remain intact.
 [Complete endpoint/filter/sorting/paging/CSV contract and examples](REPORTING.md).
+
+## Procurement API (Phase 7)
+
+All reads use BusinessRead (Admin/Manager/Viewer); all writes use BusinessWrite
+(Admin/Manager). JWT revocation checks remain mandatory. JSON enum values are
+strings. DTO fields and business rules: [Procurement](PROCUREMENT.md).
+
+| Method | Resource | Behavior |
+| --- | --- | --- |
+| GET/POST | `/api/suppliers` | Paged/searchable list or create (201) |
+| GET/PUT | `/api/suppliers/{id}` | Detail or update; no destructive deletion |
+| PUT | `/api/suppliers/{id}/status` | `{isActive: bool}` |
+| GET/POST | `/api/purchase-orders` | Paged list or create Draft (201) |
+| GET/PUT | `/api/purchase-orders/{id}` | Detail or Draft-only update |
+| POST | `/api/purchase-orders/{id}/submit` | Validate active references; no stock change |
+| POST | `/api/purchase-orders/{id}/cancel` | Draft/Submitted before any receipt |
+| GET/POST | `/api/purchase-orders/{id}/receipts` | Paged history or atomic posting |
+| GET | `/api/goods-receipts/{id}` | Immutable detail |
+| GET | `/api/reports/procurement` | Filtered PO projection |
+| GET | `/api/dashboard/procurement-summary` | Current operational aggregate |
+
+Supplier filters: search, isActive, page, pageSize ≤100, sort=name/supplierCode,
+descending. PO/report filters: search (number), supplierId, status, optional
+start/end (UTC half-open, both supplied, ≤366 days), page/pageSize, sort=orderDate/
+purchaseOrderNumber/supplier/totalAmount, descending. Defaults: page1, size20,
+PO newest first; supplier name ascending.
+
+Supplier request: supplierCode, name, contactPerson, email, phone, address, taxNumber.
+PO request: supplierId, expectedDeliveryDate nullable, notes, items [{productId,
+quantityOrdered, unitCost}]. Receipt request: notes, items [{purchaseOrderItemId,
+quantityReceived}], with required `Idempotency-Key` UUID header. Actor, timestamps,
+numbers, totals and status are server-owned. First receipt returns201 + Location;
+matching replay returns200 + same DTO, `Idempotency-Replayed: true`. Changed payload
+with same user/key returns409. Invalid fields/key400; missing404; business conflicts
+409. No arbitrary receipt/status mutation or receipt edit/delete endpoints.

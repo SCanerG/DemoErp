@@ -25,6 +25,8 @@ public sealed class Customer
 public enum OrderStatus { Pending, Confirmed, Completed, Cancelled }
 public sealed class Order
 {
+    public Guid WarehouseId { get; set; }
+    public Warehouse Warehouse { get; set; } = null!;
     public Guid Id { get; set; } = Guid.NewGuid();
     public string OrderNumber { get; set; } = "";
     public Guid CustomerId { get; set; }

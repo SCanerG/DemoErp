@@ -1,5 +1,16 @@
 # Security design
 
+## Phase 10 review
+
+JWT signature/issuer/audience/lifetime validation, current user/role/SecurityVersion checks, deactivation, last-Admin protection and server-side policy enforcement remain intact. Stock writers preserve transaction/lock order and audit behavior; real PostgreSQL regression tests verify rollback, concurrency and replay.
+
+Nginx `add_header` inheritance was reviewed: asset locations defining cache headers previously lost parent security headers. HTML and asset locations now explicitly retain nosniff, DENY framing and referrer policy. The HTML shell uses no-cache while hashed assets remain immutable. Readiness has a bounded deadline; neither health response exposes internal credentials.
+
+The initially evaluated Vitest 3 dependencies contained critical worker-pool advisories and a mocker path-traversal advisory. The selected Vitest 4.1.11 removes those dependencies/advisories while retaining Vite 6 compatibility. The final npm audit and NuGet transitive audit are executed and recorded in verification. Dependency auditing is advisory-database dependent, not proof that software is vulnerability-free. Production still requires TLS, independent secrets, backup operations and a reviewed container-image vulnerability process; no full image CVE scan or penetration test is claimed.
+
+[Deployment requirements](DEPLOYMENT.md) · [Testing scope](TESTING.md)
+
+
 [README](../README.md) · [Authorization matrix](AUTHORIZATION.md) · [Audit logging](AUDIT_LOGGING.md)
 
 ## Authentication and request authorization

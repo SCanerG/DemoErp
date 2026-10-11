@@ -16,7 +16,7 @@ test('catalog handles loading, empty results, errors, and retry', async ({ page 
     await route.fulfill({ status: 200, contentType: 'application/json', body: '[]' });
   });
   await page.goto('/products');
-  await expect(page.getByRole('status')).toContainText('Loading your catalog');
+  await expect(page.getByRole('status')).toContainText('Loading workspace');
   release();
   await expect(page.getByRole('heading', { name: 'Your catalog is a clean slate' })).toBeVisible();
   await expect(page.getByRole('link', { name: 'Create your first product' })).toBeVisible();
@@ -89,7 +89,8 @@ test('late unauthorized response from a previous session does not clear a newer 
     user: { id: 'fixture', name: 'Tester', email: 'tester@example.com', role: 'Admin', isActive: true, createdAt: '2026-10-01T00:00:00Z', updatedAt: null },
   })));
   await page.goto('/products');
-  await expect(page.getByRole('status')).toContainText('Loading your catalog');
+  await expect.poll(() => page.evaluate(() => typeof (window as unknown as { releaseOldResponse?: () => void }).releaseOldResponse)).toBe('function');
+  await expect(page.getByRole('status')).toContainText('Loading workspace');
   await page.getByRole('button', { name: 'Sign out' }).click();
   await page.route('**/api/auth/login', route => route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({
     accessToken: 'new-session', expiresAt: new Date(Date.now() + 3600000).toISOString(),

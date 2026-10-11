@@ -63,6 +63,11 @@ builder.Services.AddHttpClient<Demo.Api.AI.IAiModelClient, Demo.Api.AI.OpenAiMod
 builder.Services.AddScoped<Demo.Api.AI.AiToolExecutor>();
 builder.Services.AddScoped<Demo.Api.AI.AiAssistantService>();
 builder.Services.AddScoped<InventoryService>();
+builder.Services.AddScoped<SupplierService>();
+builder.Services.AddScoped<ProcurementService>();
+builder.Services.AddScoped<WarehouseService>();
+builder.Services.AddScoped<TransferService>();
+builder.Services.AddScoped<ManufacturingService>();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<AdminBootstrap>();
@@ -139,9 +144,22 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 app.MapControllers();
-app.MapGet("/health", async (AppDbContext db, CancellationToken ct) =>
-    await db.Database.CanConnectAsync(ct) ? Results.Ok(new { status = "healthy" })
-        : Results.Problem(statusCode: 503, title: "Database unavailable")).ExcludeFromDescription();
+app.MapGet("/health/live", () => Results.Ok(new { status = "healthy" })).ExcludeFromDescription();
+// Preserve the legacy health contract while bounding dependency checks.
+app.MapGet("/health", Readiness).ExcludeFromDescription();
+app.MapGet("/health/ready", Readiness).ExcludeFromDescription();
+
+static async Task<IResult> Readiness(AppDbContext db, CancellationToken ct)
+{
+    using var timeout = CancellationTokenSource.CreateLinkedTokenSource(ct);
+    timeout.CancelAfter(TimeSpan.FromSeconds(2));
+    try
+    {
+        if (await db.Database.CanConnectAsync(timeout.Token)) return Results.Ok(new { status = "healthy" });
+    }
+    catch (OperationCanceledException) when (!ct.IsCancellationRequested) { }
+    return Results.Problem(statusCode: 503, title: "Database unavailable");
+}
 
 try
 {

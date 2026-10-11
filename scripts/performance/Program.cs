@@ -48,6 +48,13 @@ var queries = new Dictionary<string, Func<Task>>
     ["movement-history"] = async () => { await db.InventoryMovements.AsNoTracking().Where(m => m.ProductId == productId).OrderByDescending(m => m.CreatedAt).ThenByDescending(m => m.Id)
         .Select(m => new { m.Id, m.Quantity, m.QuantityBefore, m.QuantityAfter, Actor = m.CreatedByUser.Name, m.CreatedAt }).ToListAsync(); }
 };
+if (!args.Contains("--baseline"))
+{
+    var warehouseId = await db.Warehouses.Where(w => w.IsDefault).Select(w => w.Id).SingleAsync();
+    var materialIds = await db.Products.OrderBy(p => p.Name).Take(5).Select(p => p.Id).ToArrayAsync();
+    queries["preview-before"] = async () => { await db.WarehouseInventories.AsNoTracking().Where(i => i.WarehouseId == warehouseId).ToDictionaryAsync(i => i.ProductId, i => i.QuantityOnHand); };
+    queries["preview-after"] = async () => { await db.WarehouseInventories.AsNoTracking().Where(i => i.WarehouseId == warehouseId && materialIds.Contains(i.ProductId)).ToDictionaryAsync(i => i.ProductId, i => i.QuantityOnHand); };
+}
 await using var planConnection = new NpgsqlConnection(connectionString); await planConnection.OpenAsync();
 await using (var analyze = new NpgsqlCommand("ANALYZE", planConnection)) await analyze.ExecuteNonQueryAsync();
 var measurements = new List<object>();

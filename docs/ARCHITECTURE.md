@@ -1,5 +1,18 @@
 # Architecture
 
+## Phase 10 quality and frontend architecture
+
+The application remains a layered monolith with one API project and one React app. There are no independent module assemblies, repositories or distributed business services. Scoped application services own transactions; shared inventory locks and PostgreSQL guards protect cross-module consistency. EF Core provides typed projections/migrations and PostgreSQL provides relational constraints, row/advisory locks and transactional behavior.
+
+The React shell is now shared in `AppShell.tsx`; role-aware grouped navigation and route-level lazy imports keep page concerns separate. TanStack Query continues to own server state; React Hook Form/Zod validate forms. Shared status/progress/loading/success components establish visual consistency without introducing a generic table framework. [UI decisions](UI_DESIGN.md), [test strategy](TESTING.md), [deployment](DEPLOYMENT.md).
+
+Liveness is process-only; readiness checks PostgreSQL with a two-second deadline while `/health` preserves its previous contract. Docker Compose uses readiness. No new infrastructure, business module or schema migration was added in Phase 10.
+
+
+Phase 9 adds ManufacturingService, ManufacturingModel, BOM/ProductionOrders controllers and React manufacturing pages. Stock changes call the existing InventoryService.Apply with caller-owned transactions and compatible warehouse/product/balance locks. The reporting additions are database queries with no new infrastructure. [Manufacturing design](MANUFACTURING.md).
+
+Current Phase 8 stock architecture: `WarehouseInventories` is authoritative; `Inventories` is a read-only aggregate view and `LegacyInventories` retains frozen openings. All stock writers share warehouse/product/balance lock helpers. [Warehouse architecture, lifecycle, lock order and migration](WAREHOUSE_MANAGEMENT.md). Earlier phase sections below describe their original implementation.
+
 [README](../README.md) · [Database](DATABASE.md) · [API](API.md) · [Development](DEVELOPMENT.md) · [Inventory](INVENTORY.md)
 
 The repository contains one ASP.NET Core API project and one React application.
@@ -119,3 +132,15 @@ checks and a persistent database volume. API startup applies committed migration
 with bounded retries. Host ports bind to localhost; PostgreSQL is internal.
 Swagger is Development-only. Production migrations/deployment, HTTPS and distributed
 rate limiting are outside the demonstrated scope.
+
+## Phase 7 procurement integration
+
+[Procurement and supplier management](PROCUREMENT.md) documents the actual PO
+lifecycle, restrictive EF relationships, cost snapshots, atomic receipt/stock/audit
+writes, PostgreSQL order-then-inventory locks, user/key idempotency, permissions and
+UI behavior. The existing modules and AI tool definitions remain unchanged.
+The current procurement summary is separate from sales totals and excludes Draft/
+Cancelled outstanding units; the procurement report uses PO creation dates.
+Receipt stock history uses PurchaseReceipt with a dedicated GoodsReceipt FK,
+preserving the existing sales Order reference. Procurement audit actions are
+visible through the existing Admin audit list and entity/action filters.

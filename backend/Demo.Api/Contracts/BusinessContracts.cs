@@ -8,11 +8,11 @@ public sealed record CategoryResponse(Guid Id, string Name, string Description, 
 public sealed record CustomerRequest(string Name, string Email, string Phone, string Address, [property: JsonRequired] bool IsActive);
 public sealed record CustomerResponse(Guid Id, string Name, string Email, string Phone, string Address, bool IsActive, DateTimeOffset CreatedAt, DateTimeOffset? UpdatedAt, int OrderCount);
 public sealed record OrderItemRequest(Guid ProductId, int Quantity);
-public sealed record OrderRequest(Guid CustomerId, List<OrderItemRequest> Items);
+public sealed record OrderRequest(Guid CustomerId, List<OrderItemRequest> Items, Guid? WarehouseId = null);
 public sealed record OrderStatusRequest([property: JsonRequired] OrderStatus Status);
 public sealed record OrderSummary(Guid Id, string OrderNumber, Guid CustomerId, string CustomerName, OrderStatus Status, DateTimeOffset OrderDate, decimal TotalAmount, int ItemCount);
 public sealed record OrderItemResponse(Guid Id, Guid ProductId, string ProductName, int Quantity, decimal UnitPrice, decimal LineTotal);
-public sealed record OrderResponse(Guid Id, string OrderNumber, Guid CustomerId, string CustomerName, OrderStatus Status, DateTimeOffset OrderDate, decimal TotalAmount, DateTimeOffset CreatedAt, DateTimeOffset? UpdatedAt, List<OrderItemResponse> Items, bool InventoryWasDeducted = false, DateTimeOffset? CompletedAt = null);
+public sealed record OrderResponse(Guid Id, string OrderNumber, Guid CustomerId, string CustomerName, OrderStatus Status, DateTimeOffset OrderDate, decimal TotalAmount, DateTimeOffset CreatedAt, DateTimeOffset? UpdatedAt, List<OrderItemResponse> Items, bool InventoryWasDeducted = false, DateTimeOffset? CompletedAt = null, Guid WarehouseId = default, string WarehouseName = "");
 public sealed class CategoryValidator : AbstractValidator<CategoryRequest>
 {
     public CategoryValidator() { RuleFor(x => x.Name).NotEmpty().MaximumLength(150); RuleFor(x => x.Description).NotNull().MaximumLength(2000); }

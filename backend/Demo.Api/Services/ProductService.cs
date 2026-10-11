@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Demo.Api.Services;
 public sealed class ProductService(AppDbContext db)
 {
-    private static readonly Expression<Func<Product, ProductResponse>> Projection = p => new(p.Id, p.Name, p.Description, p.Price, p.IsActive, p.CreatedAt, p.UpdatedAt, p.CategoryId, p.Category.Name);
+    private static readonly Expression<Func<Product, ProductResponse>> Projection = p => new(p.Id, p.Name, p.Description, p.Price, p.IsActive, p.CreatedAt, p.UpdatedAt, p.CategoryId, p.Category.Name, p.ProductType);
     private static DateTimeOffset UtcNow() { var ticks = DateTimeOffset.UtcNow.Ticks; return new(ticks - ticks % 10, TimeSpan.Zero); }
     public Task<List<ProductResponse>> List(CancellationToken ct) => db.Products.AsNoTracking().OrderByDescending(p => p.CreatedAt).Select(Projection).ToListAsync(ct);
     public Task<ProductResponse?> Get(Guid id, CancellationToken ct) => db.Products.AsNoTracking().Where(p => p.Id == id).Select(Projection).SingleOrDefaultAsync(ct);
@@ -30,6 +30,10 @@ public sealed class ProductService(AppDbContext db)
         if (product is null) return null;
         // An existing assignment may remain on an inactive category; changing it requires an active category.
         if (request.CategoryId != product.CategoryId) await ValidateCategory(request.CategoryId, ct);
+        if (request.ProductType != product.ProductType && (await db.BillOfMaterials.AnyAsync(b => b.ProductId == id, ct)
+            || await db.BillOfMaterialsItems.AnyAsync(b => b.MaterialProductId == id, ct)
+            || await db.ProductionOrders.AnyAsync(o => o.ProductId == id, ct)
+            || await db.ProductionOrderMaterials.AnyAsync(m => m.MaterialProductId == id, ct))) throw new BusinessException("classificationReferenced", 409);
         Apply(product, request); product.UpdatedAt = UtcNow();
         try { await db.SaveChangesAsync(ct); } catch (DbUpdateConcurrencyException) { return null; }
         await transaction.CommitAsync(ct);
@@ -38,7 +42,8 @@ public sealed class ProductService(AppDbContext db)
     public async Task<bool> Delete(Guid id, CancellationToken ct)
     {
         await using var transaction = await db.Database.BeginTransactionAsync(ct);
-        var inventory = await InventoryService.Lock(db, id, ct);
+        if (await db.Products.FromSqlInterpolated($"SELECT * FROM \"Products\" WHERE \"Id\" = {id} FOR UPDATE").AsNoTracking().SingleOrDefaultAsync(ct) is null) return false;
+        var inventory = await db.Inventories.AsNoTracking().SingleOrDefaultAsync(i => i.ProductId == id, ct);
         if (await db.OrderItems.AnyAsync(i => i.ProductId == id, ct)) throw new BusinessException("productReferenced", 409);
         if (inventory?.QuantityOnHand > 0 || await db.InventoryMovements.AnyAsync(m => m.ProductId == id, ct)) throw new BusinessException("productHasInventoryHistory", 409);
         var product = await db.Products.FindAsync([id], ct);
@@ -52,5 +57,5 @@ public sealed class ProductService(AppDbContext db)
         await transaction.CommitAsync(ct);
         return true;
     }
-    private static void Apply(Product p, ProductRequest r) { p.Name = r.Name.Trim(); p.Description = r.Description.Trim(); p.Price = r.Price; p.IsActive = r.IsActive; p.CategoryId = r.CategoryId; }
+    private static void Apply(Product p, ProductRequest r) { p.Name = r.Name.Trim(); p.Description = r.Description.Trim(); p.Price = r.Price; p.IsActive = r.IsActive; p.CategoryId = r.CategoryId; p.ProductType = r.ProductType; }
 }
