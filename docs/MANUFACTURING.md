@@ -122,21 +122,3 @@ Tests use real PostgreSQL 17, never EF InMemory as concurrency proof. Coverage i
 ## Limits
 
 No fractional units (kg/meters), conversions, nested BOM explosion, semi-finished dependencies, partial production, scrap, quality rejection, production reversal, shop-floor/work-center/machine scheduling, lead times, forecasts, reservation/allocation, safety-stock planning, cost accounting or automatic purchasing/transfers. All quantities are Int32 whole units, reports use Int64 totals where appropriate. Coarse product locks and global recipe governance favor clear correctness over maximum throughput; no load benchmark is claimed. Existing AI Assistant code is unchanged and no AI credentials/features are introduced.
-
-## Interview preparation: 15 questions and answers
-
-1. **How are EF relationships modeled?** Required Product/BOM/Warehouse/creator FKs on the order, one-to-many snapshot materials and real nullable ProductionOrderId on movements; historical deletes use Restrict.
-2. **Why reuse Product for materials?** It preserves one stock identity and catalog; ProductType supplies manufacturing rules without duplicating inventory tables.
-3. **How does BOM versioning preserve history?** Unique product/version and one active partial index; activated versions remain immutable after retirement, while orders retain their original BOM id and copied requirements.
-4. **How are material needs calculated?** Checked Int64 product of two positive Int32 inputs, exact divisibility by BaseQuantity, then validate the positive Int32 result. Fractional results are errors.
-5. **Where is the SQL transaction boundary?** Header transition, all affected balances, all movements, material consumption and audit commit in one caller-owned transaction.
-6. **Why PostgreSQL row locks?** FOR UPDATE serializes the order and stock writers; FOR SHARE protects selected warehouse activity while allowing independent users to read/work.
-7. **How do concurrent writers avoid overconsumption?** They acquire the same sorted product/balance locks and re-read authoritative balances before applying deductions. A later writer sees committed reductions.
-8. **How are retries idempotent?** Order row locking plus persisted lifecycle state returns an existing completed command result. Unique per-order/product/movement indexes prevent duplicate movements independently.
-9. **What protects inventory integrity?** Common Apply, nonnegative balance checks, company cap, exact delta/reference checks, immutable movements and deferred manufacturing traceability validation.
-10. **Why both application and database constraints?** The service provides usable errors; database constraints protect invariants from direct SQL, defects and competing instances at commit.
-11. **What belongs in DTO validation?** Shape, ids, bounds, duplicate lines and dates in FluentValidation; database-backed classification, lifecycle and stock checks stay transactional in the service.
-12. **Why dedicated REST commands?** /release, /start, /complete and /cancel each express distinct business effects; a generic status field could skip required consumption or output.
-13. **How is RBAC enforced?** Backend policies allow Admin/Manager operational writes and Admin-only BOM activation/deactivation/deletion; Viewer reads. Every request validates current user role/security version.
-14. **How does audit stay consistent?** Explicit allowed changes are added before the same SaveChanges/commit; a failed audit insert rolls back the business write, as integration tests verify.
-15. **How do integration tests prove concurrency?** Real PostgreSQL containers, HTTP requests, two application instances and Task.WhenAll races verify exact balances, states, movement counts, rollback and idempotency; browser tests separately verify user flows.

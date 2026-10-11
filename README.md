@@ -141,4 +141,4 @@ DemoErp is a runnable portfolio demonstration. It does not implement accounting,
 
 Production hosting requires HTTPS/reverse-proxy configuration, independent secrets, backup/restore drills, monitored health checks and an operational migration strategy. These are documented in [Deployment](docs/DEPLOYMENT.md); no public production deployment is claimed.
 
-[15 engineering interview questions](docs/INTERVIEW_PREPARATION.md) · [Source usage terms](NOTICE.md)
+[Source usage terms](NOTICE.md)

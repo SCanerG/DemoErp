@@ -98,18 +98,3 @@ Audit records cover warehouse create/edit/status/default and transfer create/edi
 The TR/EN interface includes warehouse list/edit/details, inventory search/category/status, shared manual forms, product stock distribution, recent movement references, transfer list filters, React Hook Form/Zod Draft editor with source-stock lookup, completion confirmation, immutable completion details, sales fulfillment selection, receipt destination selection, and warehouse reports. Queries invalidate inventory, warehouses, transfers, reports, orders, products, procurement, and audit after stock changes. Backend rules remain authoritative when source stock changes after a form loads.
 
 No bins, reservations, cross-company stock, serial/batch tracking, partial shipping, transfer reversals, or hard warehouse deletion are implemented. The existing all-products selector follows the original ERP pattern; warehouse and stock lists use server pagination. The AI Assistant/RAG application files are unchanged; their existing report sources now see summed warehouse stock through the read-only compatibility view.
-
-## Interview preparation
-
-1. **How are EF relationships modeled?** WarehouseInventory has required Warehouse/Product FKs; StockTransfer has separate source/destination Warehouse FKs and required Items. Movements use typed nullable transfer/order/receipt FKs. Restrict deletion protects history.
-2. **Why a composite unique constraint?** `(WarehouseId, ProductId)` makes one balance per pair a database invariant, including concurrent insertion. Transfer item uniqueness similarly prohibits duplicate products.
-3. **What belongs in the transaction?** Every source/destination change, both movements per item, transfer status/actor/time, and its audit. Any error rolls them all back.
-4. **Why PostgreSQL row locks?** `FOR UPDATE` serializes competing stock writers across API instances. `FOR SHARE` prevents warehouse deactivation while a stock operation is using it.
-5. **How do you avoid deadlocks?** Lock all shared resources in a deterministic order. Return 409 on detected deadlock or serialization conflicts; do not silently retry a business operation.
-6. **What makes updates atomic?** Check every source balance under locks before applying changes, save within one transaction, and retain database non-negative constraints.
-7. **How is completion idempotent?** Lock the transfer first. A Completed record returns its original representation before any stock operation; unique movement references give additional protection.
-8. **How is legacy stock migrated?** Preserve a frozen opening table, copy balances once into MAIN, and replace old reads with a sum view. Assign historic warehouse associations explicitly without inventing movement history.
-9. **What does referential integrity protect?** Required warehouse/product and actor FKs and restricted history deletion prevent orphan transfers, receipts, and movements. Finalized-header/item triggers prevent edits through SQL as well as the API.
-10. **Why LINQ aggregation?** SQL-translated SUM/COUNT and left joins provide real company/warehouse metrics without N+1 reads or an independently maintained total. Missing pairs are zero by definition.
-11. **Where is authorization enforced?** Server policies protect every endpoint; Admin manages warehouses, Admin/Manager performs operations, and Viewer reads. UI permissions improve usability but are not the security boundary.
-12. **Why integration tests with PostgreSQL?** In-memory databases cannot reproduce row locks, triggers, partial unique indexes, deferred constraints, or cross-instance races. Tests assert final balances, movements, audits, and upgrade preservation on real PostgreSQL.

@@ -193,29 +193,6 @@ application operations and ordinary SQL DML, not a tamper-proof external audit s
 At the integer ceiling, a cancellation return can fail safely if intervening receipts
 would overflow; the order/balances stay unchanged until capacity is available.
 
-## Interview talking points
-
-1. **How is one-to-one inventory enforced?** Unique FK plus product-insert and
-   inventory-protection triggers; migration backfills existing products.
-2. **Why PostgreSQL row locks?** FOR UPDATE serializes competing balance writers
-   across processes and exposes the committed balance after waiting.
-3. **What commits atomically?** Every affected balance, immutable movement and order
-   status; one EF transaction rolls all of them back on failure.
-4. **What race would a plain read/check/save allow?** Two confirmations could both
-   read ten and deduct eight/seven; locked reads prevent that stale decision.
-5. **Are stock writes safe?** They read under a lock, validate long arithmetic, and
-   save within the same transaction; DB constraints disallow negative balances.
-6. **How is the audit protected?** Required actor/reference FKs, delta checks and
-   UPDATE/DELETE rejection, plus no public movement mutation endpoints.
-7. **Why REST operation endpoints?** They express controlled receipt/issue/adjustment
-   commands without allowing arbitrary balance replacement.
-8. **Where is validation authoritative?** FluentValidation and business services on
-   the API, backed by SQL constraints; Zod only improves feedback.
-9. **Why Testcontainers?** Real PostgreSQL proves locks, constraints, triggers and
-   rollback behavior that EF InMemory cannot demonstrate.
-10. **How does React stay synchronized?** Server responses update detail data and
-    related TanStack Query caches are invalidated; no optimistic stock updates.
-
 ## Phase 7 procurement integration
 
 [Procurement and supplier management](PROCUREMENT.md) documents the actual PO

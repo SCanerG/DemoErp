@@ -67,4 +67,4 @@ Phase 10; gruplu kenar menüsü, mobil menü, merkezi yeşil tasarım sistemi, t
 
 GitHub Actions; backend, frontend, bağımlılık denetimi ve ayrı smoke/erişilebilirlik işlerini tanımlar. Yayımlanan sürümün uzak CI sonucu GitHub Actions üzerinden kontrol edilmelidir. Herhangi bir halka açık üretim dağıtımı iddia edilmez.
 
-[Mülakat için 15 soru ve yanıt](docs/INTERVIEW_PREPARATION.md) · [Üretim tasarımı](docs/MANUFACTURING.md) · [Kullanım koşulları](NOTICE.md)
+[Üretim tasarımı](docs/MANUFACTURING.md) · [Kullanım koşulları](NOTICE.md)

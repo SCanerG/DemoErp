@@ -70,7 +70,7 @@ Gitleaks scanned all 300 publish-candidate files with zero findings; a separate 
 
 ## Documentation and screenshots
 
-English README rewritten around actual connected workflows, architecture, quick start, test commands, screenshots and operational limits; Turkish README updated. ARCHITECTURE, DATABASE, SECURITY and PERFORMANCE updated. New [TESTING](docs/TESTING.md), [DEPLOYMENT](docs/DEPLOYMENT.md), [UI_DESIGN](docs/UI_DESIGN.md) and [15 interview questions/answers](docs/INTERVIEW_PREPARATION.md).
+English README rewritten around actual connected workflows, architecture, quick start, test commands, screenshots and operational limits; Turkish README updated. ARCHITECTURE, DATABASE, SECURITY and PERFORMANCE updated. New [TESTING](docs/TESTING.md), [DEPLOYMENT](docs/DEPLOYMENT.md), [UI_DESIGN](docs/UI_DESIGN.md).
 
 Nine named desktop screenshots cover login, dashboard, products, orders, inventory, warehouses, purchasing, BOMs and production detail; mobile Turkish production detail and the responsive matrix supplement them. All are actual browser captures from synthetic API data. The main database and real credentials are excluded.
 
@@ -213,12 +213,6 @@ This phase deliberately excludes fractional units/conversions, nested or semi-fi
 
 Public deployment, load benchmarking, live external AI-provider behavior and remote GitHub CI for this unpublished phase are **UNVERIFIED**. No claim of production certification or full enterprise MRP is made. Disposable test projects are stopped with their volumes retained; the user's main local application stays running.
 
-## Interview Preparation
-
-[Manufacturing design](docs/MANUFACTURING.md#interview-preparation-15-questions-and-answers) contains fifteen concrete Q&As covering EF relationships, BOM modeling/versioning/calculation, SQL transactions, PostgreSQL locks, concurrency, idempotency, inventory integrity, constraints, validation, REST commands, RBAC, audit and integration tests.
-
----
-
 # Phase 8 verification — 2026-10-10
 
 Phase 8 is implemented and running locally at [Warehouses](http://localhost:3000/warehouses), [Stock transfers](http://localhost:3000/stock-transfers) and [Warehouse report](http://localhost:3000/reports/warehouses). Authentication is required. GitHub was not pushed.
@@ -227,7 +221,7 @@ Phase 8 is implemented and running locally at [Warehouses](http://localhost:3000
 
 Four entities/tables were added: Warehouse, WarehouseInventory, StockTransfer and StockTransferItem. The PostgreSQL `Inventories` view now reads SUMs of authoritative warehouse balances; frozen legacy openings retain their original IDs. Admin manages warehouses/default/status; Admin and Manager perform transfers and stock operations; Viewer reads. TR/EN list/form/detail/report screens include warehouse stock, shared manual controls, source availability, sales fulfillment and receipt destinations. Transfer completion writes both balances, two typed movements per item, status/actor/time and audit atomically; a repeated completion returns the original result.
 
-The full design, ER diagram, transfer flow, lock order, migration assumptions, API/authorization matrix, reporting definitions, limitations and **12 interview questions/answers** are in [Warehouse management](docs/WAREHOUSE_MANAGEMENT.md). README EN/TR, Architecture, Database, Inventory, API, Reporting, Procurement, Authorization and Audit documentation were updated. Existing NOTICE conditions were retained; `docs/PUBLICATION_PLAN.md` remains absent.
+The full design, ER diagram, transfer flow, lock order, migration assumptions, API/authorization matrix, reporting definitions, limitations are in [Warehouse management](docs/WAREHOUSE_MANAGEMENT.md). README EN/TR, Architecture, Database, Inventory, API, Reporting, Procurement, Authorization and Audit documentation were updated. Existing NOTICE conditions were retained; `docs/PUBLICATION_PLAN.md` remains absent.
 
 ## Database migration and data preservation
 
@@ -322,7 +316,7 @@ Separate current procurement summary and paged supplier/status/date PO report.
 API and existing EF/JWT/audit services. React adds a lazy procurement page module,
 shared typed contracts/Zod schemas and existing query-cache invalidation. No
 microservices, generic repositories, CQRS or additional infrastructure was added.
-[Full design, ERD, lifecycle and 12 interview questions](docs/PROCUREMENT.md).
+[Full design, ERD and lifecycle](docs/PROCUREMENT.md).
 
 ## Database, business rules and consistency
 
@@ -463,7 +457,7 @@ Reports use current supplier/product labels, while ordered quantities/costs rema
 snapshots. Database locks require all receipt writers to follow the service
 transaction contract; this phase does not claim protection from a privileged
 operator disabling constraints/triggers. Live paid AI and Phase 7 remote CI remain
-unverified by design. [Twelve concise technical interview answers](docs/PROCUREMENT.md#interview-preparation).
+unverified by design.
 
 ---
 
@@ -602,7 +596,7 @@ remain unavailable. Quotas are per process and reset on restart; production need
 shared enforcement and provider spend controls. Up to three bounded provider calls
 can incur costs per question when enabled.
 
-[AI architecture, tool matrix, configuration and 12 interview Q&As](docs/AI_ARCHITECTURE.md) ·
+[AI architecture, tool matrix and configuration](docs/AI_ARCHITECTURE.md) ·
 [AI privacy/security and residual risks](docs/AI_SECURITY.md).
 
 ---
@@ -652,7 +646,7 @@ status/stock filters, paging/page-size changes, CSV download, Viewer read access
 Admin-only audit denial, mobile overflow, TR/EN and error/retry states. Previous
 catalog, stock, role-management, audit and session regression suites still pass.
 
-[Reporting contract and ten interview answers](docs/REPORTING.md) ·
+[Reporting contract](docs/REPORTING.md) ·
 [Measured results, raw plans, repeated samples and reproduction](docs/PERFORMANCE.md).
 The first benchmark pair measured sales totals at 1.456 → 0.325 ms and filtered
 orders at 2.739 → 0.631 ms. Additional samples confirm the direction while showing
@@ -755,7 +749,7 @@ creation, stale-session login redirection, audit filters/pagination/details, Tur
 mobile navigation and 403 without logout. Isolated mocked error/state tests supplement
 the real API workflow tests; they do not replace backend authorization verification.
 
-### Limits and interview preparation
+### Limits
 
 No known local failing check remains. Revocation adds one indexed user read per
 protected request and does not cancel already-authorized in-flight business requests;
@@ -767,7 +761,7 @@ storage against a database owner; offset paging may shift during new arrivals. B
 token storage and the in-memory rate limiter retain their documented demo limitations.
 
 The reproducible setup, permission matrix, precise security trade-offs, audit
-transaction boundaries and ten technical interview questions/answers are in
+transaction boundaries are in
 [SECURITY.md](docs/SECURITY.md), [AUTHORIZATION.md](docs/AUTHORIZATION.md) and
 [AUDIT_LOGGING.md](docs/AUDIT_LOGGING.md). Real local Admin credentials, backups, logs,
 traces and tool outputs stay outside Git.
@@ -809,7 +803,7 @@ the inventory row lock; competing requests see committed balances after waiting.
 The order lock and unique movement index prevent duplicate order processing. Balance,
 movement and status writes commit together. Tests inject failures after SQL writes
 and before commit to prove rollback. No in-process-only lock or optimistic browser
-stock change is used. See [detailed design and ten interview answers](docs/INVENTORY.md).
+stock change is used. See [detailed design](docs/INVENTORY.md).
 
 ### Executed commands and results
 
@@ -1014,16 +1008,3 @@ Direct interactive manual browser control was unavailable due to the tool's Wind
 Shared business data; no roles/ownership, pagination, inventory, taxes, discounts, payments, refresh/revocation or password recovery. Product/Category/Customer edits are last-write-wins; Order status uses conditional updates. Order unit prices are snapshots, while Product/Customer names remain live references. Frontend totals are previews; the final server total is authoritative. Sequence gaps are intentional. Startup migrations remain a local-demo strategy; multi-instance deployment needs controlled migration execution.
 
 Existing Product routes remain, but create/update require categoryId as requested. Browser tests intentionally create disposable accounts and order data. The API verification script deletes only its own order via test-admin SQL cleanup; the public API has no order-delete endpoint. No Git commits/history were fabricated.
-
-## Interview Talking Points
-
-| Decision | Why | Alternative / accepted trade-off |
-| --- | --- | --- |
-| Explicit EF 1:N relationships | Clear domain and referential integrity | JSON-embedded items would simplify storage but weaken relational querying |
-| Restrict referenced records | Preserve order history; safe business errors | Soft delete requires global filtering/retention rules |
-| DTO projections | Shape API responses; avoid entities/cycles/per-item queries | Include + mapping loads broader object graphs |
-| One explicit order transaction | Reference checks and writes are atomic | Implicit SaveChanges transaction covers writes only; snapshot isolation has additional concurrency costs |
-| Server-side decimal price snapshots | Reject browser manipulation; preserve historical amounts | Trusting client totals is unsafe; live prices would change history |
-| Sequence + unique constraint | Concurrent readable order numbers | MAX+1 races; sequence gaps are accepted |
-| Central translation dictionary/store | Immediate switching with no component duplication/library | i18next suits larger pluralized/multi-locale systems; dictionary lacks that tooling |
-| Query for server state; RHF for forms | Predictable cache invalidation and local editing | Global form/server store would duplicate ownership and synchronization |

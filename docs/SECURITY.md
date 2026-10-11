@@ -115,26 +115,3 @@ duplicate normalized emails, inactive login, stale-role/deactivated JWT rejectio
 Admin self-protection, concurrent role/status changes, bootstrap restart/collision
 behavior, Viewer migration backfill and atomic audit failures. Existing issuer,
 audience, signature, expiry and signing-configuration tests remain in place.
-
-## Ten interview questions
-
-1. **Authentication versus authorization?** JWT validation identifies the caller;
-   policies decide which operation that caller may perform.
-2. **Which JWT claims are necessary?** Subject, role, security version and standard
-   token metadata; avoid secrets and unnecessary personal data.
-3. **Why three predefined roles?** They match the business matrix without a dynamic
-   permission administration framework.
-4. **Why ASP.NET Core policies?** Central role membership and named intent keep
-   authorization consistent and enforce it before controller execution.
-5. **How are JWT privileges revoked?** Increment the user's SecurityVersion and
-   compare it with the token on every protected request.
-6. **What makes audit atomic?** Business entries and explicit audit entries share
-   the same EF SaveChanges transaction and existing explicit transaction boundaries.
-7. **What belongs in audit JSON?** Allowlisted changed business fields, not whole
-   entities or sensitive request data.
-8. **How is the last Admin race prevented?** A PostgreSQL transaction advisory lock
-   serializes changes; the actor and active-Admin count are checked under the lock.
-9. **Which constraints/indexes matter?** Unique normalized email, role/version checks,
-   immutable audit trigger and indexes for ordered/filterable audit reads.
-10. **How is security tested?** Real endpoint requests for each role, revoked tokens,
-    overposting, concurrent PostgreSQL writes and actual audit INSERT failures.

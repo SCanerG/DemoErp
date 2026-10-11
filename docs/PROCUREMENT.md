@@ -180,30 +180,3 @@ framework with supplier, status, number search, stable sort and optional half-op
 UTC order-date interval (both endpoints required, maximum 366 days). This phase
 does not introduce procurement CSV export, payments, invoices, tax calculation,
 currency conversion, returns or valuation accounting. AI tools are unchanged.
-
-## Interview preparation
-
-1. **Why separate PO and receipt items?** A PO line records a cost/quantity commitment;
-   many immutable receipt lines fulfill it over time through restrictive FKs.
-2. **Why one transaction?** Receipt, line quantities, stock, movement, status and audit
-   must either all commit or all roll back, including failure of the last insert.
-3. **Why SELECT FOR UPDATE?** It serializes receiving against the latest PO state
-   across processes; a stale read followed by SaveChanges alone is insufficient.
-4. **How are concurrent product writes safe?** Lock inventory in sorted UUID order
-   and compute the increase from its locked value, avoiding lost stock updates.
-5. **How does idempotency work?** User/key identifies an operation; canonical content
-   hash detects changed intent; advisory lock + unique index enforce one commit.
-6. **What preserves inventory consistency?** Reuse the existing locked stock apply
-   method, range guards, typed references and immutable movements in the same tx.
-7. **Who controls PO status?** Explicit submit/cancel transitions and derived receipt
-   states; no arbitrary client status mutation is exposed.
-8. **Why both DTO validation and database checks?** DTO rules return useful safe
-   errors; PostgreSQL constraints protect stored invariants under all writers.
-9. **Why 201 versus 200 on retry?** First posting creates a resource with Location;
-   a replay reads the original resource, producing no further stock write.
-10. **Where is RBAC enforced?** ASP.NET policies plus per-request database JWT checks;
-    React guards improve UX without being the authorization boundary.
-11. **How is audit atomic and private?** SaveChanges stages explicit allowlisted
-    snapshots in the same unit of work, with JWT actor and correlation ID.
-12. **Why real PostgreSQL tests?** In-memory providers cannot prove row/advisory locks,
-    immutable triggers, FK/check constraints or transaction rollback behavior.

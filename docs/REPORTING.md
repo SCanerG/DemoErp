@@ -158,22 +158,6 @@ CSV headers are English to keep the machine export schema stable across UI local
 In spreadsheet software that assumes semicolons under Turkish regional settings,
 import as UTF-8 with comma as the delimiter; the UI locale does not change CSV syntax.
 
-## Ten interview questions
-
-1. **Why GroupBy in LINQ?** It expresses grouping before materialization. This implementation projects scalar sums/counts so EF generates GROUP BY in PostgreSQL.
-2. **Why aggregate stored values?** SUM(LineTotal) and SUM(TotalAmount) preserve captured prices. Multiplying by today's product price would rewrite history.
-3. **Does compiling LINQ prove SQL compatibility?** No. Npgsql translation and null/type behavior are verified against real PostgreSQL, including daily/monthly grouping and aggregate left joins.
-4. **What does AsNoTracking change?** Read entities are not placed in the change tracker, reducing tracking work. Scalar/DTO projection already avoids most entity tracking; AsNoTracking states the read-only intent.
-5. **Why DTO projections?** They select only required columns, define a stable API and prevent accidental serialization of entity graphs or confidential fields.
-6. **Why these two indexes?** CompletedAt supports selective completed-sales periods; OrderDate/Id supports creation-period filtering and date ordering. Existing FK and movement indexes already serve other joins. More indexes increase storage and write work.
-7. **What does EXPLAIN ANALYZE show?** It actually executes a query and reports plan nodes, estimates versus actual rows, loops and timing. BUFFERS adds cache/page activity; neither replaces end-to-end latency measurement.
-8. **Is a correlated item COUNT an N+1 bug?** It is one SQL statement with a database subplan, not N application round trips. Its indexed subplan loops still have a cost visible in EXPLAIN and must be measured.
-9. **Why a secondary ID in pagination?** Equal dates/totals otherwise leave row order unspecified. Stable order makes offset pages reproducible on an unchanged dataset; keyset paging is preferable for very deep/changing datasets.
-10. **How are performance claims made?** Same deterministic isolated data, same captured EF command and typed parameters, discarded warmup and seven executions with median comparison. Plans and raw samples are saved; unchanged-query noise is not called an index improvement.
-
-See [measured plans, trade-offs and reproduction](PERFORMANCE.md) and
-[authorization](AUTHORIZATION.md).
-
 ## Phase 7 procurement integration
 
 [Procurement and supplier management](PROCUREMENT.md) documents the actual PO

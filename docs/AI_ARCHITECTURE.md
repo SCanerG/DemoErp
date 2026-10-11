@@ -189,18 +189,3 @@ Future RAG can add a separately authorized, bounded document-search tool to the
 registry/executor. Document access, classification, ingestion, citations and provider
 processing must be designed and tested separately. No uploads, embeddings, PDF
 ingestion, document tools, vector search or pgvector exist in Phase 6.
-
-## Twelve interview questions
-
-1. **How is OpenAI integrated in .NET?** An official SDK adapter implements IAiModelClient, with backend credentials, cancellation, strict schemas and safe errors.
-2. **Why dependency injection?** Scoped orchestration/tools reuse the scoped ReportingService/DbContext; options/quota are singleton, and tests replace the model adapter.
-3. **What does function calling do?** The model requests a named function with JSON arguments. Application code validates, authorizes and executes it; the model receives bounded results.
-4. **Where are tools authorized?** At the endpoint and immediately before every tool, using the current database identity and explicit policy; final delivery also rechecks the session.
-5. **What belongs in the prompt?** Language, business definitions, date semantics, evidence requirements and interpretation limits. Permissions remain in code.
-6. **How is prompt injection mitigated?** Treat user/catalog strings as untrusted; fixed tools, strict arguments and policy checks prevent arbitrary writes/SQL. Answer manipulation remains possible.
-7. **How do JWT and RBAC interact?** Valid signed JWTs must still match an active user's current SecurityVersion and role; BusinessRead permits all three defined roles.
-8. **What data leaves the app?** The question and selected minimized report results. Customer identities are pseudonymous; contacts, hashes, JWTs and audit rows are excluded.
-9. **How are hallucinations reduced?** Backend-calculated facts, source metadata from actual tools, empty/no-tool fallback and clear report links. Nonempty summaries still need review.
-10. **How are AI costs controlled?** Per-user quotas, short inputs, bounded rows/tokens, five calls/two tool rounds, timeout, no retries, plus deployment/provider budgets.
-11. **How do tests avoid paid calls?** Fake model responses exercise orchestration with real PostgreSQL; intercepted HTTP exercises official SDK wire contracts and failures.
-12. **Why tools rather than RAG for ERP totals?** Structured data requires authorized SQL/EF aggregation with exact business semantics. RAG retrieves document passages and needs separate document permissions.

@@ -157,7 +157,7 @@ Kısa doğrulama senaryosu: Admin ile kategori → ürün → müşteri → stok
 4. Emri serbest bırakın, başlatın ve tamamlayın. Başlatma hammaddeleri tüketir; tamamlama mamul stokunu artırır. Yetersiz stok varsa önce stok sağlayın.
 5. Mamulü satış siparişine ekleyip onaylayın; depodaki çıkışı ve hareket geçmişini gösterin.
 
-Depolar arası hareketi ayrıca stok transferi ekranından gösterebilirsiniz. İş kayıtları otomatik doldurulmaz. [İş akışı ve mimari](ARCHITECTURE.md), [testler](TESTING.md) ve [mülakat soru-cevapları](INTERVIEW_PREPARATION.md) ek açıklamalar içerir.
+Depolar arası hareketi ayrıca stok transferi ekranından gösterebilirsiniz. İş kayıtları otomatik doldurulmaz. [İş akışı ve mimari](ARCHITECTURE.md), [testler](TESTING.md) ek açıklamalar içerir.
 
 ## 9. Durdurma ve tekrar açma
 
@@ -222,7 +222,7 @@ Arayüzü bu kez `http://localhost:3001` üzerinden açın. `VITE_API_BASE_URL` 
 
 Mevcut PostgreSQL volume'unda `.env` içindeki `POSTGRES_PASSWORD` değerini değiştirmek veritabanı parolasını otomatik değiştirmez. Çalışan kurulumdaki parolayı rastgele değiştirmeyin veya sorunu çözmek için volume'u silmeyin.
 
-## Mülakat için kısa kontrol listesi
+## Kurulum kontrol listesi
 
 - [ ] Git ve Docker komutları çalışıyor; Docker Server hazır.
 - [ ] Kaynak kod GitHub'dan alındı; commit kontrol edildi.
@@ -232,4 +232,4 @@ Mevcut PostgreSQL volume'unda `.env` içindeki `POSTGRES_PASSWORD` değerini de�
 - [ ] Viewer ve Manager hesapları oluşturuldu; roller doğrulandı.
 - [ ] Bir iş akışı ve durdurma/başlatma sonrası veri kalıcılığı gösterildi.
 
-Bu kılavuzun akışı Compose, Dockerfile, ortam örneği ve bootstrap davranışına göre hazırlanmıştır. Belgeyi okumak temiz bilgisayar kurulum provasının yerine geçmez; mülakattan önce ayrı bir bilgisayarda veya temiz sanal makinede aynı yayımlanmış sürümle prova yapın.
+Bu kılavuzun akışı Compose, Dockerfile, ortam örneği ve bootstrap davranışına göre hazırlanmıştır. Kurulumu doğrulamak için ayrı bir bilgisayarda veya temiz sanal makinede aynı yayımlanmış sürümü kullanın.
