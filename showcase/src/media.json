@@ -1,0 +1,282 @@
+[
+  {
+    "id": "dashboard-en",
+    "source": "docs/screenshots/dashboard-en.png",
+    "revision": "fbada64d67859a526529368c440b80fc6a3dc32a",
+    "sha256": "49741d2470f3c3d3449a0ab1139b7c4c79969ff6c415b089116dbb1883505b79",
+    "width": 1440,
+    "height": 2376,
+    "outputs": [
+      {
+        "name": "dashboard-en-640.webp",
+        "width": 640,
+        "height": 1056,
+        "bytes": 26122
+      },
+      {
+        "name": "dashboard-en-960.webp",
+        "width": 960,
+        "height": 1584,
+        "bytes": 52030
+      },
+      {
+        "name": "dashboard-en-1440.webp",
+        "width": 1440,
+        "height": 2376,
+        "bytes": 101548
+      }
+    ]
+  },
+  {
+    "id": "dashboard-tr",
+    "source": "docs/screenshots/dashboard-tr.png",
+    "revision": "fbada64d67859a526529368c440b80fc6a3dc32a",
+    "sha256": "fe48585c66f544d6924905cb4b97e4be4836f02dba6143184a4004cddfcbb0da",
+    "width": 1440,
+    "height": 2312,
+    "outputs": [
+      {
+        "name": "dashboard-tr-640.webp",
+        "width": 640,
+        "height": 1028,
+        "bytes": 23242
+      },
+      {
+        "name": "dashboard-tr-960.webp",
+        "width": 960,
+        "height": 1541,
+        "bytes": 47664
+      },
+      {
+        "name": "dashboard-tr-1440.webp",
+        "width": 1440,
+        "height": 2312,
+        "bytes": 90156
+      }
+    ]
+  },
+  {
+    "id": "inventory-en",
+    "source": "docs/screenshots/inventory-en.png",
+    "revision": "fbada64d67859a526529368c440b80fc6a3dc32a",
+    "sha256": "aa5eb1f0be69e0be57bfb3d374776aca92b2b90776c221653f1c6920268f30d4",
+    "width": 1440,
+    "height": 1000,
+    "outputs": [
+      {
+        "name": "inventory-en-640.webp",
+        "width": 640,
+        "height": 444,
+        "bytes": 9764
+      },
+      {
+        "name": "inventory-en-960.webp",
+        "width": 960,
+        "height": 667,
+        "bytes": 19722
+      },
+      {
+        "name": "inventory-en-1440.webp",
+        "width": 1440,
+        "height": 1000,
+        "bytes": 37952
+      }
+    ]
+  },
+  {
+    "id": "warehouses-en",
+    "source": "docs/screenshots/warehouses-en.png",
+    "revision": "fbada64d67859a526529368c440b80fc6a3dc32a",
+    "sha256": "7166c2238c6772d09826f310107e37c1ad1ab9dc81835cbf15186b510166dd29",
+    "width": 1440,
+    "height": 1000,
+    "outputs": [
+      {
+        "name": "warehouses-en-640.webp",
+        "width": 640,
+        "height": 444,
+        "bytes": 10264
+      },
+      {
+        "name": "warehouses-en-960.webp",
+        "width": 960,
+        "height": 667,
+        "bytes": 19422
+      },
+      {
+        "name": "warehouses-en-1440.webp",
+        "width": 1440,
+        "height": 1000,
+        "bytes": 39080
+      }
+    ]
+  },
+  {
+    "id": "purchase-orders-en",
+    "source": "docs/screenshots/purchase-orders-en.png",
+    "revision": "fbada64d67859a526529368c440b80fc6a3dc32a",
+    "sha256": "e0eb6300c8d98dabf345aa55ca57ec264b040da2740ea31af321804b6679e26f",
+    "width": 1440,
+    "height": 1000,
+    "outputs": [
+      {
+        "name": "purchase-orders-en-640.webp",
+        "width": 640,
+        "height": 444,
+        "bytes": 11556
+      },
+      {
+        "name": "purchase-orders-en-960.webp",
+        "width": 960,
+        "height": 667,
+        "bytes": 23248
+      },
+      {
+        "name": "purchase-orders-en-1440.webp",
+        "width": 1440,
+        "height": 1000,
+        "bytes": 44020
+      }
+    ]
+  },
+  {
+    "id": "manufacturing-en",
+    "source": "docs/screenshots/manufacturing-en.png",
+    "revision": "fbada64d67859a526529368c440b80fc6a3dc32a",
+    "sha256": "dad455d677945f309d29f0ffa3a390b2f77aeb5681aca9afba084dab6bb08d88",
+    "width": 1440,
+    "height": 1000,
+    "outputs": [
+      {
+        "name": "manufacturing-en-640.webp",
+        "width": 640,
+        "height": 444,
+        "bytes": 8950
+      },
+      {
+        "name": "manufacturing-en-960.webp",
+        "width": 960,
+        "height": 667,
+        "bytes": 17902
+      },
+      {
+        "name": "manufacturing-en-1440.webp",
+        "width": 1440,
+        "height": 1000,
+        "bytes": 34514
+      }
+    ]
+  },
+  {
+    "id": "production-detail-en",
+    "source": "docs/screenshots/production-detail-en.png",
+    "revision": "fbada64d67859a526529368c440b80fc6a3dc32a",
+    "sha256": "2bb3de12fc22d59d7c68627aa0b594be044f026a8edcdef436c0238fd88078ee",
+    "width": 1440,
+    "height": 1386,
+    "outputs": [
+      {
+        "name": "production-detail-en-640.webp",
+        "width": 640,
+        "height": 616,
+        "bytes": 18116
+      },
+      {
+        "name": "production-detail-en-960.webp",
+        "width": 960,
+        "height": 924,
+        "bytes": 36382
+      },
+      {
+        "name": "production-detail-en-1440.webp",
+        "width": 1440,
+        "height": 1386,
+        "bytes": 72472
+      }
+    ]
+  },
+  {
+    "id": "production-detail-tr-mobile",
+    "source": "docs/screenshots/production-detail-tr-mobile.png",
+    "revision": "fbada64d67859a526529368c440b80fc6a3dc32a",
+    "sha256": "7b6156536514b49209e33aed9831be94dad180cf7ecd8f56693ed5881a432d54",
+    "width": 390,
+    "height": 1835,
+    "outputs": [
+      {
+        "name": "production-detail-tr-mobile-640.webp",
+        "width": 390,
+        "height": 1835,
+        "bytes": 44582
+      },
+      {
+        "name": "production-detail-tr-mobile-960.webp",
+        "width": 390,
+        "height": 1835,
+        "bytes": 44582
+      },
+      {
+        "name": "production-detail-tr-mobile-1440.webp",
+        "width": 390,
+        "height": 1835,
+        "bytes": 44582
+      }
+    ]
+  },
+  {
+    "id": "orders-en",
+    "source": "docs/screenshots/orders-en.png",
+    "revision": "fbada64d67859a526529368c440b80fc6a3dc32a",
+    "sha256": "8a37d1949b61933d970b968a3c25aa16da6284af311a3522fa6f1f2f55e66837",
+    "width": 1440,
+    "height": 1000,
+    "outputs": [
+      {
+        "name": "orders-en-640.webp",
+        "width": 640,
+        "height": 444,
+        "bytes": 9668
+      },
+      {
+        "name": "orders-en-960.webp",
+        "width": 960,
+        "height": 667,
+        "bytes": 19566
+      },
+      {
+        "name": "orders-en-1440.webp",
+        "width": 1440,
+        "height": 1000,
+        "bytes": 37622
+      }
+    ]
+  },
+  {
+    "id": "products-tr",
+    "source": "docs/screenshots/products-tr.png",
+    "revision": "fbada64d67859a526529368c440b80fc6a3dc32a",
+    "sha256": "f691a52dcc52770b0aad47884dda49cf75407905abd8c106d315ff77e6ccc36b",
+    "width": 1440,
+    "height": 1094,
+    "outputs": [
+      {
+        "name": "products-tr-640.webp",
+        "width": 640,
+        "height": 486,
+        "bytes": 11812
+      },
+      {
+        "name": "products-tr-960.webp",
+        "width": 960,
+        "height": 729,
+        "bytes": 24362
+      },
+      {
+        "name": "products-tr-1440.webp",
+        "width": 1440,
+        "height": 1094,
+        "bytes": 46844
+      }
+    ]
+  }
+]
