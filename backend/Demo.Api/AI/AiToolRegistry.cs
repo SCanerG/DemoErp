@@ -19,7 +19,7 @@ public static class AiToolRegistry
         Define("get_top_customers", "Pseudonymous customer ranking by completed sales during completion period. No customer names or contact information.", Dates + "," + Limit, "\"startDate\",\"endDate\",\"limit\"", "Top customers", "/reports/customers"),
         Define("get_inventory_overview", "Current total, in-stock, low-stock and zero-stock product counts.", "", "", "Inventory overview", "/reports/inventory"),
         Define("get_pending_orders", "All-time CURRENT pending orders waiting for confirmation: count and bounded oldest orders; no customer information.", Limit, "\"limit\"", "Pending orders", "/orders"),
-        Define("get_stock_risk", "Current stock coverage estimate based on recent completed quantities. Estimate assumes constant demand; excludes zero-demand products. Not a forecast.", Dates + "," + Limit, "\"startDate\",\"endDate\",\"limit\"", "Stock coverage estimate", "/reports/inventory") });
+        Define("get_stock_risk", "Current stock, completed quantities, coverage, targetStock and suggestedQuantity for replenishment. Backend policy: target clears minimum or covers 14 days of constant historical demand; excludes zero-demand products. Not a forecast. Use for suggested stock/replenishment requests; never calculate quantities yourself.", Dates + "," + Limit, "\"startDate\",\"endDate\",\"limit\"", "Stock coverage estimate", "/reports/inventory") });
 
     public static AiToolDefinition Find(string name) => All.SingleOrDefault(t => t.Name == name) ?? throw new BusinessException("aiUnknownTool", 400);
     public static AiArguments Validate(AiToolDefinition tool, string arguments)

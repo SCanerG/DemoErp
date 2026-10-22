@@ -10,15 +10,23 @@ DemoERP connects sales, purchasing, warehouse inventory and manufacturing in one
 
 ## Application preview
 
-**Executive dashboard — sales, order status and current inventory in one workspace.**
+**Agent Control Center — choose a specialist and prepare an order in natural language.**
 
-![Actual DemoERP executive dashboard with synthetic sales metrics, inventory indicators and charts](docs/assets/screenshots/dashboard-overview-en.png)
+![Actual Agent Control Center with eight selectable agent modes and the real local Qwen3 provider](docs/assets/screenshots/agent-catalog-tr.png)
 
-**Agent Control Center — an actual local Qwen3 run coordinating Sales and Inventory analysis.**
+**One prompt → three verified products → a reviewable order draft and Save order.**
 
-![Actual Agent Control Center showing a completed Sales and Inventory collaboration, model interpretation and recorded agent steps](docs/assets/screenshots/agent-control-center-en.png)
+![Actual three-product order prompt, customer, backend-resolved prices and quantities, review checkbox and Save order button](docs/assets/screenshots/agent-order-draft-tr.png)
 
-These are cropped browser captures of the running application with synthetic records, not generated mockups. The agent capture is from the verified October 20 local run; the current designer was captured October 22. [Full images, Workflow Designer and screenshot provenance](docs/assets/screenshots/README.md).
+The actual local run prepares **2 control boards, 3 power adapters and 5 connection cables** for the synthetic customer **[DEMO] Atlas Otomasyon**. The $164 total comes from ERP prices. The screenshot shows a pending proposal; the review checkbox remains unchecked and **no order was saved**.
+
+**AI Assistant — “son 30 günün satışlarına göre önerilen stok ve ikmal miktarını göster”.**
+
+![Actual Turkish Assistant request and verified current stock, period sales, target stock and suggested replenishment](docs/assets/screenshots/ai-assistant-replenishment-tr.png)
+
+This request ran through authenticated DemoERP and real `qwen3:8b`. In this captured execution, the final model explanation failed validation, so the UI honestly labels the displayed result as a **deterministic fallback**. Its stock targets and replenishment quantities are calculated by the backend using the existing minimum-stock / 14-day historical-demand policy, not by the model. Products without completed sales are excluded from this report; the separate Inventory Agent also checks low-stock products without sales.
+
+These October 22 captures show real application content and synthetic records. [Full gallery, dashboard and screenshot provenance](docs/assets/screenshots/README.md).
 
 ## AI agentic architecture
 
@@ -75,9 +83,9 @@ The Order Draft Agent resolves the real customer, product and warehouse, reads c
 
 The result is a **Pending sales order** in the normal ERP order workspace. Saving does not confirm the order, reserve stock or deduct inventory; those remain separate authorized business operations. The procurement collaboration likewise saves a supported purchase **Draft** only after explicit review.
 
-![Actual ERP sales order workspace with persisted synthetic orders, customer, status and order totals](docs/assets/screenshots/orders-en.png)
+![Actual agent order draft with three products, the original prompt and the explicit Save order review control](docs/assets/screenshots/agent-order-draft-tr.png)
 
-*The image shows the destination ERP order workspace with synthetic example records, not the agent approval screen. The agent-save integration is verified separately by actual browser acceptance and backend approval/replay tests; the example rows pictured are not attributed to an agent.*
+*Actual October 22 pending proposal. Save order is visible and disabled until the reviewer explicitly checks the approval box. This capture did not save an order.*
 
 **Flow:** natural-language request → backend-resolved draft → exact human review → **Save order** → verified persisted result. [Agent guide](docs/AI_AGENTS.md) · [Approval and idempotency design](docs/SECURE_WORKFLOWS.md) · [Recorded test evidence](VERIFICATION.md).
 

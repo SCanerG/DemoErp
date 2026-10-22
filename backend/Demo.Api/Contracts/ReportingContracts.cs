@@ -58,4 +58,4 @@ public sealed record SalesMetrics(decimal Sales, int CompletedOrders, decimal Av
 public sealed record InventoryOverview(int TotalProducts, int InStockProducts, int LowStockProducts, int OutOfStockProducts);
 public sealed record PendingOrderRow(string OrderNumber, DateTimeOffset OrderDate, decimal TotalAmount);
 public sealed record PendingOrderOverview(int TotalPendingOrders, List<PendingOrderRow> Orders);
-public sealed record StockCoverageRow(string Product, int QuantityOnHand, long RecentCompletedQuantity, decimal DailyAverage, decimal EstimatedDaysRemaining);
+public sealed record StockCoverageRow(string Product, int QuantityOnHand, long RecentCompletedQuantity, decimal DailyAverage, decimal EstimatedDaysRemaining, int MinimumStockLevel = 0);

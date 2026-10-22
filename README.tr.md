@@ -10,15 +10,23 @@ DemoERP; satış, satın alma, depo stoku ve üretimi tek bir React çalışma a
 
 ## Uygulamadan görüntüler
 
-**Yönetici paneli — satış, sipariş durumları ve güncel stok aynı çalışma alanında.**
+**Agent Kontrol Merkezi — uzman agent seçin, doğal dille sipariş taslağı hazırlayın.**
 
-![Sentetik verilerle çalışan gerçek DemoERP yönetici paneli; satış göstergeleri, stok bilgileri ve grafikler](docs/assets/screenshots/dashboard-overview-en.png)
+![Sekiz seçilebilir agent modunu ve gerçek yerel Qwen3 sağlayıcısını gösteren Agent Kontrol Merkezi](docs/assets/screenshots/agent-catalog-tr.png)
 
-**Agent Kontrol Merkezi — yerel Qwen3 ile gerçekleştirilmiş Satış ve Stok agent işbirliği.**
+**Tek prompt → üç doğrulanmış ürün → incelenebilir sipariş taslağı ve Siparişi kaydet.**
 
-![Tamamlanan Satış ve Stok analizini, model yorumunu ve kayıtlı agent adımlarını gösteren gerçek Agent Kontrol Merkezi](docs/assets/screenshots/agent-control-center-en.png)
+![Üç ürünlü gerçek sipariş promptu, müşteri, sunucuda çözümlenen fiyatlar ve miktarlar, inceleme kutusu ve Siparişi kaydet düğmesi](docs/assets/screenshots/agent-order-draft-tr.png)
 
-Bunlar çalışan uygulamadan, sentetik kayıtlarla alınmış ve kırpılmış tarayıcı görüntüleridir; üretilmiş arayüz taslakları değildir. Agent ekranı 20 Ekim’deki doğrulanmış yerel çalıştırmaya, güncel tasarımcı görüntüsü 22 Ekim’e aittir. [Tam görüntüler, İş Akışı Tasarımcısı ve görsel kaynakları](docs/assets/screenshots/README.md).
+Gerçek yerel çalıştırmada sentetik **[DEMO] Atlas Otomasyon** müşterisine **2 kontrol kartı, 3 güç adaptörü ve 5 bağlantı kablosu** için taslak hazırlandı. 164 USD toplam ERP fiyatlarından hesaplandı. Görselde teklif onay bekliyor; inceleme kutusu işaretlenmedi ve **sipariş kaydedilmedi**.
+
+**Yapay Zekâ Asistanı — “son 30 günün satışlarına göre önerilen stok ve ikmal miktarını göster”.**
+
+![İstenen Türkçe prompt ile güncel stok, dönem satışı, hedef stok ve önerilen ikmal miktarlarını gösteren gerçek Asistan ekranı](docs/assets/screenshots/ai-assistant-replenishment-tr.png)
+
+İstek, kimliği doğrulanmış DemoERP üzerinden gerçek `qwen3:8b` modeliyle çalıştırıldı. Bu görüntüde son model açıklaması doğrulamadan geçmediği için sonuç açıkça **otomatik şablon** olarak etiketleniyor. Stok hedeflerini ve ikmal miktarlarını backend, mevcut minimum stok / 14 günlük geçmiş talep politikasıyla hesaplıyor. Bu rapor tamamlanmış satışı olmayan ürünleri dışarıda bırakır; ayrı Stok Agent’ı satış geçmişi olmayan düşük stoklu ürünleri de inceler.
+
+22 Ekim tarihli görüntüler gerçek uygulamadan ve sentetik kayıtlardan alındı. [Tam galeri, yönetici paneli ve görsel kaynakları](docs/assets/screenshots/README.md).
 
 ## Agent tabanlı AI mimarisi
 
@@ -75,9 +83,9 @@ Sipariş Taslağı Agent’ı gerçek müşteri, ürün ve depoyu çözümler; E
 
 Sonuç, normal ERP sipariş ekranında bir **Beklemede satış siparişidir**. Kaydetme işlemi siparişi onaylamaz, stok ayırmaz veya stok düşmez; bunlar ayrı yetkili iş adımlarıdır. Satın alma işbirliği de desteklenen satın alma önerisini ancak açık incelemeden sonra **Taslak** olarak kaydeder.
 
-![Kaydedilmiş sentetik siparişleri, müşteriyi, durumları ve tutarları gösteren gerçek ERP satış siparişleri ekranı](docs/assets/screenshots/orders-en.png)
+![Gerçek üç ürünlü agent sipariş taslağı, prompt ve açık inceleme gerektiren Siparişi kaydet düğmesi](docs/assets/screenshots/agent-order-draft-tr.png)
 
-*Görsel, agent onay ekranını değil, kayıtların ulaştığı ERP sipariş ekranını gösterir. Agent ile kayıt entegrasyonu gerçek tarayıcı kabulü ve backend onay/tekrar gönderim testleriyle ayrıca doğrulanmıştır; görseldeki örnek satırların agent tarafından oluşturulduğu ileri sürülmez.*
+*22 Ekim tarihli gerçek teklif onay bekliyor. Siparişi kaydet düğmesi, kullanıcı inceleme kutusunu açıkça işaretleyene kadar pasif kalır. Görsel hazırlanırken sipariş kaydedilmedi.*
 
 **Akış:** doğal dilde istek → backend tarafından çözümlenen taslak → tam içeriğin insan tarafından incelenmesi → **Siparişi kaydet** → doğrulanan gerçek kayıt. [Agent rehberi](docs/AI_AGENTS.md) · [Onay ve idempotency tasarımı](docs/SECURE_WORKFLOWS.md) · [Test kanıtları](VERIFICATION.md).
 

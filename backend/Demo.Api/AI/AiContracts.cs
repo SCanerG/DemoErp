@@ -26,7 +26,7 @@ public sealed record AiInventoryOverview(int TotalProducts, int InStockProducts,
 public sealed record AiPendingOrder(string OrderNumber, DateTimeOffset OrderDate, decimal TotalAmount);
 public sealed record AiPendingOrders(int TotalPendingOrders, List<AiPendingOrder> Orders);
 public sealed record AiStockRisk(string Product, int QuantityOnHand, long RecentCompletedQuantity, decimal DailyAverage,
-    decimal EstimatedDaysRemaining);
+    decimal EstimatedDaysRemaining, int MinimumStockLevel = 0, int? TargetStock = null, int? SuggestedQuantity = null);
 
 public sealed record AiExecutionStatus(Guid Id, string CorrelationId, string Provider, string Model, string Outcome, int ProviderCalls, int TotalTokens, long DurationMs, DateTimeOffset CreatedAt, List<AiToolStatus> Tools);
 public sealed record AiToolStatus(string Name, string Outcome, long DurationMs, DateTimeOffset? StartedAt = null, DateTimeOffset? EndedAt = null);

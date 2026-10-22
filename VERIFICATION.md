@@ -1,3 +1,28 @@
+# Actual agent catalogue, three-product draft and Assistant capture (2026-10-22)
+
+The owner requested current screenshots and actual model runs. The bilingual README now starts with the selectable agent catalogue, an actual three-item order proposal with its prompt and **Save order**, and the exact requested Assistant replenishment question. All images come from the running React/.NET application with synthetic ERP records and local `qwen3:8b`. Agent choices are now ordinary accessible buttons controlling the same existing mode state as the dropdown.
+
+The order execution succeeded with two provider calls, 1,430 total tokens and 22,122 ms recorded duration. It resolved synthetic Atlas Otomasyon, 2 control boards at 45 USD, 3 adapters at 18 USD and 5 cables at 4 USD: a 164 USD pending proposal. The normal browser reloaded that proposal and restored the same prompt for the final capture. Approval remained unchecked; **no approval/save request was sent**. Counts and checksums of Orders, Products, Customers, WarehouseInventories, PurchaseOrders and ProductionOrders were identical before/after the requested captures. AI run/audit/proposal metadata was created as expected.
+
+The exact Assistant prompt was executed successfully through the authenticated API and an actual stock-risk tool call. Final model explanation validation failed, so the screenshot deliberately retains the truthful deterministic-fallback label. The report now reuses `InventoryAnalysisAgent.Calculate` for target/replenishment values; the model cannot invent those calculations. The stock-risk report excludes products without completed sales, unlike the separate low-stock Inventory Agent analysis.
+
+## Confirmed report-parameter defect and correction
+
+Before the fix, real Qwen calls reproduced HTTP 400 `aiInvalidArguments`: top-products supplied only an integer limit, omitting the two date fields; sales-summary supplied two null dates but omitted `comparePrevious`. The Ollama adapter now supplies only those documented defaults for actually offered canonical reporting tools. Supplied invalid values, partial dates, missing limits, duplicate or unknown properties, out-of-scope tools and non-report tool schemas remain rejected by unchanged strict validation. No migration or business-write permission changed.
+
+## Current validation
+
+- Backend build: successful, zero warnings/errors.
+- Full backend suite: **738 total; 734 passed, 3 opt-in tests skipped, 1 failed**. The sole failure was the existing readiness latency assertion exceeding five seconds during the loaded Docker run. **An isolated rerun of all four HealthTests passed**, including that outage/latency test; its timeout assertion was not relaxed. The first full run is retained as a timing failure, not described as fully green.
+- All three new opt-in actual-Qwen reporting cases passed: top five products, last-30-days sales, and the exact stock/replenishment question. Each retrieved the expected authorized report; final explanations used labelled fallback in these observed runs.
+- New regression cases passed, including native omitted-argument mapping, unsafe argument rejection, unchanged tool scope, shared server replenishment policy and verified fallback quantities.
+- Frontend production build/type checking, ESLint and **22/22 unit/component tests** passed. Actual browser capture confirmed all eight agent mode controls and a visible disabled unreviewed Save order button.
+- Deterministic AI evaluation: **33/33**, no critical failures. Documentation: **465 local links**, **12 image assets**, **34 rendered Mermaid diagrams**, no broken local links.
+
+These checks do not imply successful live OpenAI inference, automatic order creation or a guarantee that Qwen final prose always validates. Prior dated evidence below is preserved.
+
+---
+
 # Agent stock and reviewed-order showcase follow-up (2026-10-22)
 
 Both README introductions and feature tables now explicitly highlight natural-language inventory checks and agent-prepared orders that users can save after exact review. Dedicated sections explain real stock/minimum/sales reads, the review checkbox and **Save order**, verified persisted receipts, Pending sales orders and separate confirmation/stock operations. The order workspace image is explicitly identified as the destination screen; its example rows are not falsely attributed to an agent.

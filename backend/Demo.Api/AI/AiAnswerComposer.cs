@@ -78,6 +78,9 @@ public static class AiTrustedSummary
         var tr=language=="tr";var lines=new List<string>{tr?AiAnswerComposer.TurkishFallback:AiAnswerComposer.EnglishFallback};
         foreach(var fact in facts) {
             switch(fact.Data) {
+                case List<AiStockRisk> risks:
+                    lines.Add(tr?"Stok hedefleri minimum seviyeyi aşma veya 14 günlük sabit geçmiş talebi karşılama politikasına dayanır; tahmin değildir. Satış olmayan ürünler bu raporda yer almaz.":"Stock targets clear the minimum level or cover 14 days of constant historical demand; these are policy suggestions, not forecasts. Products without completed sales are excluded.");
+                    foreach(var r in risks.Take(10))lines.Add(tr?$"{r.Product}: mevcut stok {r.QuantityOnHand}, dönem satışı {r.RecentCompletedQuantity}, hedef stok {r.TargetStock?.ToString()??"belirsiz"}, önerilen ikmal {r.SuggestedQuantity?.ToString()??"belirsiz"} adet.":$"{r.Product}: current stock {r.QuantityOnHand}, period sales {r.RecentCompletedQuantity}, target stock {r.TargetStock?.ToString()??"unknown"}, suggested replenishment {r.SuggestedQuantity?.ToString()??"unknown"} units.");break;
                 case List<AiStock> rows:
                     foreach(var r in rows.Take(5))lines.Add(tr?$"{r.Product} ürününün mevcut stoğu {r.QuantityOnHand} adet, minimum stok seviyesi {r.MinimumStockLevel} adettir. Stok ihtiyacını kaynak rapordan inceleyin.":$"{r.Product} currently has {r.QuantityOnHand} units; its minimum stock level is {r.MinimumStockLevel}. Review the source report for replenishment.");break;
                 case AiInventoryOverview i:lines.Add(tr?$"Stok raporunda {i.TotalProducts} ürün bulunuyor. {i.LowStockProducts} ürün düşük stokta, {i.OutOfStockProducts} ürünün stoğu tükenmiş.":$"The inventory report contains {i.TotalProducts} products. {i.LowStockProducts} have low stock and {i.OutOfStockProducts} are out of stock.");break;

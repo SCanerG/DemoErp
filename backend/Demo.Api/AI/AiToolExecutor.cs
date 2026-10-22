@@ -73,13 +73,19 @@ public sealed class AiToolExecutor(ReportingService reports, AppDbContext db, IA
                     var pending = await reports.PendingOrders(args.Limit, ct);
                     data = new AiPendingOrders(pending.TotalPendingOrders, pending.Orders.Select(o => new AiPendingOrder(Name(o.OrderNumber), o.OrderDate, o.TotalAmount)).ToList()); break;
                 case "get_stock_risk":
-                    data = (await reports.StockCoverage(filter, args.Limit, ct)).Select(r => new AiStockRisk(Name(r.Product), r.QuantityOnHand, r.RecentCompletedQuantity,
-                        decimal.Round(r.DailyAverage, 4), decimal.Round(r.EstimatedDaysRemaining, 2))).ToList(); break;
+                    data = (await reports.StockCoverage(filter, args.Limit, ct)).Select(r => {
+                        var recommendation = Agents.InventoryAnalysisAgent.Calculate(
+                            new InventoryReportRow(Guid.Empty,r.Product,"",r.QuantityOnHand,r.MinimumStockLevel,"",DateTimeOffset.UtcNow),
+                            r.RecentCompletedQuantity,new(args.StartDate!.Value,args.EndDate!.Value));
+                        return new AiStockRisk(Name(r.Product),r.QuantityOnHand,r.RecentCompletedQuantity,
+                            decimal.Round(r.DailyAverage,4),decimal.Round(r.EstimatedDaysRemaining,2),r.MinimumStockLevel,
+                            recommendation.TargetStock,recommendation.SuggestedQuantity);
+                    }).ToList(); break;
                 default: throw new BusinessException("aiUnknownTool");
             }
             var basis = tool.Name switch { "get_order_status_summary" => "OrderDate period; current statuses",
                 "get_inventory_overview" or "get_pending_orders" or "get_low_stock_products" or "get_out_of_stock_products" => "Current snapshot",
-                "get_stock_risk" => "CompletedAt historical demand; current stock; constant-demand estimate",
+                "get_stock_risk" => "CompletedAt historical demand; current stock; target=max(minimum+1,ceil(14*rounded_daily_demand)); replenishment=max(0,target-stock); policy suggestion, not forecast; zero-demand excluded",
                 _ => "CompletedAt historical sales; legacy without CompletedAt excluded; any stock is current" };
             var hasData = data switch { AiSalesComparison s => s.Current.CompletedOrders > 0 || s.Previous?.CompletedOrders > 0,
                 AiInventoryOverview i => i.TotalProducts > 0, AiPendingOrders p => p.TotalPendingOrders > 0,

@@ -182,10 +182,10 @@ public sealed class ReportingService(AppDbContext db)
         var sold = CompletedLines(start, end).GroupBy(i => i.ProductId).Select(g => new { Id = g.Key, Quantity = g.Sum(i => (long)i.Quantity) });
         var rows = from a in sold join i in db.Inventories.AsNoTracking() on a.Id equals i.ProductId
             where a.Quantity > 0
-            select new { i.ProductId, i.Product.Name, i.QuantityOnHand, a.Quantity,
+            select new { i.ProductId, i.Product.Name, i.QuantityOnHand, i.MinimumStockLevel, a.Quantity,
                 Daily = a.Quantity / days, Coverage = i.QuantityOnHand * days / a.Quantity };
         return await rows.OrderBy(x => x.Coverage).ThenBy(x => x.ProductId).Take(limit)
-            .Select(x => new StockCoverageRow(x.Name, x.QuantityOnHand, x.Quantity, x.Daily, x.Coverage)).ToListAsync(ct);
+            .Select(x => new StockCoverageRow(x.Name, x.QuantityOnHand, x.Quantity, x.Daily, x.Coverage, x.MinimumStockLevel)).ToListAsync(ct);
     }
     public static async Task<List<T>> Export<T>(IQueryable<T> query, CancellationToken ct)
     {

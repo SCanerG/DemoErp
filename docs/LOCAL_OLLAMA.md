@@ -6,6 +6,25 @@ The current `IAiModelClient` abstraction preserves OpenAI, Ollama and Developmen
 
 ## Models and hardware
 
+### Reporting arguments and replenishment
+
+The Ollama adapter fills only omitted documented defaults: **both** missing date fields become `null` (last 30 days), and an omitted sales-summary comparison becomes `false`. It never coerces supplied values, completes a one-sided date range, fills a missing limit, accepts extra/duplicate fields or expands the offered tool list. The unchanged strict registry and current-user authorization still validate every dispatched call.
+
+`get_stock_risk` now includes backend-calculated `minimumStockLevel`, `targetStock` and `suggestedQuantity`, using the existing Inventory Agent policy: clear the minimum threshold or cover 14 days of constant historical demand. This is a bounded report of products with completed sales, not a forecast or an automatic purchase action. Final model explanations still require validation; deterministic fallback text is explicitly labelled and includes verified replenishment quantities.
+
+From the repository root, with Docker and local `qwen3:8b` available:
+
+```powershell
+$env:REPORT_ARGUMENT_LIVE_SMOKE = 'true'
+try {
+    dotnet test backend/Demo.Api.Tests -- --filter-method '*Live_Ollama_reporting_suggestions_execute_authorized_reports*'
+} finally {
+    Remove-Item Env:REPORT_ARGUMENT_LIVE_SMOKE -ErrorAction SilentlyContinue
+}
+```
+
+This opt-in calls the actual model through authenticated DemoERP against an isolated test database. It checks the requested report source, not that a valid final model explanation will always be available.
+
 Actual local inference has been verified with **`qwen3:8b`** through DemoERP. Local knowledge uses **`nomic-embed-text`** and its recorded digest/dimension identity. Models are configurable, but another model's function-call/structured-output behavior must be verified before claiming compatibility.
 
 Install Ollama for Windows using its [official download](https://ollama.com/download/windows), keep the local service running, and use:

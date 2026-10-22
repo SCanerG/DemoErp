@@ -4,6 +4,22 @@
 
 Every image below originated in a real browser capture of DemoERP using synthetic records. No image-generation tool, fake UI, edited numerical value or fabricated result was used. Crops preserve original pixels; PNG files were compressed losslessly. Widths and height differ by captured content; all assets use ordinary GitHub Markdown image links, with full-width rendering and readable alt text.
 
+## Current agent and assistant captures — October 22, 2026
+
+![Actual selectable specialist agent catalogue](agent-catalog-tr.png)
+
+The current Agent Control Center exposes eight real mode-selection buttons. This is the running application, including local Ollama provider readiness.
+
+![Actual three-product prompt, pending sales proposal and Save order button](agent-order-draft-tr.png)
+
+Authenticated Admin execution with actual `qwen3:8b`; synthetic Atlas Otomasyon customer, 2 control boards, 3 power adapters and 5 cables. Backend-resolved total: 164 USD. The approval box was not checked and Save order was not clicked. After the execution, the same prompt was restored in the normal input while the pending proposal and execution were reloaded from the backend. The image is a continuous pixel-preserving browser crop, not a composite.
+
+![Actual Assistant replenishment request with verified backend quantities](ai-assistant-replenishment-tr.png)
+
+The exact requested prompt ran through React → authenticated .NET → Ollama → authorized stock-risk report. Final model text failed validation, so the displayed result explicitly uses the deterministic fallback label. The existing Inventory Agent policy calculates target and replenishment. No inference success is claimed for the final explanation. Completed-sales demand, stock and thresholds are real synthetic ERP records.
+
+All three images are actual browser captures; only cropping and lossless compression are used. The read-only request and pending proposal do not create sales orders or stock movements.
+
 ## Featured views
 
 ![Executive dashboard showing actual synthetic KPI and sales-chart responses](dashboard-overview-en.png)
@@ -42,6 +58,4 @@ Every image below originated in a real browser capture of DemoERP using syntheti
 | `workflow-designer-full-tr.png` | Same Phase 11.8 capture | Full 1440 × 2738 page |
 | `inventory-en.png`, `orders-en.png`, `production-order-en.png` | Corresponding original `docs/screenshots/` assets | Full content, lossless compression |
 
-Nine optimized PNG assets retain authentic application content. Original ERP screenshots remain in `docs/screenshots/`; original local execution evidence stays ignored. No secrets, personal customer records, browser error overlays or private server addresses are shown in the selected captures. The screenshot set is a product demonstration, not a real customer's business history. The ordinary order workspace illustrates where approved orders appear; it is not labelled as a capture of an agent approval or proof that its pictured sample rows were agent-created.
-
-Fresh AI Assistant, Knowledge Center, Operations Center and Quality Dashboard screenshots are **not included**: no new database records or live queries were submitted during this documentation change solely to fill a gallery. Their implemented status is documented separately, and missing visual evidence is not replaced by mockups. A future refresh should use an explicitly isolated synthetic environment and consistent viewport sizes. [Capture/test procedure](../../DEVELOPMENT.md#screenshots).
+Twelve optimized PNG assets retain authentic application content. Original ERP screenshots remain in `docs/screenshots/`; private local execution evidence stays ignored. The gallery contains synthetic demo records. The current draft capture shows pending human approval and is not presented as an already saved order.
