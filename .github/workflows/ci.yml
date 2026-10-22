@@ -13,15 +13,30 @@ jobs:
   backend:
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    env:
+      AI_EVAL_REPORT_DIRECTORY: ${{ github.workspace }}/artifacts/ai-evaluation
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
         with:
           dotnet-version: '10.0.x'
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '22'
       - run: dotnet restore Catalog.slnx
       - run: dotnet build Catalog.slnx --no-restore
       # Testcontainers uses the hosted runner's Docker daemon.
       - run: dotnet test --no-build
+      - name: Verify deterministic AI evaluation gate
+        run: node scripts/verify-ai-evaluation.mjs artifacts/ai-evaluation
+      - name: Preserve synthetic AI evaluation reports
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: deterministic-ai-evaluation
+          path: artifacts/ai-evaluation/
+          if-no-files-found: warn
+          retention-days: 7
   frontend:
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -41,6 +56,13 @@ jobs:
       - run: npm test
       - run: npm run build
       - run: npm audit --audit-level=high
+      # Intercepted local HTTP only; this does not invoke the opt-in live provider.
+      - run: node --test scripts/tests/*.test.mjs
+        working-directory: .
+      - run: node scripts/ai-agents-live-smoke.mjs
+        working-directory: .
+      - run: node scripts/ai-ollama-smoke.mjs
+        working-directory: .
 
   smoke:
     runs-on: ubuntu-latest
@@ -66,7 +88,19 @@ jobs:
         working-directory: frontend
       - run: npx playwright install --with-deps chromium
         working-directory: frontend
-      - run: npm run test:smoke && npm run test:a11y
+      - run: npm run test:smoke && npm run test:a11y && npm run test:ai
         working-directory: frontend
+      - name: Quality Dashboard authorization and synthetic evidence checks
+        run: npx playwright test quality-dashboard.spec.ts workflows.spec.ts
+        working-directory: frontend
+      - name: Enable Development mock (no external provider)
+        run: docker compose up -d --wait
+        env:
+          AI_ENABLED: 'true'
+          AI_PROVIDER: Mock
+      - run: npm run test:ai-mock
+        working-directory: frontend
+        env:
+          AI_DEVELOPMENT_MOCK: 'true'
       - if: always()
         run: docker compose down

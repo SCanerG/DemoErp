@@ -1,3 +1,19 @@
+> Phase 11.8: [Visual workflows](VISUAL_WORKFLOWS.md) adds bounded owner-private graphs, current identity rechecks, fixture-only simulation and existing human-approved business transactions. Models cannot activate workflows or approve ERP writes. Execution facts stay in private history; telemetry records safe metadata only.
+
+> Phase 11.7: [AI quality and observability](AI_QUALITY.md) adds allowlisted, owner-scoped telemetry and fixed synthetic evaluations. No prompts, tool arguments, document text or hidden reasoning are captured. The evaluation runner cannot approve or write an ERP transaction; backend authorization/approval regressions remain CI gates.
+
+> Phase 11.6: [Proactive monitoring](PROACTIVE_OPERATIONS.md) adds an explicit report-only service identity, scoped in-app alerts, fenced durable jobs and bounded local inference admission. No scheduled LLM calls or automatic order writes are enabled.
+
+> Phase 11.5: [Local knowledge security and setup](ENTERPRISE_RAG.md) adds owner-private/admin-shared documents, authorized hybrid retrieval, literal source grounding and read-only Knowledge orchestration. Existing ERP write approvals remain mandatory.
+
+> Phase 11.3: [Intelligent agents and Agent Control Center](INTELLIGENT_AGENTS.md) adds typed orchestration, read-only analysis, resolved non-submitted drafts and private step metadata.
+
+> Phase 11.2 adds the optional Development-only [local Ollama provider](OLLAMA_INTEGRATION.md), Inventory Agent and review-only order drafts. Existing OpenAI behavior remains available.
+
+> Phase 11.1: [OpenAI Responses integration](OPENAI_INTEGRATION.md) documents the current provider transport, canonical environment variables, error handling, execution correlation and opt-in live smoke. Earlier foundation design below is retained as historical context where superseded.
+
+> Phase 11 update: [AI foundation](AI_FOUNDATION.md) defines the current opt-in history, metadata retention, provider abstraction and read-only policy. Earlier Phase 6 boundaries below still apply unless explicitly extended there.
+
 # AI security and data governance
 
 [Architecture, tool matrix and configuration](AI_ARCHITECTURE.md) · [Application security](SECURITY.md) · [Authorization](AUTHORIZATION.md)
@@ -79,7 +95,7 @@ Disabled/missing/invalid provider settings do not block ERP startup. Timeouts,
 cancellation, provider throttling/unavailability, malformed answers, denied tools and
 query failures become safe ProblemDetails. Provider exception bodies and inner
 exceptions are discarded, so the existing unexpected-error logger receives no raw
-provider secrets. Requests do not receive automatic SDK or UI retries.
+provider secrets. SDK and UI retries remain disabled; bounded runtime retries apply only to transient provider errors, within the overall deadline.
 
 Per-user minute/day counters, bounded inputs/results/output tokens, five total calls,
 two tool rounds and a global cancellable deadline limit abuse and cost. Counters are
@@ -91,9 +107,10 @@ Operational logs include only request/user IDs, UTC time, provider/model, succes
 executed tool names, duration, outcome and token usage when available. No full prompt,
 conversation, raw tool result or business mutation audit event is logged by AI code.
 User/request identifiers are still operational personal data and need log access and
-retention controls. No chat table is created; the UI keeps at most 20 exchanges in
-memory and resets on reload/navigation. Language preference and existing auth session
-storage remain separate from conversations.
+retention controls. Stateless requests keep at most 20 page-local exchanges and reset
+on reload/navigation. Phase 11 adds optional owner-scoped conversation tables with
+expiry, explicit deletion and separate execution metadata retention. Language preference
+and existing auth session storage remain separate from conversations.
 
 ## Deployment review required before enabling
 

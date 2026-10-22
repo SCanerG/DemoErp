@@ -1,0 +1,8 @@
+import { describe,it,expect } from 'vitest';
+import {workflowConfig,workflowNodes,workflowEdges,workflowGraph,workflowConnectionAllowed,type WorkflowGraph} from './workflows';
+describe('Visual workflow editing',()=>{
+  const fixture:WorkflowGraph={schemaVersion:1,nodes:[{id:'start',type:'trigger.manual',x:10,y:20,config:workflowConfig()},{id:'report',type:'action.report',x:300,y:20,config:workflowConfig()},{id:'end',type:'control.end',x:600,y:20,config:workflowConfig()}],edges:[{id:'a',source:'start',target:'report',when:'always'},{id:'b',source:'report',target:'end',when:'always'}],policy:{timeoutSeconds:120,retries:1,maxAgents:3,maxTools:10}};
+  it('preserves typed settings, positions, branches and published-policy values through canvas editing',()=>{const source={...fixture,edges:[{...fixture.edges[0],when:'true'},fixture.edges[1]]};expect(workflowGraph(workflowNodes(source,x=>x),workflowEdges(source),source.policy)).toEqual(source);});
+  it('prevents cycles, trigger inputs, end outputs, duplicate links and ambiguous operation inputs',()=>{const nodes=workflowNodes(fixture,x=>x),edges=workflowEdges(fixture);expect(workflowConnectionAllowed('report','start',nodes,edges)).toBe(false);expect(workflowConnectionAllowed('end','report',nodes,edges)).toBe(false);expect(workflowConnectionAllowed('start','report',nodes,edges)).toBe(false);expect(workflowConnectionAllowed('start','end',nodes,edges)).toBe(true);});
+  it('never adds script or privilege settings to node defaults',()=>{const cfg=workflowConfig('en');expect(cfg.language).toBe('en');expect(cfg.summarize).toBe(false);expect(cfg.customerId).toBeNull();expect(Object.keys(cfg)).not.toContain('sql');expect(Object.keys(cfg)).not.toContain('approved');});
+});

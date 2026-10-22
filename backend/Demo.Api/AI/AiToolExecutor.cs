@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Demo.Api.AI;
 
-public sealed class AiToolExecutor(ReportingService reports, AppDbContext db, IAuthorizationService authorization)
+public sealed class AiToolExecutor(ReportingService reports, AppDbContext db, IAuthorizationService authorization, AiExecutionPolicy policy, Quality.QualityTelemetry? telemetry = null)
 {
     public async Task Recheck(ClaimsPrincipal principal, string policy, CancellationToken ct)
     {
@@ -25,7 +25,14 @@ public sealed class AiToolExecutor(ReportingService reports, AppDbContext db, IA
     private static string Name(string value) => value.Length > 120 ? value[..120] : value;
     public async Task<(AiToolResult Result, AiSource Source)> Execute(AiToolCall call, ClaimsPrincipal principal, CancellationToken ct)
     {
+        var name = AiToolRegistry.All.Any(t => t.Name == call.Name) ? call.Name : "unregistered";
+        using var span = telemetry?.Begin("tool", name);
+        try { return await ExecuteCore(call, principal, ct); } catch (Exception error) { span?.Fail(error); throw; }
+    }
+    private async Task<(AiToolResult Result, AiSource Source)> ExecuteCore(AiToolCall call, ClaimsPrincipal principal, CancellationToken ct)
+    {
         var tool = AiToolRegistry.Find(call.Name);
+        policy.Demand(tool);
         var args = AiToolRegistry.Validate(tool, call.Arguments);
         try
         {

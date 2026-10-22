@@ -1,0 +1,7 @@
+# Start only postgres with this override; run the API/frontend natively.
+# Use a new Compose project name to preserve existing databases and volumes.
+services:
+  postgres:
+    image: pgvector/pgvector:pg17
+    ports:
+      - "127.0.0.1:55444:5432"

@@ -1,5 +1,7 @@
 # Development and verification
 
+For a current first run, use [Getting started](GETTING_STARTED.md). For native Ollama/knowledge/visual workflows, use [the combined PowerShell setup](VISUAL_WORKFLOWS.md#windows-local-setup); the base Compose backend does not forward every optional native configuration variable. [Documentation index](README.md) separates current guides from historical phase notes.
+
 [README](../README.md) · [Architecture](ARCHITECTURE.md) · [API](API.md)
 
 ## Compose
@@ -109,9 +111,10 @@ and intentionally remain in that disposable database until it is removed.
 ## CI and publication
 
 .github/workflows/ci.yml runs backend restore/build/tests on Ubuntu with Docker
-available for Testcontainers, plus npm ci/build on Node 22. Actions are pinned to
-verified official release SHAs. Browser acceptance remains a separate local check;
-there is no deployment job. Remote CI results must be checked after publication.
+available for Testcontainers, plus frontend lint/type/component/build/audit on Node 22.
+The checked-in smoke job also runs disposable browser/accessibility, AI Mock and
+designer/quality fixtures. Actions are pinned; there is no deployment job.
+Remote CI results must be checked for the actual published commit.
 
 Before publication, inspect source candidates and all relevant Git history with a
 secret scanner. Examples deliberately contain local placeholders; actual credentials,

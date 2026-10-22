@@ -62,7 +62,7 @@ public sealed class OrderService(AppDbContext db)
     public async Task<OrderResponse> Create(OrderRequest request, CancellationToken ct)
     {
         // One snapshot for customer/product checks; all writes commit together. Disposal rolls back on any failure.
-        await using var transaction = await db.Database.BeginTransactionAsync(IsolationLevel.RepeatableRead, ct);
+        await using var transaction = db.Database.CurrentTransaction is null ? await db.Database.BeginTransactionAsync(IsolationLevel.RepeatableRead, ct) : null;
         var warehouse = await InventoryService.ResolveWarehouse(db, request.WarehouseId, ct);
         await InventoryService.LockWarehouses(db, [warehouse], ct);
         if (!await db.Customers.AnyAsync(c => c.Id == request.CustomerId && c.IsActive, ct)) throw new BusinessException("customerUnavailable");
@@ -81,7 +81,7 @@ public sealed class OrderService(AppDbContext db)
         if (order.TotalAmount > 9999999999999999.99m) throw new BusinessException("totalTooLarge");
         db.Orders.Add(order);
         await db.SaveChangesAsync(ct);
-        await transaction.CommitAsync(ct);
+        if (transaction is not null) await transaction.CommitAsync(ct);
         return (await Get(order.Id, ct))!;
     }
     public async Task<OrderResponse?> ChangeStatus(Guid id, OrderStatus status, Guid userId, CancellationToken ct)

@@ -1,0 +1,27 @@
+import { test, expect } from '@playwright/test';
+test.use({ trace: 'off', screenshot: 'off' });
+test('Live Operations Center persists inventory alerts and obtains an actual Ollama explanation', async ({ page }) => {
+  test.skip(process.env.PROACTIVE_UI_LIVE_SMOKE !== 'true', 'Explicit isolated monitoring UI opt-in required.'); test.setTimeout(180000);
+  const email = process.env.AI_LIVE_EMAIL, password = process.env.AI_LIVE_PASSWORD;
+  if (!email || !password) throw new Error('Existing isolated ERP administrator credentials required.');
+  const base = new URL(process.env.API_URL ?? 'http://127.0.0.1:5116');
+  if (base.protocol !== 'http:' || !['127.0.0.1','localhost','[::1]'].includes(base.hostname)) throw new Error('Only an isolated loopback API is supported.');
+  await page.goto('/auth/login'); await page.evaluate(() => localStorage.setItem('catalog.language', 'en')); await page.reload();
+  await page.getByLabel('Email address').fill(email); await page.getByLabel('Password', { exact: true }).fill(password); await page.getByRole('button', { name: 'Sign in', exact: true }).click(); await expect(page).toHaveURL(/\/dashboard$/);
+  const token = await page.evaluate(() => JSON.parse(sessionStorage.getItem('catalog.session')!).accessToken as string);
+  const headers = { Authorization: 'Bearer ' + token };
+  const categoryResponse = await page.request.post(new URL('/api/categories', base).href, { headers, data: { name: 'Synthetic monitoring browser category', description: 'Isolated acceptance only', isActive: true } }); expect(categoryResponse.ok()).toBe(true); const category = await categoryResponse.json();
+  const productResponse = await page.request.post(new URL('/api/products', base).href, { headers, data: { name: 'Synthetic browser monitor part ' + Date.now(), description: 'Isolated acceptance only', categoryId: category.id, isActive: true, price: 10, productType: 'RawMaterial' } }); expect(productResponse.ok()).toBe(true); const product = await productResponse.json();
+  expect((await page.request.put(new URL(`/api/inventory/${product.id}/minimum-level`, base).href, { headers, data: { minimumStockLevel: 5 } })).ok()).toBe(true);
+  await page.getByRole('link', { name: 'AI Operations Center', exact: true }).click();
+  await page.getByRole('button', { name: 'Run check now · Inventory monitoring', exact: true }).click();
+  const row = page.getByRole('listitem').filter({ has: page.getByText(product.name, { exact: true }) }); await expect(row).toBeVisible({ timeout: 60000 });
+  const reviewResponse = page.waitForResponse(r => /\/operations\/alerts\/[^/]+\/review$/.test(r.url()) && r.request().method() === 'POST', { timeout: 130000 });
+  await row.getByRole('button', { name: 'Analyze inventory and sales', exact: true }).click();
+  const response = await reviewResponse; expect(response.status()).toBe(200); const review = await response.json(); expect(review.error).toBeNull(); expect(review.result.responseKind).toBe('model'); expect(review.result.isMock).toBe(false);
+  await expect(page.getByRole('heading', { name: 'Authorized agent review', exact: true })).toBeVisible();
+  const journalResponse = await page.request.get(new URL(`/api/ai/agents/runs/${review.executionId}`, base).href, { headers }); expect(journalResponse.ok()).toBe(true); const journal = await journalResponse.json(); expect(journal.execution.provider).toBe('Ollama'); expect(journal.execution.totalTokens).toBeGreaterThan(0);
+  await row.getByRole('button', { name: 'Acknowledge', exact: true }).click(); await expect(row.getByRole('button', { name: 'Acknowledge', exact: true })).toBeDisabled();
+  await page.setViewportSize({ width: 390, height: 844 }); expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  console.log(JSON.stringify({ liveOperationsUiVerified: true, executionId: review.executionId, provider: journal.execution.provider, model: journal.execution.model, totalTokens: journal.execution.totalTokens, responseKind: review.result.responseKind, alertAcknowledged: true }));
+});

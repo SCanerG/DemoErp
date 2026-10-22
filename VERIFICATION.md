@@ -1,3 +1,567 @@
+# Owner-authorized repository publication checks (2026-10-22)
+
+After the owner explicitly requested a repository update, a normal publication clone was based on GitHub `main` commit `01922508e46c7f697bc0c86e19976a63587675d7`. It preserves all 62 existing standalone `showcase/` files, the usage notice, old business migrations and commit history. Publication includes the previously verified AI implementation through Phase 11.8 and the professional bilingual documentation, without deployment or business database changes.
+
+Immediately before publication, the existing verified backend build was rerun with all three live-model opt-ins disabled: **711 passed, 3 explicitly skipped, 0 failed (714 total)** in 2m04s. Frontend TypeScript checking and **22/22 component/unit tests** passed, **32/32 script tests** passed, and the deterministic evaluation gate passed **33/33** with no critical failures. No paid request or fresh live-model call was made. Previous successful actual Ollama executions remain documented below.
+
+The complete publication source passed redacted Gitleaks scanning. Staged whitespace checks passed; no source files were deleted, and no ignored tools, private preparation, real environment files or generated logs were staged. Push is an ordinary descendant update, never a force push. Remote Actions results must be inspected for the actual published commit and are not inferred from local checks. Earlier no-publication statements below describe their respective development/review stages before the owner's explicit update request.
+
+---
+
+# Repository documentation showcase (2026-10-22)
+
+The English and complete Turkish landing pages now prioritize introduction/badges, authentic application screenshots, the agentic architecture, a supported multi-agent example, then feature and technical guides. Existing design and execution reports below are preserved. This documentation change is local on `docs/professional-agentic-erp-showcase`; no commit, push, merge, GitHub settings update, deployment or database record modification was performed.
+
+## Documentation-only validation
+
+- Local Markdown paths, image files and heading fragments were checked across **46 Markdown documents**; no broken local links were found. Final machine-readable reports remain ignored under `.tools/repository-showcase/`.
+- **34/34 Mermaid blocks parsed and rendered** in a local Edge browser with Mermaid 12.2.0. This includes both README diagrams and the seven detailed architecture diagrams. One new sequence diagram and the existing OpenAI sequence diagram had separator-sensitive punctuation corrected without changing their meaning. GitHub's remote renderer was not exercised because no publication occurred.
+- English/Turkish README previews, the architecture and selected authentic images were visually inspected. Eight PNG assets were decoded/verified; they total **1,261,749 bytes**. Changes to captures are pixel-preserving cropping/lossless compression only. No generated UI imagery was used. Gallery provenance documents older versus current captures and missing feature screenshots.
+- **79 PowerShell code blocks** parsed with zero syntax errors. Startup commands were checked against actual project paths, Compose configuration, option names and previous local execution evidence; the application/database was not started merely to validate this documentation change.
+- SHA-256 comparison confirmed **297 existing runtime source, script and CI files unchanged**. Existing migration/source history and the usage notice were not edited. Relevant prior test output was reviewed; the 714/22/32 test counts in the README remain explicitly dated Phase 11.8 results, not a new full-suite run.
+- A redacted Gitleaks scan of the public source candidates found **no leaks**. Ignored local tools/logs/private preparation were excluded from publication candidates; no non-example environment file was present. Machine-specific user paths were removed from public Markdown examples. No scanner result is a guarantee against every secret format.
+- No Markdown linter is configured in the project; local link/heading/image validation, PowerShell parsing and actual Mermaid rendering were used. No cosmetic runtime dependency was added. Documentation validation tools and previews stay in ignored `.tools/`.
+
+The observed public GitHub content was older than the local source; this checkout has no configured remote or HEAD commit, so exact remote branch parity/merged history could not be established. A functioning hosted DemoERP demo and current remote CI are not claimed. Successful live OpenAI inference and refreshed Knowledge/Operations/Quality screenshots remain unverified or absent. The proposed description/topics/portfolio link and an owner-controlled publication sequence are recorded in `docs/REPOSITORY_REVIEW.md`.
+
+---
+
+# Phase 11.8 — Visual workflow designer (2026-10-22)
+
+[Architecture, registered nodes, security/approval lifecycle, limits, migration and exact Windows commands](docs/VISUAL_WORKFLOWS.md)
+
+The verified starting baseline was **674 backend tests passed, two opt-in live tests skipped (676 total)**. Existing ERP, Phase 11.4 approvals, RAG, monitoring and quality infrastructure were inspected and reused. Work remains local on `codex/phase11-8-workflow-designer`; HEAD is unborn and the pre-existing project files remain untracked. No commit, push, merge, remote CI run or deployment was performed. All database writes used disposable test databases or the explicitly isolated synthetic Phase 11.8 review database, not the user's working database.
+
+## Executed Phase 11.8 results
+
+| Check | Actual result |
+| --- | --- |
+| Full backend suite, final `WorkflowAcceptance` build | **714 passed, 0 failed, 0 skipped**, 1m38s; all three opt-in local model cases were enabled |
+| New visual workflow backend coverage | 38 cases, including one actual Ollama integration case; existing approval regressions preserved |
+| Fixed Phase 11.7 evaluation dataset/gate | **33/33 passed**, zero critical failures |
+| Broad browser regression suite, actual isolated ERP API | **119 passed, four opt-in/profile tests skipped**; 4m |
+| Default-disabled AI browser case, separately configured API | **1/1 passed**; real Viewer navigation and disabled-state behavior |
+| Designer browser fixtures | **7/7 passed**; drag/drop, saving/configuration, fixture simulation, explicit publication/activation, Viewer controls, approval replay key, unavailable AI, TR/mobile and accessibility |
+| Actual visual designer → API → durable worker acceptance | **1/1 passed**; actual inventory recommendation/notification, Friday 09:00 UTC schedule, persistent report history, simulation and pending human approval; orders unchanged |
+| Same actual workflow UI acceptance with AI and knowledge disabled | **1/1 passed**; deterministic workflows and ERP pages remain usable without model calls |
+| Frontend unit tests | **22/22 passed**, three files |
+| Test dependency security patch and install reproducibility | Vitest updated to **4.1.12**; required Testing Library DOM peer explicitly declared; **22/22 tests passed again**, standard `npm ci --dry-run` lock validation passed |
+| Script regression tests | **32/32 passed**, including original approval write guards and new visual smoke guards |
+| Frontend lint/typecheck/production bundle | Passed; isolated bundle output, normal application build directory preserved |
+| New local Compose override and six documented PowerShell blocks | Compose configuration valid; all PowerShell blocks parsed successfully |
+| Secret scan | Changed/new review sources scanned with Gitleaks redaction; no leaks found |
+| Final dependency audit after security patch | **0 vulnerabilities** reported by `npm audit`; transient registry timeout was retried successfully |
+
+The four broad-suite skips were existing live Agent Center, live purchase approval, Development Mock profile and live inventory UI cases. Their opt-ins were not enabled in that broad run; they are not reported as successes. The default-disabled case was deliberately run under a separate disabled configuration. Backend provider/Mock/approval regressions ran in the full 714-case suite. Live purchase approval was not automatically executed in the browser. A previously timing-sensitive OpenAI cancellation test was synchronized with the first transport call before cancellation; its cancellation/no-retry assertions remain intact.
+
+## Actual Ollama evidence
+
+The final standalone smoke called **Ollama `qwen3:8b` through the authenticated DemoERP API** and returned:
+
+```json
+{
+  "liveWorkflowDraftVerified": true,
+  "workflowId": "3bd6ffac-1f8a-4b0c-a10e-2edd18a411a2",
+  "provider": "Ollama",
+  "model": "qwen3:8b",
+  "totalTokens": 418,
+  "latencyMs": 10048,
+  "validated": true,
+  "published": false,
+  "activated": false,
+  "ordersUnchanged": true
+}
+```
+
+The actual browser acceptance recorded inventory run `c91583e4-ddb8-4e1a-b004-ffe770929544`, a verified stock balance of zero and a recommendation of six at configured threshold five, a private notification and waiting order run `1350e703-4468-4b5d-94d3-8bf1ef5481da`. It did not claim a model call: the separate API smoke and backend live case provide that evidence. The model-disabled repeat recorded successful inventory run `a8b70deb-b40d-4d6d-a7b6-092d2432daf8`; orders remained unchanged there too.
+
+The confirmed draft failure was a provider contract mismatch: Ollama's final natural-language answer contract forbids nested JSON. A dedicated bounded native function selection now maps a model suggestion into one of four server-built graphs. Unknown tools, extra/missing/duplicate arguments, wrong numeric types and invalid graphs remain rejected. Actual Qwen selection passed without relaxing authorization or final-answer validation.
+
+Evidence logs and baseline source copies are retained locally under ignored `.tools/phase11-8/`. The original `backend/Demo.Api.Tests/WorkflowTests.cs`, `scripts/ai-workflow-live-smoke.mjs`, its original test file and `frontend/playwright.workflow.config.ts` match the baseline byte-for-byte. New designer tests/config/scripts use distinct `VisualWorkflow` names.
+
+## Scope and limits
+
+New code lives primarily in `backend/Demo.Api/AI/Workflows/`, `Controllers/WorkflowsController.cs`, `frontend/src/pages/WorkflowDesigner.tsx` and the typed helpers/tests. Migration `20261021201217_VisualWorkflowDesigner` adds five workflow tables only; existing business migrations are unchanged. The UI has a node palette, maintained React Flow canvas, typed configuration, safe simulation, review/publish/activation, version/run history, explicit approval and owner-private notification inbox, in Turkish and English.
+
+Current bounds are intentional: one executing workflow per database, 25-node acyclic graphs, 40 edges, weekly UTC scheduling, polling rather than a transactional event bus, three agents/ten logical ERP reads, bounded retries and conservative manual review after uncertain side effects. Private workflow history has bounded queries but no automatic deletion/compaction yet. The repository has owner isolation, not a tenant domain. Model drafting selects approved templates rather than unrestricted executable workflows. Follow-up priorities are history retention, uncertain-run operator tools, transactional event delivery and timezone calendars. Existing human approval remains mandatory for critical business writes.
+
+Only isolated API `5120`, frontend `3040` and the `demoerp-phase118-review` database container were stopped after verification. Enabled synthetic test schedules were disabled and unfinished synthetic approval runs cancelled through authorized API operations. The synthetic database volume remains recoverable; the user's normal ERP/database configuration and Ollama process were preserved. Final UI review also corrected secondary-button styling to the existing design system and completed the Turkish execution-history heading; the seven designer browser cases and actual model-disabled acceptance passed afterward.
+
+---
+
+# Phase 11.7 — AI evaluation and observability (2026-10-21)
+
+[Architecture, privacy, metric definitions, dataset/CI specification, modified files, limitations and exact Windows commands](docs/AI_QUALITY.md)
+
+The unchanged baseline passed **657 tests with two opt-in live cases skipped** (659 total). Actual existing Phase 11.4 approval, Phase 11.5 RAG and Phase 11.6 proactive services were inspected. Existing untracked work was preserved on the dedicated unborn branch `codex/phase11-7-ai-evaluation-observability`; no commit, push, merge or deployment was performed. Baseline/source copies and execution evidence are under ignored `.tools/phase11-7/`.
+
+Implemented: standard .NET ActivitySource/Meter instrumentation and bounded owner-private metadata storage; nested HTTP/action/orchestration/agent/tool/provider/retrieval/embedding/approval/order/monitoring observations; authentic Turkish/English Quality Dashboard; a versioned, hashed 33-case synthetic evaluation catalog; private idempotent Admin evaluation runs; comparison/regression gates and JSON/JUnit CI reports; labelled actual pgvector retrieval coverage; and guarded opt-in local API/UI acceptance runners. The additive `20261021172838_AiQualityObservability` migration creates only the two quality tables/indexes. Existing business migration history and authorization/approval services are preserved.
+
+## Executed Phase 11.7 results
+
+| Check | Actual result |
+| --- | --- |
+| Final complete backend suite | **676/676 passed, zero failed/skipped**, 3m33s (`backend-acceptance.log`), including both existing authenticated inventory and monitoring live Ollama cases |
+| Deterministic contract evaluation | **33/33 passed, zero critical failures**; machine-readable JSON/JUnit generated and CLI CI gate passed (`evaluation-acceptance/`) |
+| Comparison with earlier matching evaluation | Comparable dataset/mode, no newly failing or critical regressions; **one latency warning**: `order-draft-price` 17.4993 → 51.3057 ms, exceeding default 2×/+20 ms thresholds (`comparison-acceptance.log`). Latency blocking was not enabled. This is a single synthetic measurement under different local load, requiring controlled follow-up before attributing a persistent performance regression |
+| Quality metadata, privacy and evaluation tests | 16 focused tests passed before the final complete suite; hierarchy/correlation, redaction, owner/Admin scopes, retention, status/latency/usage, idempotency, policy boundaries, comparison and unavailable-provider coverage |
+| Node runner/gate tests | **29/29 passed** (`scripts-acceptance.log`), including opt-in/origin/credential guards and critical-regression/report checks |
+| Frontend lint, TypeScript and isolated production build | Passed on final source (`lint-acceptance.log`, `types-acceptance.log`, `build-acceptance.log`); the normal `frontend/dist` was not overwritten |
+| Frontend unit tests | **19/19 passed** (`unit-acceptance.log`) |
+| Actual Quality Dashboard/API acceptance | **1/1 passed**, 9.5s; fixed synthetic evaluation ran through the real API and persisted runtime traces were displayed (`live-ui-acceptance.log`); no model call was claimed by the UI test itself |
+| Broad ERP/browser regression | **112 passed, four opt-in/profile cases skipped**, 6.0m. The AI-disabled-only test failed when deliberately included against the Ollama-enabled profile; rerunning that exact case against a separate AI-disabled API/frontend **passed 1/1**, 18.2s (`browser-acceptance.log`, `browser-disabled.log`). Thus 113 distinct applicable cases passed across their respective profiles; the combined Ollama-profile command itself is not represented as fully green |
+| Quality Dashboard browser coverage | All **seven** new fixture cases passed within the broad run: authentic counts/unavailable metrics, Viewer restrictions, stable Admin evaluation key, comparison, safe trace rendering, EN/TR, mobile and WCAG |
+| Static delivery checks | Dedicated Compose override validated; seven documented PowerShell blocks parsed with zero syntax errors; no trailing whitespace in 43 changed/reviewed files; redacted Gitleaks scan found no leaks |
+| Actual labelled pgvector hybrid retrieval | **Recall@5 1, Precision on returned results@5 0.5, MRR@5 1**, two returned sources; expected source/version, valid citation and private-source exclusion verified (`evaluation-acceptance/rag-retrieval-report.json`) |
+| Final real Ollama API acceptance | **Passed**, actual `qwen3:8b` inventory/collaboration/draft and local `nomic-embed-text` retrieval/citations (`live-quality-acceptance.log`) |
+
+### Actual local model evidence
+
+The final API acceptance ran through authenticated native .NET **127.0.0.1:5118**, using a separate synthetic-only PostgreSQL/pgvector database on **127.0.0.1:55441**. User databases and normal application ports/configuration were not modified.
+
+Inventory execution **`fa99970c-2a82-4215-908d-60e4aae7d99e`** used actual Qwen3, verified stock zero/minimum five and recorded **982 total tokens**, **5899 ms** client-observed execution request latency. Sales + Inventory collaboration **`f5e56847-7a79-460b-b877-8859842d5cda`** recorded **2922 total tokens**, **11515 ms** and both agent steps. Latency excludes the later journal fetch and is a single observation under local load, not a percentile/throughput guarantee.
+
+Order draft **`3a79bbed-925b-4108-a3a5-ad1673b5c4e1`** retained required human review, resolved current identities/prices and left order IDs unchanged. No live order approval was requested. RAG source **`2e9e9b8f-0984-4345-becf-99dff37ae6c7`** was indexed with actual **768-dimensional** local embeddings; its known answer returned one verified citation. Unsupported/combined knowledge checks also ran through the existing guarded RAG acceptance helper. Trace **`68eff73a800954f3c87b63e0e63150aa`** contained **12** persisted safe observations including provider/tool/orchestration hierarchy and execution correlation; the synthetic product text was absent from span payloads.
+
+The real Quality Dashboard UI acceptance persisted evaluation **`ff8e046e-d011-45de-9ea6-3e64eddcf1dc`**, showing 33 passed/zero failed/critical failures and an actual trace timeline; mobile width was checked. The dashboard evaluation mode was `deterministic-fixtures`, explicitly **not** a live model benchmark. Its preceding API acceptance supplies the actual model evidence above.
+
+An earlier broad run had a registration/login navigation failure in the existing business workflow. It did not reproduce in the focused rerun (1/1 passed) or final broad rerun; no unsupported root-cause claim or product workaround was made. The final broad run's sole failed assertion expected the disabled-AI screen on an enabled-Ollama server. That profile mismatch was confirmed by its assertion and resolved for verification by running the unchanged test on the appropriate isolated disabled profile, rather than changing application behavior. Mock-specific and explicit live-browser opt-ins were not enabled in the broad run. The separate new real API/UI acceptances and both backend live tests are recorded above.
+
+Prompt-injection/backend enforcement (acceptance E) and unavailable-provider behavior (F) were verified by deterministic backend tests, not claimed as live attack/outage runs. The user's Ollama process was not stopped. RAG rank tests use deterministic fixture vectors in actual pgvector, separately from real model acceptance; these few labelled sources do not establish general semantic accuracy. Exact model wording is not scored. Literal source validation does not prove causality, forecasting or comprehensive answer correctness; manual semantic review remains required.
+
+### Delivery boundaries
+
+GitHub CI now runs the deterministic evaluation gate, preserves synthetic JSON/JUnit reports and includes the Quality Dashboard browser checks. Equivalent build/test/gate checks were run locally; no remote workflow was triggered for this unpushed work. No paid model test is required by ordinary CI. Runtime telemetry is best effort with bounded queues/retention/query caps; unavailable token values remain null. The completed-request rate includes labelled fallback/Mock/insufficient responses and is not a factual task-success score. No external collector, GPU collector, production deployment or multi-tenant isolation is claimed. [Phase 11.8 recommendations and metric limitations](docs/AI_QUALITY.md#security-reliability-and-limitations).
+
+Only isolated review servers and the Phase 11.7 review database container were stopped after verification; the synthetic volume remains recoverable. Normal user application/database configuration and the running Ollama service were preserved.
+
+# Phase 11.6 — Proactive operations (2026-10-21)
+
+[Verified baseline, architecture, security boundaries, changed files/migration, Windows commands and Phase 11.7 recommendations](docs/PROACTIVE_OPERATIONS.md)
+
+Phase 11.5 and the actual Phase 11.4 approval services were inspected before implementation. The unchanged baseline passed **634 tests with one live test skipped** (635 total). Existing untracked work was preserved on the dedicated unborn branch `codex/phase11-6-proactive-ai`; no HEAD commit was available. Baseline copies and execution artifacts remain under ignored `.tools/phase11-6/`.
+
+Implemented: a scoped report-only monitoring service, durable per-rule jobs, UTC intervals and best-effort existing-audit event triggers, bounded retries/lease recovery/cancellation, deterministic inventory/purchase-date/stalled-sales/sales-change findings, deduplicated in-app alerts with lifecycle history, and a Turkish/English Operations Center. Explicit user-triggered review reuses Inventory/Sales/Knowledge/coordinator services and existing private proposals/approval boundaries. Scheduled checks do not call an LLM and cannot create orders. Local chat/embedding admission now has a bounded configurable queue.
+
+## Executed results
+
+| Check | Actual result |
+| --- | --- |
+| Final complete backend suite | **659/659 passed, zero skipped, zero failed**, 3m48s; both existing inventory and new monitoring live Ollama tests opted in (`backend-delivery.log`). The earlier expanded full run also passed 659/659. |
+| New monitoring backend coverage | **24 cases**, including actual PostgreSQL findings, samples/thresholds, missing purchase dates, private approval isolation, cancelled publication, two API instances claiming one job, backoff/recovery, configuration conflicts, event observation, bounded inference and an actual model explanation |
+| Frontend lint, TypeScript and isolated production build | Passed on final source; standard local `frontend/dist` was not overwritten |
+| Frontend unit tests | **19/19 passed** (`unit-final.log`) |
+| Node smoke-runner tests | **22/22 passed** (`scripts-final.log`), including four proactive runner opt-in/origin checks |
+| Operations Center browser fixture suite | **6/6 passed**, including Admin configuration, Viewer restrictions, persisted action requests, EN/TR, mobile and WCAG scan |
+| Broad ERP/browser regression | **105 passed, one profile-specific Mock case skipped**, 106 scenarios, 4.6m (`browser-full.log`); existing sales, inventory, procurement, manufacturing, warehouses, session/security and AI UI cases passed |
+| Final affected browser regression | **22/22 passed**, Agent Center and Operations Center, 1.1m (`browser-final.log`), after the last UI operation-key/private-history refinements |
+| Real local proactive API smoke, final build | Passed, actual Ollama model response, persisted alert and acknowledgement, operation-key/review reuse and deduplicated repeated monitoring (`live-api-final.log`) |
+| Real Operations Center UI smoke, final build | **1/1 passed**, 1.1m, actual model through authenticated .NET, recorded alert acknowledgement and mobile width (`live-ui.log`) |
+| Secret/whitespace/Compose checks | Redacted Gitleaks scan of **31 changed/reviewed files** found no leaks; no trailing whitespace findings; monitoring Compose override validated |
+
+Initial test setup failures were corrected: a synthetic supplier code did not satisfy the existing uppercase format constraint, and product fixture code tried to insert a balance that the ERP automatically creates. Those fixture failures are not represented as passing tests. The finalization session initially found Docker stopped; the resulting 504 database/environment failures are recorded in `backend-final.log` and are not counted as an integration pass. After starting Docker, the final complete delivery rerun passed all 659 tests. An earlier automatic approval-review usage limit had interrupted final checks; no approval check was bypassed.
+
+## Actual model and persistence evidence
+
+The final API acceptance ran on native API **127.0.0.1:5116**, separate frontend **127.0.0.1:3036** and isolated PostgreSQL/pgvector **127.0.0.1:55439**. A labelled synthetic category/product/minimum fixture was deliberately created through normal authenticated ERP endpoints. Monitoring run **`4930bfe9-251a-4ec3-b9f8-63ce0769d757`** persisted zero-stock alert **`aad37ae5-291b-4438-85e1-8f98860eee1d`** with verified stock zero and minimum five. Repeated checks created no second alert. Private review execution **`291c55b3-9651-4271-81c2-1536608862fb`** used **Ollama qwen3:8b**, returned **`responseKind=model`**, consumed **1,448 total tokens**, and had a successful model-call execution journal. Repeating review returned the same execution; acknowledgement was present in alert history. No order-creation or approval endpoint was called by the runner.
+
+The real browser acceptance created its own explicitly labelled synthetic product fixture, triggered Inventory monitoring from Operations Center, located the persisted alert, requested Inventory + Sales review and received a real model explanation. Execution **`4b544517-f54f-447d-b3b5-865ce6863b62`**, **Ollama qwen3:8b**, **2,765 total tokens**, `responseKind=model`. The UI acknowledgement persisted, and the page fit a 390px mobile viewport. Credential-bearing live traces/screenshots were disabled. Model latency includes concurrent test/local model load and is not a throughput promise.
+
+The opt-in backend live case also asserts unchanged sales/purchase order counts around monitoring and explanation. Ordinary deterministic tests verify alerts continue with AI disabled; model unavailability does not gate the monitoring service. Existing workflow tests continue to validate current-identity approval enforcement and idempotent order creation. The larger browser suite intentionally creates its own synthetic business fixtures only in the isolated review database; unchanged-order assertions apply to the relevant live test window, not the entire regression suite.
+
+## Delivery boundary and limitations
+
+The additive `20261021165224_ProactiveOperations` migration introduces five monitoring tables and three disabled rule configurations, without altering existing ERP rows or inventing stock/delivery thresholds. It was applied only to disposable test databases and the separate review database. User-local databases **55433/55437** and production data were not migrated or reseeded. No Git commit, push, merge or application deployment was performed. The existing local release was not replaced by this task.
+
+Monitoring is bounded deterministic rules, not a statistical proof of anomalies or an autonomous purchasing system. Sales orders have no delivery deadline; only purchase orders with real expected dates can be overdue. Findings are single-workspace, with owner-private proposal alerts; no tenant model is invented. Audit event polling is best effort and scheduled scans provide eventual re-evaluation. Lease fencing prevents duplicate publication, not exactly-once computation. AI and policy review are explicitly on demand, use existing authorized sources, and never independently approve business transactions. The service capability is constrained in code but still uses the application's database connection; a dedicated restricted database role, history retention, transactional outbox and cross-instance inference scheduling are documented follow-up work. No external notification service, paid dependency or unrestricted LLM loop was added.
+
+---
+
+# Phase 11.5 — Local knowledge and grounded retrieval (2026-10-21)
+
+[Architecture, changed files, security, migration strategy, exact Windows commands and limitations](docs/ENTERPRISE_RAG.md)
+
+The Phase 11.4 implementation was inspected before extending it: provider abstraction, reporting tools, coordinator step journal, bounded retries, private execution history, durable human approvals and existing security checks were present. The first baseline run failed because Docker was stopped; after starting Docker, the unchanged baseline passed **594 tests, with one live test skipped**. No failed environment run is counted as a passing test. The repository still had no HEAD commit and untracked source files. Work continued on `codex/phase11-5-enterprise-rag` without staging, resetting or overwriting the prior source; baseline copies and execution logs are under ignored `.tools/phase11-5/`.
+
+## Executed checks
+
+| Check | Actual result |
+| --- | --- |
+| Final complete backend suite | **635/635 passed, zero skipped, zero failed**, 2m25s, including the explicitly enabled existing real Qwen3 inventory test; `backend-acceptance.log` |
+| Added RAG backend coverage | **40 cases** covering real PostgreSQL/pgvector persistence, plain PostgreSQL fallback, extraction, scope isolation, current identity, versions, deletion, hybrid search, citations, malicious tool output, cancellation, missing models and recovery |
+| Frontend lint, TypeScript and production build | Passed; build output isolated under `.tools/phase11-5/frontend-dist`, ordinary `frontend/dist` not replaced |
+| Frontend unit tests | **19/19 passed** |
+| Node smoke-runner tests | **18/18 passed**, including four new RAG runner cases |
+| Knowledge Center browser fixtures | **6/6 passed**, EN/TR, upload scope, source preview, readonly role, versions/reindex/delete and mobile |
+| Complete broader browser run | **98 passed, one profile-specific Mock case skipped, one accessibility timeout**, out of 100 scenarios; existing ERP/order/procurement/manufacturing/warehouse/security cases passed |
+| Isolated accessibility rerun | **1/1 passed**, 13.6s with a 90s test ceiling; first whole-suite run exceeded its 30s ceiling, not an accessibility assertion failure |
+| Real local API RAG acceptance | **3/3 scenarios passed**, actual nomic embeddings, pgvector, Qwen3, protected quote verification and combined execution audit |
+| Real Knowledge Center browser acceptance | **1/1 passed**, actual upload/index/question/source preview/mobile, 9.3s |
+| Dependency audit | API direct/transitive NuGet check reported no known vulnerable packages in configured sources |
+| Credential scan | Gitleaks redacted directory scan of 107 reviewed source/documentation files found no leaks; private ignored runtime files were excluded |
+
+The first expanded suite exposed a test that inspected the shared model gate's instantaneous counter while another parallel test could acquire it. It was corrected to verify actual HTTP cancellation instead; the complete final suite above passed. A wrongly expressed focused-test filter selected zero tests; that command was not counted, and a full final suite was run. Broader browser profile-specific skips do not imply a new Mock-profile live acceptance.
+
+## Actual local model evidence
+
+An initial direct `/api/embed` batch returned **HTTP 200**, two finite vectors of **768 dimensions**. The schema uses variable-dimension `vector`; runtime checks actual model/digest/dimension identity on indexing and retrieval. The migration was not built around an unverified fixed dimension.
+
+The final API acceptance used Ollama `qwen3:8b`, dedicated `nomic-embed-text`, native test API `127.0.0.1:5106` and an isolated pgvector PostgreSQL database on `127.0.0.1:55436`. Uploaded private synthetic manual **`892638b7-8ba4-4b4d-b913-33e432df50c7`** was indexed successfully. The documentation question returned `model_extract`, one verified citation, **438 total tokens**, retrieval **219 ms** and LLM **2,614 ms**. The unsupported question returned insufficient evidence with no citation. Combined Inventory → Knowledge execution **`9c4b003a-39cd-4444-814a-4053bb8113fc`** returned `model_extract`, **472 total tokens**, an audited successful step sequence and no order draft/proposal. Both cited quotes were checked against their protected source passage and version. These three acceptance scenarios are not a broad statistical retrieval benchmark.
+
+The final actual browser run uploaded private manual **`2b17e6cb-dd19-4f35-afc0-ab5137a166f9`**, waited for Indexed, asked through the React UI, received `model_extract`, one valid quote, **369 total tokens**, retrieval **146 ms**, LLM **1,973 ms**, and opened the protected source preview. Mobile width also passed. Traces and screenshots were disabled for credential-bearing live tests. Timings are observations, not performance guarantees.
+
+Deterministic regressions separately verified unauthorized document metadata/content denial, malicious model tool calls producing no ERP orders, replacement invalidating old citations/indexes, deleted chunks, changed embedding digests, permission revocation, archive/PDF rejection, OCR-required status and stale-job recovery. The synthetic dataset is [rag-evaluation.json](docs/rag-evaluation.json); live scenarios A–C and deterministic scenarios D–E are distinguished deliberately.
+
+## Scope and remaining limitations
+
+Only the new isolated database/container received migrations and test documents. Ordinary regression tests created synthetic ERP fixtures through authenticated APIs **inside that test database**; the RAG acceptance itself created knowledge documents only. The normal user database on port 55433 was not seeded, imported, reset or migrated. No production data was changed; no Git commit, push, merge or deployment was performed.
+
+Grounding is deliberately limited to exact source excerpts; no unrestricted Turkish/English policy paraphrase or semantic entailment guarantee is claimed. Original quoted language is preserved. The application has one workspace, with owner-private/admin-shared scopes, not implemented multi-tenancy. No OCR, hostile-file OS sandbox, distributed model scheduler, persistent Knowledge conversation memory or enterprise-scale ANN benchmark is implemented. Retrieval uses bounded exact cosine plus full-text fusion; HNSW is deferred until fixed-model/dimension query plans and authorized corpus measurements justify it. The private parser and corpus limits, in-process model gate and CPU embeddings make this a bounded local foundation. The Windows guide uses a separate review database/API/UI and documents a backup/restore path for a future explicitly authorized retained-database migration.
+
+---
+
+# Phase 11.4 — Secure workflow approval (2026-10-21)
+
+[Architecture, changed files, security guarantees, limitations and exact Windows review commands](docs/SECURE_WORKFLOWS.md)
+
+Baseline tests executed before edits: **571 passed, one opt-in live test skipped, zero failed** (572 total). The repository had no HEAD commit and untracked project sources. Work continued on the dedicated unborn branch `codex/phase11-4-secure-workflows` without staging, resetting or overwriting existing work. Baseline sources and logs were saved under ignored `.tools/phase11-4/`.
+
+## Actual results
+
+| Check | Result |
+| --- | --- |
+| Complete backend suite | **595/595 passed, zero skipped**, about 2m01s; includes the explicitly enabled real Qwen3 inventory/audit test |
+| New backend coverage | **23 additional cases**: owner-bound approvals, revoked identity, expiry, price/stock changes, historical purchase cost changes, long product names, two API instances racing, idempotency, cancellation, bounded retries, interruption recovery, durable results, PostgreSQL rollback and populated database migration preservation |
+| Frontend lint, production build and unit tests | Passed; **19/19 Vitest tests** |
+| Smoke runner tests | **14/14 passed**, including intercepted HTTP, loopback checks, two explicit write opt-ins, stable approval keys and no credential output |
+| AI browser fixture suite | **33/33 passed** on installed Microsoft Edge over localhost |
+| Broader ERP browser suite | **93 passed, one profile-specific Mock case skipped**, 94 scenarios, 3.5m; manual orders, products, stock, procurement, manufacturing, warehouses, authorization, accessibility, EN/TR and sessions |
+| Separate Development Mock profile | **1/1 passed** with actual Mock backend, including authorized data and private history |
+| Separate disabled-provider profile | **1/1 passed** with actually disabled backend |
+| Real purchasing browser acceptance | **1/1 passed**, real Ollama Qwen3:8b, explicit human review/save, audit, repeated approval and history reload |
+
+These are recorded executions, not tests rerun merely to finish this report. Early compile/test setup errors were corrected; failed setup attempts are not counted as successful checks. Detailed artifacts remain under ignored `.tools/phase11-4/`.
+
+## Live evidence and test data
+
+Initial isolated purchase attempts ran Sales → Inventory → Order → Summary with real Ollama but had no eligible historical supplier cost for suggested products. The write smoke correctly failed rather than inventing prices or suppliers. Execution `9848fb3b-8bc4-4fc9-97ad-23f05fcc851f` returned a model explanation. A later attempt, `5a107a8e-6f0f-41e7-acf7-50d312d45f64`, returned an explicitly labelled fallback after an unverified-number failure. Neither attempt proved a purchase transaction.
+
+A labelled synthetic supplier and submitted historical purchase fixture covering 10 existing synthetic products, with test unit cost 7, were then prepared through normal authenticated APIs **only in the isolated database on port 55434**. This was deliberate test setup, not an AI-invented quotation. The normal user database on port 55433 was not seeded or migrated.
+
+The real API write smoke passed: execution **`04b761cc-b714-499d-a146-6dcbcdb60d3d`**, Ollama qwen3:8b, `responseKind=model`, **2,313 total tokens**, 6,878 ms. It verified purchase Draft **`fdfdc569-dbfd-4db1-9376-a4e9ab5ac323`**, exact supplier/items/quantities/costs, same-key duplicate prevention, authenticated Create audit, history restoration and unchanged stock/customer sales orders.
+
+The real browser acceptance also passed: execution **`ea12b83b-1561-47a5-9a3d-a1919139525a`**, `responseKind=model`, **4,668 total tokens**. A bounded repair after `unverified_number` succeeded before returning the final explanation; backend run latency was 14,175 ms and browser test duration about 25 seconds. Explicit supplier/cost review and Save order created purchase Draft **`0213bd0c-e383-4067-98d4-c5a3645141d4`**. Repeating approval returned that same purchase ID. Persisted facts, audit actor, unchanged stock/customer orders and verified history reload passed. Traces/screenshots were disabled for the credential-bearing live test.
+
+The later ordinary ERP browser regression intentionally created its own synthetic records in the same isolated test database. Unchanged-state assertions above apply to each live acceptance window, not all test activity combined.
+
+## Delivery boundary
+
+Phase 11.4 remains source changes on the feature branch. No push, merge, commit, external deployment or automatic update of the user's running application was performed. The additive migration was exercised on isolated databases; the normal database was retained. The existing local preview bundle was restored to its prior version after an early build; subsequent Phase 11.4 build output went to ignored `.tools/phase11-4/frontend-dist`.
+
+At the end of the original verification run, the retained 5101 API and 3021 UI both returned HTTP 200. On resuming report completion, **no listeners were found on 5101, 3021, 5104 or 3024**. The application was not restarted or deployed automatically. Review/start instructions, including an isolated database copy, are in the architecture document.
+
+Source Gitleaks scanning previously reported no findings; a final changed-file scan is recorded locally when report completion finishes. Existing limitations remain: historical costs are not supplier quotes; purchase approval creates Draft and sales approval creates Pending; inventory is bounded to ten products; recovery requires explicit resubmission rather than autonomous job continuation; ownership is not delegated approval or multi-tenant isolation; distinct proposals from separate executions are not globally deduplicated.
+
+Recommended next scope is documented in [SECURE_WORKFLOWS.md](docs/SECURE_WORKFLOWS.md#limits-and-proposed-phase-115). The user's separate Phase 11.5 specification has not been implemented as part of finishing Phase 11.4.
+
+---
+
+# Human-reviewed AI order draft save — 2026-10-21
+
+The Agent Control Center can save a complete reviewed draft through the existing authenticated `POST /api/orders`. Admin/Manager can explicitly approve and save; Viewer cannot. No model tool, agent contract, server business rule or migration was changed. The ordinary service calculates current prices, creates Pending status and records the authenticated actor in audit. Generation alone remains read-only.
+
+Actual checks:
+
+* Frontend lint, **19/19 Vitest tests** and production build passed.
+* **29/29 AI browser regressions passed** on Edge/localhost, including Admin and Manager saves, no write before review, double-click suppression, exact ID/quantity-only payload, actual server total in the receipt, Viewer restrictions, incomplete drafts, denied save errors and Turkish controls.
+* **572/572 complete backend tests passed**, zero skipped, including real opt-in Qwen3 inventory/audit coverage and existing order authorization, entity validation, pricing and inventory lifecycle tests; about 92 seconds.
+* A separate real browser test logged into the isolated synthetic ERP on PostgreSQL port **55434**, requested a draft using actual Qwen3:8b through DemoERP, checked the human review box and clicked Save order. Execution `8345d1d9-1360-4c80-b6ee-3d247b7b4019` returned `responseKind=model`. Exactly **one** order POST returned 201; the saved order was Pending, used current server price, retained quantity 10, left stock unchanged and had a matching Create audit entry for the authenticated user. The order details link opened successfully. No test order was written to the user's normal local database on port 55433.
+* The production frontend bundle is served by the running local preview at `http://127.0.0.1:3021`; the existing backend on 5101 is retained. Source secrets and trailing-whitespace checks passed. No push, merge or remote deployment.
+
+Changed sources: `frontend/src/OrderDraftPreview.tsx`, `frontend/src/pages/AgentCenter.tsx`, `frontend/src/translations.ts`, `frontend/tests/agent-center.spec.ts`, `docs/INTELLIGENT_AGENTS.md` and this verification record. [Flow and limitations](docs/INTELLIGENT_AGENTS.md#save-a-reviewed-customer-order). Local evidence is under ignored `.tools/order-save/` and `.tools/ai-intent/backend-order-recheck.log`.
+
+---
+# Order draft routing and summary semantics — 2026-10-21
+
+Confirmed causes: Turkish `taslağı` was missed by `taslak` substring matching; explicit agent modes overrode conflicting requests; Automatic draft planning still offered unrelated report kinds. Numeric provenance alone did not bind amounts to currency or stock to a product. See [the reliability follow-up](docs/AI_RESPONSE_RELIABILITY.md#order-intent-and-summary-semantics-follow-up-2026-10-21) for changes and limits.
+
+Actual checks on the final implementation:
+
+* **572/572 complete backend tests passed**, zero skipped, including the opt-in real local Qwen3 inventory/audit test; IntentFix configuration, approximately 65 seconds.
+* Frontend lint, **19/19 Vitest tests**, production build and LocalPublishIntent API build passed.
+* Edge AI browser run: **22 passed, one new test failed because its exact label locator included nested option text**. After correcting that test locator, the new example/mode-reset scenario passed on a targeted recheck. Thus 23 scenarios passed across the run and recheck; this was not one initially green run.
+* Authenticated real Qwen3:8b calls through DemoERP, isolated synthetic PostgreSQL: the screenshot's exact A/B draft request returned `intent=order`, two clarification requests and `responseKind=deterministic` (execution `d2138dd5-02a0-43fe-9ab4-f1a0a1842968`). The final clarification is a server template, not a model-generated explanation.
+* A draft request using actual existing customer/product names returned `intent=order`, quantity 10, correct entity IDs, `persisted=false` and **responseKind=model** (execution `e1b040af-1021-41bd-902d-c2a1da6edfb0`). Order records were identical before and after both tests. Explicit Sales mode plus the draft request returned `aiAgentModeMismatch` as expected.
+* Regressions cover the screenshot's TL currency error and contradictory product stock, valid USD/product stock, Turkish inflections, restricted planner schema, conflicting modes, incorrect model routes and no order writes. Semantic checks cover supported phrases rather than all natural language.
+* Running localhost UI and backend were updated: `http://127.0.0.1:3021/auth/login` and `http://127.0.0.1:5101/health/ready` returned HTTP 200. The existing user database was retained, with no new migration or business-data seed. Login may be required after restarting the local API.
+* Redacted Gitleaks source scan and changed-file trailing-whitespace checks passed. No push, merge or remote deployment was performed.
+
+Local evidence is in ignored `.tools/ai-intent/`. Backend validation is not a universal guarantee that every generated sentence is true; verified typed facts remain authoritative.
+
+---
+# Initial tool-selection follow-up — 2026-10-21
+
+The local user's exact pending-order question failed before any report tool executed: execution `8109bc70-bda0-461d-aeb8-c611caf861dd` recorded `empty_answer`, 17 output tokens and zero tool dispatches. The prior recovery covered final explanations only. This is a separately confirmed first-stage failure, not assumed model misbehavior or output truncation.
+
+`AiToolSelection` now allows at most one retry for bounded empty/incomplete response categories, with known-usage accounting. Tool argument/call-shape errors, negative usage, authorization and context/timeout failures are not repaired. Agent model-call budgets still count every attempt. Clear current pending-count questions use the existing authenticated/audited `get_pending_orders` executor directly in All reports chat and Automatic Agent Center mode, including a valid zero result. Their response kind and saved-history provenance are `deterministic`, with zero model calls; inventory-only permissions are unchanged. Other requests retain normal provider planning and final validation.
+
+Actual checks after this follow-up:
+
+* **558/558 complete backend tests passed**, zero skipped, including the real local Ollama inventory/audit test; `SelectionFix` configuration, approximately 1m38s.
+* Frontend lint, **19/19 Vitest tests**, production build and local API build passed.
+* **22/22 AI browser regressions passed** on installed Edge over localhost, including new count-provenance and meaningful-selection-error tests. Cached Chromium could not launch (`spawn UNKNOWN`); these launch failures are not counted as product passes.
+* Authenticated live API checks compared both exact-question answers against the current order records in the isolated synthetic database. Both passed with `responseKind=deterministic`, one successful audited reporting tool, and zero provider calls. No orders changed.
+* A free-form Turkish pending-order summary called actual Qwen3:8b: three provider calls, 3,492 total tokens, execution `ef7cf908-13d7-4066-abde-d9d4a32b8215`. Final model explanation did not validate; the response was explicitly `fallback`. This verifies the live provider/tool path, **not** successful generation of a model explanation.
+* The running localhost app was updated and both `http://127.0.0.1:3021/auth/login` and `http://127.0.0.1:5101/health/ready` returned HTTP 200. The existing local database was retained; no migration was added. No GitHub push or merge occurred.
+
+Local follow-up logs are under ignored `.tools/ai-selection/`. The exact-phrase count route does not provide arbitrary or historical analytics; current pending counts are not period-filtered. The existing ERP tool scope still defines which questions can be answered.
+
+---
+
+# AI response reliability — 2026-10-21
+
+[Diagnosis, changed files, security boundaries and Windows commands](docs/AI_RESPONSE_RELIABILITY.md)
+
+The Ollama adapter now separates native tool selection from final schema-constrained answers, normalizes legitimate optional fields/Qwen wrappers, and records validation subtypes. Final explanations receive at most one repair, then an explicitly labelled deterministic summary of verified facts. Tool authorization/argument validation remain strict. Both React screens share a non-HTML Markdown renderer. No reliability migration, business write tool, push, merge or deployment was added.
+
+## Actual final checks
+
+| Check | Actual result |
+| --- | --- |
+| Complete backend suite, final code | **542/542 passed, zero skipped**, including the opt-in real Qwen3 authenticated inventory/audit test; Reliability configuration, 2m29s |
+| Frontend lint, production build, Vitest | Passed; **19/19** unit tests |
+| Smoke command guards | **10/10** passed; intercepted HTTP verifies opt-in, safe origins, credentials and audit contracts |
+| AI fixture browser tests | **20 passed**, live test skipped in that fixture-only run |
+| Full ordinary browser run | 75 passed, 5 failed, 3 profile-specific skips (83 tests; disabled-provider case deliberately run separately) |
+| Corrected environment/fixture recheck | **5/5 passed**: three procurement, one warehouse receipt and one late-session-401 scenario |
+| Separate disabled-provider profile | **1/1 passed** with an actually disabled backend |
+| Separate Development Mock profile | **1/1 passed**, including authorized reports and private history reload/deletion |
+| Real Ollama browser profile, final code | **2/2 passed**, both final responses had `responseKind=model` |
+| Combined browser matrix | **84 distinct scenarios exercised successfully across the main run, targeted recheck and separate profiles**; this was not a single initially green run |
+| Secrets / whitespace | Gitleaks redacted source scan had zero findings; changed-file diff checks found zero whitespace errors |
+| Migration compatibility | All 23 tracked migration/snapshot files match the preceding Phase 11.3 local review copy; no new reliability migration. The complete suite includes upgrade/data-preservation and pending-model checks |
+
+The five broad-browser failures were investigated, not counted as passes. Four receipt flows use the unchanged `crypto.randomUUID()` implementation. The initial Docker browser URL was plain HTTP `host.docker.internal`, where Chromium does not expose this secure-context API. A temporary localhost HTTP forwarding harness inside the test container reproduced the application's normal localhost context without disabling browser security or modifying receipt code; all four flows passed. The remaining test held only the first old-session product request; a StrictMode follow-up escaped to the actual backend and returned 401 before the intended race. The fixture now controls every old-session product request and clones its delayed response. The newer session remains intact after release; no production session/security code changed. Portfolio screenshot generation is an opt-in artifact workflow, not part of the ordinary runtime suite.
+
+An initial OpenAI two-tool-round regression was caught and corrected: the existing OpenAI chat-round behavior is retained, while the Ollama final explanation receives the new recovery. The complete backend run above passed afterward. An initial Turkish browser assertion used the wrong letter case; its corrected assertion verifies the actual visible fallback label and safe Markdown.
+
+## Actual real-model evidence
+
+Authenticated calls used isolated synthetic PostgreSQL data, not the user's application database. Ollama remained on `127.0.0.1:11434`, model `qwen3:8b`. Audit records were read through the authenticated DemoERP API and checked against source/tool execution IDs.
+
+| Final React → .NET → Ollama scenario | Response kind | Tokens | Provider calls | Backend duration | Execution ID |
+| --- | --- | --- | --- | --- | --- |
+| Low-stock assistant | model | 1,764 | 2 | 7,186 ms | `35e045be-4127-4e99-8cf1-64e94d960a30` |
+| Coordinated sales + inventory Agent Center | model | 2,295 | 1 | 7,983 ms | `148dbf78-dfaa-4b19-afff-da4f6073f244` |
+
+The low-stock source was `get_low_stock_products`; the coordinated run audited `get_sales_summary`, `get_top_products`, and `analyze_replenishment`, all successful. The coordinated provider log recorded 128 output tokens. Both screens verified the model/fallback provenance label against the returned contract.
+
+Earlier in this work, a real four-agent acceptance run completed inventory, sales, order-draft and collaboration scenarios with unchanged order/stock state. The collaboration explanation reached its 2,000-output-token limit twice (`output_truncated`), consumed 7,861 total tokens across both attempts, and returned a labelled deterministic fallback in approximately 111 seconds. That result is **not** described as a successful model explanation. A subsequent live UI run also exercised fallback on a numerical value absent from the verified facts. The final qualitative-repair prompt and numerical check were then tested in the final complete backend run and two successful final live browser runs above.
+
+Safe execution logs, token/audit metadata and test outputs are retained locally under the ignored `.tools/ai-reliability/` directory. No prompts, reasoning, API keys or raw provider bodies were added to diagnostics. Historical incident payloads were unavailable, so the exact cause of every earlier user-visible failure cannot be certified. Model semantic interpretation still requires checking against typed ERP results; supported Markdown is deliberately limited and context guards are not an exact tokenizer.
+
+---
+
+# Phase 11.3 — Intelligent agents — 2026-10-21
+
+[Architecture, security, Windows startup and limitations](docs/INTELLIGENT_AGENTS.md) · [Verified baseline](docs/AGENTS_BASELINE.md)
+
+Implementation adds fixed sequential orchestration, deterministic inventory replenishment, sales period comparison, intelligent customer/product-resolved order previews and a React Agent Control Center. All previous providers and the original assistant remain. The dedicated local branch is `codex/phase11-3-intelligent-agents`; inherited uncommitted Phase 11.2 changes were snapshotted before editing. No merge, push or deployment was performed.
+
+## Actual executed verification
+
+| Check | Result |
+| --- | --- |
+| Baseline Ollama adapter checks | 15/15 passed before development |
+| Final backend regression | 517/517 passed in Phase113Final configuration; opt-in legacy live test excluded |
+| New agent-focused tests | 30/30 passed before the final Mock regression addition; included in final suite |
+| Migration compatibility | Passed: all existing tables/rows, including AI execution/tool history, hashed before/after upgrade from AiRequestCorrelation; no pending EF model changes |
+| New migration | 20261020223656_AgentControlCenter creates only AiAgentRuns/AiAgentSteps; old migration sources/designers unchanged; model snapshot updated |
+| Frontend build/lint/Vitest | Passed; 16/16 Vitest tests |
+| Secret and diff checks | Passed: Gitleaks scanned 2.56 MB of publishable source, zero findings; git diff --check clean |
+| Smoke command contracts/guards | 10/10 passed with intercepted HTTP; default agent invocation skips with no network |
+| Existing ERP/AI browser regressions | 17 passed: original AI/history, original inventory selector, ERP navigation/login/logout and accessibility; legacy live browser test skipped, default-disabled-provider case excluded because test provider is enabled |
+| New Control Center browser suite | Final 5/5 passed, including real Ollama collaboration, mobile/Turkish, keyboard-scrollable table accessibility, clarification, cancellation and safe error/Mock states |
+
+The initial combined browser run had 21 passes, one skipped legacy live test and one new mobile accessibility failure. The failure was a horizontally scrollable table without keyboard access; focusable named regions corrected it, and all five new tests passed on rerun. Initial agent test failures exposed an EF query composition problem and inactive synthetic products; the trusted bounded sales-quantity read and explicit active fixtures corrected them. Final complete backend suite passed. No test failure was ignored as a successful run.
+
+## Real Ollama acceptance
+
+Actual authenticated HTTP calls went through DemoERP on isolated loopback port 5102, not directly to the model. The local model was qwen3:8b. Twelve synthetic products, six customers and twelve sales orders were prepared only in the separate Phase 11.3 test database.
+
+| Scenario | Tokens | Duration | Executed agents |
+| --- | ---: | ---: | --- |
+| Inventory | 1361 | 19415 ms | orchestrator → inventory → summary |
+| Sales | 1314 | 8236 ms | orchestrator → sales → summary |
+| Resolved order draft | 1145 | 3997 ms | orchestrator → order → summary |
+| Coordinated analysis | 2041 | 5275 ms | orchestrator → sales → inventory → summary |
+
+`liveOllamaAgentsVerified=true` and `readOnlyBusinessStateVerified=true` were actually returned. Tool/step outcomes, real provider/model, positive token usage, ERP customer/product IDs, unit prices and draft totals were checked. Before/after orders and inventory matched. The explicit order draft resolved an existing active customer and product; no business order was created. Real browser collaboration also passed and displayed sales/inventory facts and actual completed steps. Token/latency numbers are observations, not performance guarantees. Model explanations are not certified for every sentence; factual tables and source reports remain authoritative.
+
+Safe evidence is ignored under `.tools/phase11-3/`: backend-final.log, agent-tests-final.log, live-agents.log, browser.log (initial combined run), browser-agents-final.log, agent-center-live.png and baseline-manifest.json. The user's running 5101 database was not deliberately upgraded or seeded by Phase 11.3 work. On continuation Docker was stopped and test ports 5102/3022 were no longer listening, so no additional live run or final read of the user's database was claimed. Use the documented restart/backup instructions to activate this version deliberately.
+
+## Limits and next steps
+
+Up to five sequential steps, six trusted operations and three model attempts; shared request timeout/quota, input/context limits, owner-only execution history and current identity rechecks are enforced. Draft business mutations have no callable interface. No SQL/shell/URL or write tool is offered. Tenant-level ERP filtering is not implemented; existing shared BusinessRead policies remain.
+
+Agent Center runs are independent requests; metadata history cannot replay old prompts/results. Original opt-in assistant conversations remain available. Dates are limited to the four supported period presets. Mock cannot perform natural-language order extraction and clearly asks for clarification. RAG remains interfaces only. Provider health checks validate local readiness; OpenAI status is configuration-only. Process crashes may leave stale queued/running metadata until expiry; no durable background job recovery is claimed. A process-wide Ollama semaphore is not a multi-instance coordination solution.
+
+Recommended Phase 12 work: evaluated document retrieval with document authorization, durable execution recovery/distributed quotas, broader intent/language/date evaluations and an explicitly approved idempotent order submission flow with fresh price/stock checks.
+
+---
+
+# Phase 11.2 — Local Ollama — 2026-10-21
+
+Baseline: publication checkout `6579f16`, branch `codex/phase11-2-local-ollama`. Root working source remains mirrored to the publication checkout for review; no push, merge or deployment was performed. [Windows startup and live test commands](docs/OLLAMA_INTEGRATION.md).
+
+## Executed checks
+
+| Check | Actual result |
+| --- | --- |
+| Backend build | PASS, zero warnings/errors |
+| Backend regression | PASS, 485/485; includes 15 Ollama transport/configuration tests and agent authorization/draft tests; real model test excluded in this run |
+| Explicit live backend integration | PASS, 1/1; authenticated DemoERP controller → qwen3:8b → actual ReportingService on disposable PostgreSQL with synthetic inventory → owner-only audit/tokens; order count unchanged |
+| HTTP live smoke command | PASS; provider=Ollama, model=qwen3:8b, Turkish, get_low_stock_products, 1434 total tokens, execution f8bdf8ea-2a06-4887-bd43-53fde4f18ecb, correlation 0HNPEUO40UMT9:00000002. Empty low-stock report explicitly reported; no business data seeded by smoke command |
+| React → .NET → real Ollama browser flow | PASS, Linux Chromium; live source, non-Mock response, positive tokens, successful tool audit and matching correlation verified |
+| New agent UI contract | PASS, 1/1; default reporting payload stays backward compatible |
+| Existing AI UI regressions | PASS, 14/14 history, EN/TR, cancellation, error and source rendering checks; default-disabled-provider browser case excluded because this isolated stack intentionally enables Ollama |
+| Frontend build/lint/Vitest | PASS; 16/16 Vitest tests |
+| Live-smoke guard/contract tests | PASS, 5/5, intercepted local HTTP only |
+| Default Ollama live command | SKIP as intended; no network without explicit opt-in |
+| Secret scan / diff | PASS; Gitleaks scanned 2.36 MB of publishable source, zero findings; git diff --check clean |
+| Database compatibility | No migrations added; all 23 historical migration files byte-identical to Phase 11.1; regression suite applies committed migrations to disposable PostgreSQL and exercises ERP operations |
+
+The first real model call did not select a tool; a subsequent attempt requested limit=100 and was correctly rejected. The adapter now clarifies native selection and 1–10 argument bounds, then switches to constrained final JSON after one native batch. Validation was not relaxed. Tests passed after those corrections. Initial Windows Chromium launch failed and Edge was unsuitable for this run; final browser checks used the existing Linux Playwright image against loopback-bound native servers. A confirmed pre-existing Vite development startup failure (`lazy` before initialization) was fixed by grouping imports before lazy declarations in App.tsx. Production build and browser regressions passed afterward.
+
+Order drafts are structured preparation only: no natural-language order extraction, reference verification, pricing, stock reservation or ERP write. They return human-review flags and a metadata-only DraftOnly execution with zero model calls/tokens. Future RAG interfaces are declared but unregistered; no pgvector extension, ingestion or retrieval exists yet. Local token counts do not imply API billing. A passing live check does not certify all model statements; source reports remain authoritative.
+
+Test services used an isolated `demoerp-phase112-validation` PostgreSQL volume and temporary native backend/frontend processes. Existing ERP database volumes and Ollama listener/GPU settings were not changed. No OpenAI key was needed or read for this phase. Runtime evidence and screenshots are ignored under `.tools/phase11-2/` (the early live test logs are under `.tools/ollama-live-*.log`).
+
+---
+
+# Phase 11.1 OpenAI Responses integration — 2026-10-20
+
+## Baseline and implementation
+
+Verified clean Phase 11 commit `1cad4d83686fee7b17bb3859a259f97fde64933f`, then created `codex/phase11-1-openai-responses`. The existing publication checkout remains the Git source of record. The provider-independent IAiModelClient interface is unchanged. [OpenAI integration](docs/OPENAI_INTEGRATION.md) documents architecture, configuration, request flow, security, error semantics, live smoke and limitations.
+
+The official pinned OpenAI .NET SDK now targets `/v1/responses` with strict function schemas, strict final text.format JSON, store=false, bounded output and no SDK retries. It replays function outputs with call_id and keeps opaque reasoning continuation only in scoped request memory. Multiple function calls remain sequential, authorized and bounded. Runtime retries cannot redispatch tools; Retry-After is cancellable under the overall deadline. Refusals, incomplete results, missing models, quota/authentication errors and invalid provider requests have safe translated categories. The Development-only Mock provider is preserved.
+
+OPENAI_API_KEY and OPENAI_MODEL are backend-only canonical settings, with nonempty canonical values overriding legacy configuration. No key was exposed or committed. Existing AI history ownership, retention, deletion and business read-only policy remain intact. A small additive AiRequestCorrelation migration adds one column to the existing execution table; historical AI and business records are preserved. The new owner-only execution-summary endpoint exposes safe metadata, not prompts/arguments/results, and rejects foreign/expired IDs.
+
+## Executed checks
+
+| Check | Result |
+| --- | --- |
+| Baseline and dedicated branch | PASS; clean 1cad4d8 verified before changes |
+| Backend build | PASS, zero warnings/errors; official SDK Responses preview warning is localized to adapter |
+| Final full backend suite | PASS **468/468** including Phase 11 coverage, SDK network timeout, transport contracts, real ERP tool flows, correlation ownership and both preservation upgrades |
+| Official Responses SDK tests | PASS **33/33** via intercepted HTTP, not live OpenAI |
+| Frontend lint / TypeScript / production build | PASS |
+| Vitest components | PASS **16/16** |
+| Linux Chromium AI/history/error/smoke/axe | PASS **17/17** |
+| Preserved Development Mock real reporting/history flow | PASS **1/1**, no paid provider |
+| Live-smoke command safety tests | PASS **3/3**, intercepted local application HTTP only |
+| Live-smoke default invocation | SKIP as designed, no network call |
+| Additive migration/data preservation | PASS; 23 business tables/views retain full-row signatures, and prior AI history/usage/audit survive correlation migration |
+| Historical migration/designer sources | PASS; all **20** existing files unchanged |
+| Fresh separate-volume Compose | PASS; all three services healthy, canonical settings forwarded only to backend |
+| Secret scan / local links | PASS; final checks repeated before commit |
+| Real authenticated OpenAI acceptance | **NOT RUN**; OPENAI_API_KEY and legacy provider key were absent from the execution environment |
+| Remote GitHub Actions / deployment | **NOT RUN**; no push, main merge or deployment performed |
+
+Initial failing attempts are not counted as passes: a malformed empty response was classified as transient rather than invalid; null status/ID validation was tightened. SDK enum string casing initially rejected completed function items; case-insensitive status validation corrected it. The complete passing runs followed those fixes. No production data was fabricated. Static model/HTTP fixtures and temporary ERP records exist only in isolated automated tests; they are never reported as live provider results.
+
+## Live status, required configuration and next phase
+
+The Responses integration is implemented and deterministic tests pass. This is **not a successful live-model verification**. To perform it, configure a valid backend OPENAI_API_KEY, an accessible compatible OPENAI_MODEL, AI_ENABLED=true and AI_PROVIDER=OpenAI; use an existing authorized ERP account. The opt-in `scripts/ai-live-smoke.mjs` authenticates, reads actual low stock, requests Turkish output with the approved low-stock tool and verifies persisted metadata/correlation. It never seeds business data. Instructions and secret-safe invocation are in OPENAI_INTEGRATION.md. A human must still compare answer prose/figures with the actual source report.
+
+Known limitations remain: the official SDK marks its Responses surface preview; model/account compatibility needs live verification; per-process quotas are not financial controls; ambiguous retries may incur provider cost; structured JSON and verified tool execution do not guarantee every model statement; provider/backup retention and production operations require review. The next phase should run an authorized live acceptance and model evaluation, then add operational spend/shared quota controls before RAG or any separately approved action workflow.
+
+---
+
+# Phase 11 AI foundation — 2026-10-20
+
+## Repository audit and architectural decisions
+
+[AI foundation](docs/AI_FOUNDATION.md) records the pre-implementation audit, risks, component responsibilities, data flow/Mermaid, API, settings and Phase 12 recommendations. Work is on `codex/phase11-ai-foundation` in the existing publication checkout. No main merge, public deployment or paid provider call was performed. Current app remains a layered monolith; existing authorized ReportingService and nine read-only tools are reused.
+
+## Implemented features and security
+
+Provider-neutral schema validation, bounded transient retries, explicit read-only execution policy (including denial of future approval-required tools), Development-only labeled Mock provider, optional owner-only persistent conversation context, revision-protected appends, server-generated sources, no-store responses, expiry/deletion and startup/hourly retention cleanup. Four new AI-only tables hold conversations, validated successful messages, run/usage metadata and per-tool audit metadata. No prompt/result/secret/error bodies enter logs or execution metadata. Stateless requests do not store message content. Unknown tool names are redacted as `unregistered`. Estimated cost is null without a verified price snapshot. AI has no business write, SQL, shell, arbitrary URL or user-management capability.
+
+The React interface retains existing navigation/design/localization, adds explicit history opt-in, server-side loading/resume/deletion, error/loading feedback and mock/ERP-report interpretation labels. Saved mock replies remain labeled after reload. No conversation body/ID is stored in browser local/session storage. The existing auth session and language preference retain their existing storage behavior.
+
+## Executed verification
+
+| Check | Result |
+| --- | --- |
+| Backend restore/build | PASS, zero warnings/errors on initial build; subsequent test builds also pass |
+| Full backend suite | PASS **444/444** after final runtime/schema changes |
+| Migration suite after adding Phase 11 upgrade preservation test | PASS **5/5**, including one new test; combined coverage is **445 distinct passing backend cases** (the whole 445-case suite was not rerun together) |
+| Phase 11 data preservation | PASS: full-row JSON signatures identical for all **23** existing business tables/views across Manufacturing → AiFoundation; ten migrations applied, no pending model changes |
+| Historical migration sources | PASS: all **18** historical migration/designer files unchanged; only snapshot and one additive migration added |
+| Frontend lint / TypeScript | PASS, final source |
+| Frontend Vitest components | PASS **16/16** |
+| Frontend production build | PASS, host build and final Compose build |
+| Final Linux Chromium default-disabled AI/history + smoke/axe | PASS **11/11** |
+| Linux Chromium Development mock + history | PASS **3/3**, including real API/reporting/persistence/reload/delete and mock labeling |
+| Fresh isolated Compose stacks | PASS: PostgreSQL/backend/frontend healthy, no real-provider key required |
+| Local documentation links / secret scan | PASS; final counts checked again before commit |
+| Remote GitHub Actions for this branch | NOT RUN; branch not pushed as part of this implementation |
+| Live paid provider integration / model quality | NOT RUN; tests use mocked model turns, intercepted SDK HTTP and labeled development simulation |
+
+Initial attempts are not counted as passes: an authentication test constructed an unmatched DELETE route; it was corrected. Windows Chromium failed at process launch (`spawn UNKNOWN`); Linux Playwright was used. Two new UI fixtures initially omitted required session fields; corrected fixtures passed. A test-only dynamic table identifier triggered the SQL analyzer; identifiers now have an explicit whitelist assertion and a narrowly scoped suppression. No production SQL/tool authority was loosened.
+
+## CI and remaining risks
+
+CI adds `test:ai` on the existing isolated default-disabled stack, then enables Development Mock for `test:ai-mock`; ordinary CI never requires paid calls. Workflow steps use the same existing read-only repository permission and disposable project. Local equivalent checks passed; remote execution is not claimed without a push.
+
+Quotas remain per-process/in-memory. Schema validity and real source execution do not guarantee factual prose. Secret-pattern checks are not complete DLP/PII detection. Content may be sent to the configured real provider only when enabled; deployment/provider/backup retention and residency remain operational responsibilities. Cleanup can lag on outages, though expired reads are immediately rejected. Final execution metadata completion is best effort after failures; crashes can leave running records. Token metadata is not exact billed usage and no cost estimate is fabricated. RAG/vector ingestion, human approval execution and multi-agent orchestration are not enabled; extension designs and required authorization/versioning boundaries are documented for Phase 12.
+
+The main local runtime/data were not migrated or redeployed; only disposable separate-volume test stacks were used.
+
+## Modified files
+
+- `.env.example`
+- `.github/workflows/ci.yml`
+- `README.md`
+- `README.tr.md`
+- `VERIFICATION.md`
+- `backend/Demo.Api.Tests/AiFoundationTests.cs`
+- `backend/Demo.Api.Tests/AiTests.cs`
+- `backend/Demo.Api.Tests/MigrationTests.cs`
+- `backend/Demo.Api.Tests/OpenAiClientTests.cs`
+- `backend/Demo.Api/AI/AiAssistantOptions.cs`
+- `backend/Demo.Api/AI/AiAssistantService.cs`
+- `backend/Demo.Api/AI/AiBoundaries.cs`
+- `backend/Demo.Api/AI/AiContracts.cs`
+- `backend/Demo.Api/AI/AiConversationStore.cs`
+- `backend/Demo.Api/AI/AiExecutionJournal.cs`
+- `backend/Demo.Api/AI/AiPersistenceEntities.cs`
+- `backend/Demo.Api/AI/AiToolExecutor.cs`
+- `backend/Demo.Api/AI/AiToolRegistry.cs`
+- `backend/Demo.Api/AI/OpenAiModelClient.cs`
+- `backend/Demo.Api/Controllers/AiController.cs`
+- `backend/Demo.Api/Data/AiModel.cs`
+- `backend/Demo.Api/Data/AppDbContext.cs`
+- `backend/Demo.Api/Data/Migrations/20261020113720_AiFoundation.Designer.cs`
+- `backend/Demo.Api/Data/Migrations/20261020113720_AiFoundation.cs`
+- `backend/Demo.Api/Data/Migrations/AppDbContextModelSnapshot.cs`
+- `backend/Demo.Api/Program.cs`
+- `docker-compose.yml`
+- `docs/AI_ARCHITECTURE.md`
+- `docs/AI_FOUNDATION.md`
+- `docs/AI_SECURITY.md`
+- `docs/TESTING.md`
+- `frontend/package.json`
+- `frontend/src/pages/AiAssistant.tsx`
+- `frontend/src/translations.ts`
+- `frontend/tests/ai-development.spec.ts`
+- `frontend/tests/ai-history.spec.ts`
+
+---
+
 > Publication update: Phase 7–10 sources and the Windows installation guide are included in this authorized GitHub release. The reports below record verification at the time of each phase; statements about an unpublished revision are historical. Remote CI for the published commit must be checked in GitHub Actions. A separate fresh Compose database/volume was built and started from the publication tree on ports 3017/5097; all three services were healthy, all three health endpoints returned 200, initial Admin bootstrap and demo Viewer/Manager creation/login passed, and disabling bootstrap then recreating the backend preserved access. This is a local fresh-stack check, not a clean Windows OS installation. No public application deployment is claimed.
 
 # Phase 10 delivery and verification — 2026-10-11

@@ -1,3 +1,10 @@
+import { RequirePermission } from './permissions';
+import { t, useLanguage } from './i18n';
+import { lazy, Suspense, useEffect } from 'react';
+import { Loading } from './components';
+import { Link, Navigate, Route, Routes } from 'react-router-dom';
+import { AppShell } from './AppShell';
+
 const BomsPage = lazy(() => import('./pages/Boms').then(m => ({ default: m.BomsPage })));
 const BomEditor = lazy(() => import('./pages/Boms').then(m => ({ default: m.BomEditor })));
 const BomDetail = lazy(() => import('./pages/Boms').then(m => ({ default: m.BomDetail })));
@@ -11,14 +18,10 @@ const WarehouseDetail = lazy(() => import('./pages/Warehouses').then(m => ({ def
 const TransfersPage = lazy(() => import('./pages/Transfers').then(m => ({ default: m.TransfersPage })));
 const TransferEditor = lazy(() => import('./pages/Transfers').then(m => ({ default: m.TransferEditor })));
 const TransferDetail = lazy(() => import('./pages/Transfers').then(m => ({ default: m.TransferDetail })));
-import { RequirePermission } from './permissions';
 const UsersPage = lazy(() => import('./pages/Administration').then(m => ({ default: m.UsersPage })));
 const UserEditor = lazy(() => import('./pages/Administration').then(m => ({ default: m.UserEditor })));
 const AuditPageView = lazy(() => import('./pages/Administration').then(m => ({ default: m.AuditPageView })));
 const AuditDetail = lazy(() => import('./pages/Administration').then(m => ({ default: m.AuditDetail })));
-import { t, useLanguage } from './i18n';
-import { lazy, Suspense, useEffect } from 'react';
-import { Loading } from './components';
 const DashboardPage = lazy(() => import('./pages/Reporting').then(m => ({ default: m.DashboardPage })));
 const ReportsPage = lazy(() => import('./pages/Reporting').then(m => ({ default: m.ReportsPage })));
 const SuppliersPage = lazy(() => import('./pages/Procurement').then(m => ({ default: m.SuppliersPage })));
@@ -29,8 +32,12 @@ const PurchaseEditor = lazy(() => import('./pages/Procurement').then(m => ({ def
 const PurchaseDetail = lazy(() => import('./pages/Procurement').then(m => ({ default: m.PurchaseDetail })));
 const ReceiveGoods = lazy(() => import('./pages/Procurement').then(m => ({ default: m.ReceiveGoods })));
 const ReceiptDetail = lazy(() => import('./pages/Procurement').then(m => ({ default: m.ReceiptDetail })));
+const KnowledgeCenter = lazy(() => import('./pages/KnowledgeCenter'));
+const OperationsCenter = lazy(() => import('./pages/OperationsCenter'));
+const QualityDashboard = lazy(() => import('./pages/QualityDashboard'));
+const WorkflowDesigner = lazy(() => import('./pages/WorkflowDesigner'));
+const AgentCenter = lazy(() => import('./pages/AgentCenter'));
 const AiAssistant = lazy(() => import('./pages/AiAssistant'));
-import { Link, Navigate, Route, Routes } from 'react-router-dom';
 const RecordList = lazy(() => import('./pages/Records').then(m => ({ default: m.RecordList })));
 const RecordEditor = lazy(() => import('./pages/Records').then(m => ({ default: m.RecordEditor })));
 const RecordDetail = lazy(() => import('./pages/Records').then(m => ({ default: m.RecordDetail })));
@@ -39,7 +46,6 @@ const OrderCreate = lazy(() => import('./pages/Orders').then(m => ({ default: m.
 const OrderDetail = lazy(() => import('./pages/Orders').then(m => ({ default: m.OrderDetail })));
 const InventoryList = lazy(() => import('./pages/Inventory').then(m => ({ default: m.InventoryList })));
 const InventoryDetail = lazy(() => import('./pages/Inventory').then(m => ({ default: m.InventoryDetail })));
-import { AppShell } from './AppShell';
 const AuthPage = lazy(() => import('./pages/AuthPage').then(m => ({ default: m.AuthPage })));
 const ProductList = lazy(() => import('./pages/ProductList').then(m => ({ default: m.ProductList })));
 const ProductDetail = lazy(() => import('./pages/ProductDetail').then(m => ({ default: m.ProductDetail })));
@@ -55,6 +61,11 @@ export function App() {
     <Route path="/auth/register" element={<AuthPage registerMode />} />
     <Route element={<AppShell />}>
       <Route path="/dashboard" element={<DashboardPage />} />
+      <Route path="/knowledge" element={<KnowledgeCenter />} />
+      <Route path="/operations" element={<OperationsCenter />} />
+      <Route path="/ai-quality" element={<QualityDashboard />} />
+      <Route path="/workflows" element={<WorkflowDesigner />} />
+      <Route path="/agent-center" element={<AgentCenter />} />
       <Route path="/ai-assistant" element={<RequirePermission permission="read"><AiAssistant /></RequirePermission>} />
       <Route path="/reports" element={<Navigate to="/reports/sales" replace />} />
       <Route path="/reports/procurement" element={<PurchaseList report />} />

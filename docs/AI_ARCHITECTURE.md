@@ -1,9 +1,18 @@
+> Current entry points: [agent responsibilities](AI_AGENTS.md), [system/provider diagrams](architecture/SYSTEM.md), [human-approved operations](architecture/AGENT_WORKFLOWS.md), [knowledge/workflow pipelines](architecture/KNOWLEDGE_AUTOMATION.md). Phase 11.8 includes local RAG, durable proposals and visual workflows. Earlier phase descriptions below retain their original scope and do not mean those later capabilities are absent today.
+
+> Phase 11.3: [Intelligent agents and Agent Control Center](INTELLIGENT_AGENTS.md) adds typed orchestration, read-only analysis, resolved non-submitted drafts and private step metadata.
+
+> Phase 11.2 adds the optional Development-only [local Ollama provider](OLLAMA_INTEGRATION.md), Inventory Agent and review-only order drafts. Existing OpenAI behavior remains available.
+
+> Phase 11.1: [OpenAI Responses integration](OPENAI_INTEGRATION.md) documents the current provider transport, canonical environment variables, error handling, execution correlation and opt-in live smoke. Earlier foundation design below is retained as historical context where superseded.
+
 # AI Business Assistant
 
 [README](../README.md) · [Security and privacy](AI_SECURITY.md) · [Reporting definitions](REPORTING.md) · [Verification](../VERIFICATION.md)
 
-Phase 6 extends the existing .NET 10 / EF Core / PostgreSQL application. It adds no
-tables, migrations, vector database, agent framework or persistent chat history.
+Phase 11 extends the existing Phase 6 assistant with provider-neutral validation,
+opt-in persistent history and AI-only execution metadata. See [AI foundation](AI_FOUNDATION.md)
+for the current architecture, API, retention and configuration. No vector database or autonomous write agent is implemented.
 All tools are read-only. Viewer, Manager and Admin share BusinessRead permission.
 
 ```mermaid
@@ -27,7 +36,7 @@ flowchart TD
 ## Request lifecycle
 
 `GET /api/ai/status` requires BusinessRead and returns only `{ enabled, configured,
-available }`. Available means locally configured, not confirmed provider health.
+available }` plus provider, isMock and retentionDays. Available means locally configured, not confirmed provider health.
 It performs no provider request and does not expose endpoint, key or internal errors.
 
 `POST /api/ai/chat` accepts exactly the supported business input:
@@ -40,7 +49,8 @@ The server accepts 1–2,000 characters and `en` or `tr`, checks optional featur
 configuration, rechecks the active authenticated identity, then consumes quota.
 The model receives server-owned instructions, the question and registered schemas.
 No client system messages, history, user IDs, role overrides or model selection
-are forwarded. Each request is independent; users must repeat relevant context.
+are forwarded. Requests remain independent by default; opt-in history is loaded
+by the server from the current user's unexpired conversation.
 
 Tool calls execute sequentially because EF Core's scoped DbContext is not safe for
 parallel queries. Arguments must match the complete expected property set, with
@@ -103,27 +113,27 @@ historical price snapshots remain stored order/item prices, not current prices.
 
 ## Provider configuration
 
-The official **OpenAI .NET SDK 2.14.0** uses Chat Completions function calling and
-strict answer JSON. Default model is the supported snapshot
-`gpt-4.1-mini-2025-04-14`, confirmed in the [official model documentation](https://developers.openai.com/api/docs/models/gpt-4.1-mini).
-The [official function-calling guide](https://developers.openai.com/api/docs/guides/function-calling)
-describes the application-executed tool/output cycle; [SDK documentation](https://developers.openai.com/api/docs/libraries)
-identifies the supported .NET package. Not every configurable model supports these
-same options. Changing model requires compatibility and quality testing. Newer
-Responses-only models cannot be substituted into this Chat Completions adapter.
+The official **OpenAI .NET SDK 2.14.0** now uses Responses API function calling,
+strict `text.format` answer JSON and `store=false`. The existing default
+`gpt-4.1-mini-2025-04-14` remains configurable; actual account/model capability and
+quality need deployment verification. The adapter handles refusals, incomplete
+responses, stateless encrypted reasoning continuation and safe failure categories.
+The SDK marks its Responses surface OPENAI001; the opt-in is confined to the adapter.
+See [OpenAI integration](OPENAI_INTEGRATION.md) for the exact wire flow, configuration,
+known limitations and opt-in live acceptance. No live provider success is assumed.
 
 Copy `.env.example` to ignored `.env`; keep AI disabled until privacy/cost review.
-For an authorized deployment, set `AI_ENABLED=true` and provide `AI_API_KEY` through
+For an authorized deployment, set `AI_ENABLED=true` and provide `OPENAI_API_KEY` through
 a backend secret mechanism, then recreate the backend. Do not use a VITE variable.
 No real key is committed and no billable live calls run in CI.
 
 | Compose environment / backend option under AiAssistant | Default / allowed |
 | --- | --- |
 | `AI_ENABLED` / Enabled | false |
-| `AI_PROVIDER` / Provider | OpenAI only |
-| `AI_MODEL` / Model | gpt-4.1-mini-2025-04-14; server controlled |
+| `AI_PROVIDER` / Provider | OpenAI, or Mock in Development only |
+| `OPENAI_MODEL`, fallback `AI_MODEL` / Model | gpt-4.1-mini-2025-04-14; server controlled |
 | `AI_ENDPOINT` / Endpoint | https://api.openai.com/v1 only; arbitrary hosts rejected |
-| `AI_API_KEY` / ApiKey | empty; backend only |
+| `OPENAI_API_KEY`, fallback `AI_API_KEY` / ApiKey | empty; backend only |
 | `AI_TIMEOUT_SECONDS` / TimeoutSeconds | 30; 1–120 |
 | `AI_MAX_OUTPUT_TOKENS` / MaxOutputTokens | 1000; 100–2000 per provider response |
 | `AI_MAX_TOOL_CALLS` / MaxToolCalls | 5; 1–5 total per request |
@@ -139,7 +149,8 @@ credential validation can be added later without changing the controller/tools.
 
 At most two tool rounds and one final answer round, five tool calls total, ten rows
 per ranking/list, 20,000 serialized characters per tool payload, 2,000 input characters,
-8,000 answer characters and a 16 KB HTTP body. SDK retries are disabled. Linked
+8,000 answer characters and a 16 KB HTTP body. SDK retries are disabled; the runtime retries transient provider failures at most
+AI_MAX_RETRIES times within the overall deadline. Linked
 cancellation bounds the entire request, provider calls and EF queries. The final
 round exposes no tools. Conversation UI keeps at most 20 exchanges in component
 memory; refresh/navigation resets it. Cancel/unmount aborts requests. React renders

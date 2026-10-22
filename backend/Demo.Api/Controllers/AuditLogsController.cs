@@ -12,8 +12,8 @@ namespace Demo.Api.Controllers;
 [ApiController, Authorize(Policy = AccessPolicies.AuditRead), Route("api/audit-logs")]
 public sealed class AuditLogsController(AppDbContext db) : ControllerBase
 {
-    private static readonly string[] Actions = ["Create", "Update", "Delete", "Activate", "Deactivate", "RoleChange", "OrderConfirm", "OrderComplete", "OrderCancel", "StockIn", "StockOut", "StockAdjustment", "MinimumLevelChange", "PurchaseSubmit", "PurchaseCancel", "PurchaseReceive", "GoodsReceiptPost", "WarehouseDefaultChange", "TransferComplete", "TransferCancel", "BomActivate", "BomDeactivate", "ProductionRelease", "ProductionStart", "ProductionComplete", "ProductionCancel"];
-    private static readonly string[] Entities = ["Product", "Category", "Customer", "Order", "Inventory", "User", "Warehouse", "WarehouseInventory", "StockTransfer", "Supplier", "PurchaseOrder", "GoodsReceipt", "BillOfMaterials", "ProductionOrder"];
+    private static readonly string[] Actions = ["MonitoringCancel", "Create", "Update", "Delete", "Activate", "Deactivate", "RoleChange", "OrderConfirm", "OrderComplete", "OrderCancel", "StockIn", "StockOut", "StockAdjustment", "MinimumLevelChange", "PurchaseSubmit", "PurchaseCancel", "PurchaseReceive", "GoodsReceiptPost", "WarehouseDefaultChange", "TransferComplete", "TransferCancel", "BomActivate", "BomDeactivate", "ProductionRelease", "ProductionStart", "ProductionComplete", "ProductionCancel"];
+    private static readonly string[] Entities = ["MonitoringRule", "MonitoringRun", "KnowledgeDocument", "AiOrderProposal", "Product", "Category", "Customer", "Order", "Inventory", "User", "Warehouse", "WarehouseInventory", "StockTransfer", "Supplier", "PurchaseOrder", "GoodsReceipt", "BillOfMaterials", "ProductionOrder"];
     private static JsonElement? Json(string? value) => value is null ? null : JsonSerializer.Deserialize<JsonElement>(value);
     private static AuditResponse Map(AuditLog a) => new(a.Id, a.UserId, a.UserName, a.Action, a.EntityName, a.EntityId, Json(a.OldValues), Json(a.NewValues), a.Description, a.CreatedAt, a.CorrelationId);
     [HttpGet]

@@ -2,5 +2,5 @@ import { defineConfig } from 'vitest/config';
 import react from '@vitejs/plugin-react';
 
 export default defineConfig({ plugins: [react()], test: { env: { VITE_API_BASE_URL: 'http://127.0.0.1:1/api' },
-  environment: 'jsdom', include: ['src/**/*.test.tsx'], setupFiles: ['./src/test-setup.ts'],
+  environment: 'jsdom', include: ['src/**/*.test.{ts,tsx}'], setupFiles: ['./src/test-setup.ts'],
 } });

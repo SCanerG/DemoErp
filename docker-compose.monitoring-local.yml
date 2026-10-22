@@ -1,0 +1,6 @@
+# NEW project/volume only. Native API connects on loopback; Ollama is never published.
+services:
+  postgres:
+    image: pgvector/pgvector:pg17
+    ports:
+      - "127.0.0.1:55440:5432"

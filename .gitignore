@@ -12,3 +12,4 @@
 *.user
 *.log
 *.tsbuildinfo
+artifacts/ai-evaluation/

@@ -13,6 +13,82 @@ namespace Demo.Api.Tests;
 public sealed class MigrationTests
 {
     [Fact]
+    public async Task Agent_upgrade_preserves_all_Phase111_business_and_AI_rows()
+    {
+        var ct=TestContext.Current.CancellationToken;
+        await using var database=new PostgreSqlBuilder("postgres:17-alpine").WithDatabase("agent_upgrade").WithUsername("catalog").WithPassword("test-only-password").Build();await database.StartAsync(ct);
+        await using var db=new AppDbContext(new DbContextOptionsBuilder<AppDbContext>().UseNpgsql(database.GetConnectionString()).Options);
+        var migrator=db.GetService<IMigrator>();await migrator.MigrateAsync("20261020120446_AiRequestCorrelation",ct);
+        var user=new Demo.Api.Domain.User {Name="Preserved agent owner",Email="preserved-agent@example.com",PasswordHash="preserved-test-hash"};
+        var conversation=new Demo.Api.AI.AiConversation {UserId=user.Id,ExpiresAt=DateTimeOffset.UtcNow.AddDays(2)};
+        var run=new Demo.Api.AI.AiExecution {UserId=user.Id,ConversationId=conversation.Id,Provider="Ollama",Model="qwen3:8b",CorrelationId="preserved-correlation",ExpiresAt=conversation.ExpiresAt};
+        db.AddRange(user,conversation,run,new Demo.Api.AI.AiToolAudit {ExecutionId=run.Id,ToolName="get_inventory_overview",Outcome="success"});await db.SaveChangesAsync(ct);
+        var tables=await db.Database.SqlQueryRaw<string>("SELECT table_name AS \"Value\" FROM information_schema.tables WHERE table_schema='public' AND table_name <> '__EFMigrationsHistory' ORDER BY table_name").ToListAsync(ct);
+        async Task<string[]> Snapshot() {
+            var signatures=new List<string>();
+            foreach(var table in tables) {
+                Assert.Matches("^[A-Za-z][A-Za-z0-9]*$",table);
+#pragma warning disable EF1002 // Only validated table identifiers from the isolated test database are interpolated.
+                var json=await db.Database.SqlQueryRaw<string>($"SELECT COALESCE(jsonb_agg(to_jsonb(t) ORDER BY to_jsonb(t)::text),'[]'::jsonb)::text AS \"Value\" FROM \"{table}\" t").SingleAsync(ct);
+#pragma warning restore EF1002
+                signatures.Add(table+":"+Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(json))));
+            }
+            return signatures.ToArray();
+        }
+        var before=await Snapshot();await migrator.MigrateAsync(cancellationToken:ct);Assert.Equal(before,await Snapshot());Assert.False(db.Database.HasPendingModelChanges());
+        Assert.Empty(await db.Set<Demo.Api.AI.Agents.AiAgentRun>().ToListAsync(ct));
+        Assert.Equal("preserved-correlation",(await db.Set<Demo.Api.AI.AiExecution>().SingleAsync(ct)).CorrelationId);
+    }
+    [Fact]
+    public async Task Correlation_upgrade_preserves_existing_AI_history_usage_and_audits()
+    {
+        var ct=TestContext.Current.CancellationToken;
+        await using var database=new PostgreSqlBuilder("postgres:17-alpine").WithDatabase("ai_correlation_upgrade").WithUsername("catalog").WithPassword("test-only-password").Build();await database.StartAsync(ct);
+        await using var db=new AppDbContext(new DbContextOptionsBuilder<AppDbContext>().UseNpgsql(database.GetConnectionString()).Options);
+        var migrator=db.GetService<IMigrator>();await migrator.MigrateAsync("20261020113720_AiFoundation",ct);
+        var user=new Demo.Api.Domain.User{Name="Preserved AI owner",Email="correlation-upgrade@example.com",PasswordHash="preserved-hash"};
+        var conversation=new Demo.Api.AI.AiConversation{UserId=user.Id,Revision=1,ExpiresAt=DateTimeOffset.UtcNow.AddDays(7)};
+        var message=new Demo.Api.AI.AiConversationMessage{ConversationId=conversation.Id,Sequence=0,Role="user",Content="Preserved history",Language="en"};db.AddRange(user,conversation,message);await db.SaveChangesAsync(ct);
+        var run=Guid.NewGuid();var now=DateTimeOffset.UtcNow;var expiry=now.AddDays(7);var audit=Guid.NewGuid();
+        await db.Database.ExecuteSqlInterpolatedAsync($"INSERT INTO \"AiExecutions\" (\"Id\",\"UserId\",\"ConversationId\",\"Provider\",\"Model\",\"Outcome\",\"ProviderCalls\",\"TotalTokens\",\"DurationMs\",\"CreatedAt\",\"ExpiresAt\") VALUES ({run},{user.Id},{conversation.Id},'Mock','preserved-model','success',2,15,42,{now},{expiry})",ct);
+        await db.Database.ExecuteSqlInterpolatedAsync($"INSERT INTO \"AiToolAudits\" (\"Id\",\"ExecutionId\",\"ToolName\",\"Outcome\",\"DurationMs\",\"CreatedAt\") VALUES ({audit},{run},'get_inventory_overview','success',12,{now})",ct);
+        await migrator.MigrateAsync(cancellationToken:ct);
+        var stored=await db.Set<Demo.Api.AI.AiExecution>().SingleAsync(r=>r.Id==run,ct);Assert.Equal("",stored.CorrelationId);Assert.Equal(15,stored.TotalTokens);Assert.Equal("success",stored.Outcome);Assert.Equal(conversation.Id,stored.ConversationId);
+        Assert.Equal("Preserved history",(await db.Set<Demo.Api.AI.AiConversationMessage>().SingleAsync(m=>m.Id==message.Id,ct)).Content);
+        Assert.Equal("success",(await db.Set<Demo.Api.AI.AiToolAudit>().SingleAsync(t=>t.Id==audit,ct)).Outcome);Assert.False(db.Database.HasPendingModelChanges());
+    }
+    [Fact]
+    public async Task Ai_foundation_upgrade_preserves_all_business_tables_and_views()
+    {
+        var ct=TestContext.Current.CancellationToken;
+        await using var database=new PostgreSqlBuilder("postgres:17-alpine").WithDatabase("ai_upgrade").WithUsername("catalog").WithPassword("test-only-password").Build();
+        await database.StartAsync(ct);
+        await using var db=new AppDbContext(new DbContextOptionsBuilder<AppDbContext>().UseNpgsql(database.GetConnectionString()).Options);
+        var migrator=db.GetService<IMigrator>();await migrator.MigrateAsync("20261010091341_Manufacturing",ct);
+        var category=new Demo.Api.Domain.Category {Name="AI migration preserved category"};
+        db.AddRange(category,new Demo.Api.Domain.Product {CategoryId=category.Id,Name="Preserved product",Price=12.50m},
+            new Demo.Api.Domain.Customer {Name="Preserved customer"},new Demo.Api.Domain.User {Name="Preserved user",Email="ai-upgrade@example.com",PasswordHash="preserved-hash"});
+        await db.SaveChangesAsync(ct);
+        var tables=await db.Database.SqlQueryRaw<string>("SELECT table_name AS \"Value\" FROM information_schema.tables WHERE table_schema='public' AND table_name <> '__EFMigrationsHistory' ORDER BY table_name").ToListAsync(ct);
+        Assert.Equal(23,tables.Count);
+        async Task<string[]> Signatures()
+        {
+            var values=new List<string>();
+            foreach(var table in tables) {
+                Assert.Matches("^[A-Za-z][A-Za-z0-9]*$",table);
+#pragma warning disable EF1002 // Test-only, validated identifiers from information_schema; identifiers cannot be SQL parameters.
+                var value=await db.Database.SqlQueryRaw<string>($"SELECT COALESCE(jsonb_agg(to_jsonb(t) ORDER BY to_jsonb(t)::text),'[]'::jsonb)::text AS \"Value\" FROM \"{table}\" t").SingleAsync(ct);
+#pragma warning restore EF1002
+                values.Add(table+":"+Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(value))));
+            }
+            return values.ToArray();
+        }
+        var before=await Signatures();await migrator.MigrateAsync(cancellationToken:ct);Assert.Equal(before,await Signatures());
+        Assert.Equal(db.Database.GetMigrations().Count(),(await db.Database.GetAppliedMigrationsAsync(ct)).Count());
+        Assert.False(db.Database.HasPendingModelChanges());
+        Assert.Equal(0,await db.Set<Demo.Api.AI.AiConversation>().CountAsync(ct));
+    }
+    [Fact]
     public async Task Procurement_upgrade_preserves_all_existing_rows_and_immutable_movement_history()
     {
         var ct = TestContext.Current.CancellationToken;

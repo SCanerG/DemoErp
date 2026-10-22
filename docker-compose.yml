@@ -34,10 +34,14 @@ services:
       AiAssistant__Model: ${AI_MODEL:-gpt-4.1-mini-2025-04-14}
       AiAssistant__Endpoint: ${AI_ENDPOINT:-https://api.openai.com/v1}
       AiAssistant__ApiKey: ${AI_API_KEY:-}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      OPENAI_MODEL: ${OPENAI_MODEL:-}
       AiAssistant__TimeoutSeconds: ${AI_TIMEOUT_SECONDS:-30}
       AiAssistant__MaxOutputTokens: ${AI_MAX_OUTPUT_TOKENS:-1000}
       AiAssistant__MaxToolCalls: ${AI_MAX_TOOL_CALLS:-5}
       AiAssistant__RequestsPerMinute: ${AI_REQUESTS_PER_MINUTE:-10}
+      AiAssistant__MaxRetries: ${AI_MAX_RETRIES:-1}
+      AiAssistant__RetentionDays: ${AI_RETENTION_DAYS:-7}
       AiAssistant__RequestsPerDay: ${AI_REQUESTS_PER_DAY:-100}
       Cors__Origins__0: ${FRONTEND_ORIGIN:-http://localhost:3000}
     ports:

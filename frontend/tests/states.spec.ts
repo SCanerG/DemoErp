@@ -70,15 +70,17 @@ test('unavailable session storage still permits login and logout in memory', asy
 test('late unauthorized response from a previous session does not clear a newer login', async ({ page }) => {
   await page.addInitScript(() => {
     const originalFetch = window.fetch;
-    let held = false;
+    let held: Promise<Response> | undefined;
     window.fetch = (input, options) => {
-      if (!held && String(input).endsWith('/api/products')) {
-        held = true;
-        return new Promise<Response>(resolve => {
+      if (String(input).endsWith('/api/products') && new Headers(options?.headers).get('Authorization') === 'Bearer old-session') {
+        held ??= new Promise<Response>(resolve => {
           // Deliberately model a response already in flight when cancellation/logout occurs.
           (window as unknown as { releaseOldResponse: () => void }).releaseOldResponse = () =>
             resolve(new Response(JSON.stringify({ title: 'Unauthorized' }), { status: 401 }));
         });
+        // StrictMode can initiate another request after cancelling the first observer.
+        // Every old-session request belongs to this controlled race, never to the real API.
+        return held.then(response => response.clone());
       }
       return originalFetch(input, options);
     };

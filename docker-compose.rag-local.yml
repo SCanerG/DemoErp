@@ -1,0 +1,7 @@
+# Use a NEW Compose project/volume or restore an existing DB into a separate reviewed copy.
+# This file does not alter the current ERP database and does not publish Ollama.
+services:
+  postgres:
+    image: pgvector/pgvector:pg17
+    ports:
+      - "127.0.0.1:55437:5432"

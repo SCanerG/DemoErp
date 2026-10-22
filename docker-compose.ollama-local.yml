@@ -1,0 +1,6 @@
+# Start ONLY postgres with this override; backend runs natively on Windows.
+# No Ollama container, port publishing, or host network setting is added.
+services:
+  postgres:
+    ports:
+      - "127.0.0.1:55433:5432"

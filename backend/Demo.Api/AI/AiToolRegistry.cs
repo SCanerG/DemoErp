@@ -24,7 +24,7 @@ public static class AiToolRegistry
     public static AiToolDefinition Find(string name) => All.SingleOrDefault(t => t.Name == name) ?? throw new BusinessException("aiUnknownTool", 400);
     public static AiArguments Validate(AiToolDefinition tool, string arguments)
     {
-        if (arguments.Length > 2000) throw new BusinessException("aiInvalidArguments");
+        if (arguments is null || arguments.Length > 2000) throw new BusinessException("aiInvalidArguments");
         try
         {
             using var document = JsonDocument.Parse(arguments, new JsonDocumentOptions { MaxDepth = 4 });

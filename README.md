@@ -1,108 +1,113 @@
-# DemoErp
+# DemoERP — AI-Native Enterprise Resource Planning
 
-A full-stack ERP engineering portfolio built with **ASP.NET Core, React and PostgreSQL**. DemoErp connects purchasing, warehouse inventory, manufacturing and sales in one business workspace, with English/Turkish localization and role-based access.
+**Transactional ERP workflows. Authorized AI tools. Human-approved actions.**
 
-[Türkçe](README.tr.md) · [Architecture](docs/ARCHITECTURE.md) · [API](docs/API.md) · [Testing](docs/TESTING.md) · [Deployment](docs/DEPLOYMENT.md) · [Verification](VERIFICATION.md)
+DemoERP connects sales, purchasing, warehouse inventory and manufacturing in one React workspace. This personal engineering project explores how specialized AI agents can work with real business data: the .NET backend owns calculations, permissions and transactions, while optional local or hosted models help route requests and explain verified results.
 
-![Executive dashboard with synthetic business data](docs/screenshots/dashboard-en.png)
+![.NET 10](https://img.shields.io/badge/.NET-10-512BD4?style=flat) ![React 19](https://img.shields.io/badge/React-19-149ECA?style=flat) ![TypeScript](https://img.shields.io/badge/TypeScript-5.9-3178C6?style=flat) ![PostgreSQL 17](https://img.shields.io/badge/PostgreSQL-17-4169E1?style=flat) ![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?style=flat) ![Ollama](https://img.shields.io/badge/Ollama-local_AI-222222?style=flat) [![GitHub Actions configuration](https://img.shields.io/badge/GitHub_Actions-CI_configuration-2088FF?style=flat)](.github/workflows/ci.yml)
 
-[Windows setup guide (Türkçe)](docs/INSTALLATION.tr.md)
+[Türkçe](README.tr.md) · [Getting started](docs/GETTING_STARTED.md) · [Documentation](docs/README.md) · [Verified feature status](docs/FEATURE_STATUS.md)
 
-## Demo accounts
+## Application preview
 
-Use these accounts to explore the prepared demo database:
+**Executive dashboard — sales, order status and current inventory in one workspace.**
 
-| Role | Email | Application role |
-| --- | --- | --- |
-| Administrator | `admin@example.com` | `Admin` |
-| Viewer | `viewer@example.com` | `Viewer` |
-| Operations manager | `operation@example.com` | `Manager` |
+![Actual DemoERP executive dashboard with synthetic sales metrics, inventory indicators and charts](docs/assets/screenshots/dashboard-overview-en.png)
 
-**Password for all three accounts:** `qwe123456789`
+**Agent Control Center — an actual local Qwen3 run coordinating Sales and Inventory analysis.**
 
-These are public demo credentials for synthetic data only. A fresh installation does not automatically create these accounts; provision them through Admin setup and user management. Do not reuse these credentials in production.
+![Actual Agent Control Center showing a completed Sales and Inventory collaboration, model interpretation and recorded agent steps](docs/assets/screenshots/agent-control-center-en.png)
 
-## Implemented business workflows
+These are cropped browser captures of the running application with synthetic records, not generated mockups. The agent capture is from the verified October 20 local run; the current designer was captured October 22. [Full images, Workflow Designer and screenshot provenance](docs/assets/screenshots/README.md).
 
-| Area | Capabilities |
-| --- | --- |
-| Catalog and sales | Products, categories, customers, server-priced sales orders; confirmation deducts stock and eligible cancellation returns it |
-| Inventory | Warehouse balances, stock in/out, adjustments, minimum levels and immutable movement history |
-| Warehouses | Selected fulfillment/receiving locations, default warehouse governance and atomic stock transfers |
-| Procurement | Suppliers, purchase orders, partial/full goods receipts with idempotent posting |
-| Manufacturing | Versioned single-level BOMs, immutable material snapshots, release/start/complete lifecycle, atomic consumption and finished-goods output |
-| Analytics | Eight executive KPIs, sales/status charts, product/customer rankings, stock alerts, procurement/manufacturing summaries and paginated CSV reports |
-| Administration | Admin/Manager/Viewer policies, user activation/role management, last-Admin protection and transactional audit logging |
-| Optional AI | Bounded read-only business assistant; disabled by default, no provider key needed to run the ERP or its tests |
+## AI agentic architecture
 
 ```mermaid
-flowchart LR
-  Purchase[Purchase order] --> Receipt[Goods receipt]
-  Receipt --> Materials[Warehouse inventory]
-  Materials --> Production[Production: consume BOM materials]
-  Production --> Finished[Finished goods inventory]
-  Finished --> Sales[Sales order confirmation]
-  Transfer[Atomic warehouse transfer] --> Materials
+flowchart TD
+    UI["React ERP workspace"] --> API[".NET API<br/>JWT · current identity · role policies"]
+    API --> COORD["Bounded agent coordinator"]
+    COORD <-->|"Routing and explanations"| MODEL["IAiModelClient<br/>Ollama · OpenAI · Development Mock"]
+    COORD --> AGENTS["Sales · Inventory<br/>Order Draft · Knowledge"]
+    AGENTS --> READ["Authorized reports and RAG"]
+    READ --> DB[("PostgreSQL<br/>Optional pgvector knowledge store")]
+    AGENTS --> PROPOSAL["Backend-resolved proposal"]
+    PROPOSAL --> HUMAN["Explicit human approval"]
+    HUMAN --> BUSINESS["Validated ERP transaction"]
+    BUSINESS --> DB
+    COORD -.-> HISTORY["Private history and telemetry"]
+    BUSINESS -.-> HISTORY
+    classDef boundary fill:#e8f3ef,stroke:#286052,color:#173e35
+    class API,READ,HUMAN,BUSINESS boundary
 ```
 
-The backend owns pricing, authorization, stock consistency and lifecycle validation. UI controls reflect those rules; hiding a button never substitutes for server authorization. Completed-order sales value is expressed in USD and is not accounting revenue. Inventory and active-record KPIs are current snapshots.
+The agents are bounded, specialized C# services sharing a provider abstraction. They are not independent unrestricted model processes. Nine fixed read-only reporting tools coexist with typed agent reads and document retrieval. **The model cannot execute SQL, shell commands or approve its own business writes.** [Detailed architecture and seven maintainable diagrams](docs/architecture/README.md).
 
-## Run locally
+## A real multi-agent ERP workflow
 
-Install Docker Desktop with Linux containers, then:
+> “Analyze sales from the last three months and inspect inventory for replenishment.”
+
+1. The authenticated request enters a fixed **Sales → Inventory → Summary** collaboration path.
+2. Sales reuses authorized reporting tools; Inventory reads current balances and completed-sales demand. The backend calculates all quantities and totals.
+3. Current account state, role and security version are checked before protected work. Tool names, arguments and result sizes are bounded.
+4. The model explains those verified facts. The UI separates factual tables from model interpretation and explicitly labels deterministic fallback output.
+5. A replenishment recommendation does **not** create an order. A separate supported draft/procurement request can prepare a private proposal with resolved references and current prices.
+6. An authorized user reviews the exact proposal. The existing business service revalidates and saves only after explicit approval, with idempotency and an actual saved-result receipt.
+
+Actual local collaboration and draft executions are recorded in [verification](VERIFICATION.md). The collaboration example is read-only; it does not imply automatic procurement, forecasting or autonomous order confirmation. [Agent responsibilities and approval lifecycle](docs/AI_AGENTS.md).
+
+## Key features
+
+| Area | Implemented capabilities |
+| --- | --- |
+| **ERP core** | Products, categories, customers, server-priced sales orders, warehouse balances/transfers, suppliers, purchase orders and goods receipts; versioned single-level BOMs and production orders; dashboard and bounded CSV reports |
+| **AI assistance** | Read-only Assistant, Agent Control Center, Inventory/Sales/Order Draft/Knowledge services, fixed tool calling, bounded sequential orchestration, backend-resolved proposals and explicit human approval |
+| **Knowledge** | PDF/DOCX/TXT/Markdown ingestion, versioned indexing, local embeddings, authorized pgvector + full-text retrieval and verified literal source excerpts |
+| **Automation** | Deterministic proactive monitoring, deduplicated private alerts, visual acyclic workflows, weekly UTC schedules, immutable published versions, safe fixture simulations and execution history |
+| **Engineering** | JWT and current-user revocation checks, Admin/Manager/Viewer policies, transactional audit, PostgreSQL concurrency tests, component/browser/accessibility tests, deterministic AI evaluations and private runtime traces |
+
+Knowledge, monitoring, quality recording and workflow execution are opt-in. **The ERP and deterministic workflow nodes remain usable without Ollama.** OpenAI transport is implemented and tested with intercepted HTTP; successful live OpenAI inference has not been verified. [Per-feature evidence and limitations](docs/FEATURE_STATUS.md).
+
+### Visual automation
+
+![Actual Turkish Workflow Designer showing registered nodes, graph connections, configuration and explicit publication controls](docs/assets/screenshots/workflow-designer-tr.png)
+
+Four starter templates cover critical inventory, overdue purchase orders with actual due dates, weekly sales and inventory-policy lookup. AI can suggest an inactive starter draft; publication and activation remain separate user actions. Business writes still require separate approval. [Workflow design, recovery, security and limits](docs/VISUAL_WORKFLOWS.md).
+
+## Local AI and provider switching
+
+`IAiModelClient` preserves **OpenAI**, **Ollama** and **Development Mock** implementations. The verified local chat model is `qwen3:8b`; knowledge indexing uses `nomic-embed-text`. Local inference uses loopback `127.0.0.1:11434` and makes no paid inference API calls. Ollama and Mock are currently Development-only in the code configuration.
+
+`OLLAMA_MODEL` selects the local model. Another model must be checked for the required tool/structured-output contracts; listing or loading it is not proof of compatibility. The reviewed Windows machine has 32 GB RAM and an RTX 4060 with 8 GB VRAM. This is a tested configuration, not a minimum specification or a performance guarantee. Context size, model residency and embedding work can affect latency. [Local Ollama and hardware/setup details](docs/LOCAL_OLLAMA.md) · [OpenAI integration](docs/OPENAI_INTEGRATION.md).
+
+## Getting started
+
+Install Git and Docker Desktop with Linux containers. From a reviewed source revision:
 
 ```sh
+git clone https://github.com/SCanerG/DemoErp.git
+cd DemoErp
 docker compose up --build
 ```
 
-Open [the application](http://localhost:3000), [API Swagger in Development](http://localhost:5080/swagger) or [readiness](http://localhost:5080/health/ready). PostgreSQL remains on the Compose network, with data in a persistent named volume. No AI credentials are required.
+Open [the application](http://localhost:3000) or [Development Swagger](http://localhost:5080/swagger). PostgreSQL stays internal to Compose; AI is disabled by default. Public registration creates a Viewer. Admin setup is explicit and disabled by default.
 
-Registration creates a **Viewer**. For business writes, provision the initial Admin using the optional `BOOTSTRAP_ADMIN_*` variables in an ignored `.env`; see [secure Admin setup](docs/SECURITY.md). Disable bootstrap and remove its password after initial provisioning. Development defaults in [.env.example](.env.example) are explicitly unsuitable for production. Never use `docker compose down -v` on a database you want to retain.
+For a complete clone → configuration → database → native API → frontend guide, use [Getting started](docs/GETTING_STARTED.md). It includes .NET 10/Node 22 prerequisites, safe environment configuration, startup migrations and exact PowerShell commands. For local Ollama, pgvector and the designer, use the [isolated advanced setup](docs/VISUAL_WORKFLOWS.md#windows-local-setup). Published revisions may lag this local source tree; [repository review](docs/REPOSITORY_REVIEW.md) records that distinction.
 
-For local source development, environment setup and disposable test stacks, see [Development](docs/DEVELOPMENT.md) and [Testing](docs/TESTING.md).
+### Prepared demo accounts
 
-## Architecture and technologies
-
-One ASP.NET Core application uses controllers, typed contracts, scoped business services and EF Core mappings. This is a **layered monolith**, not independently deployable modules. It keeps cross-module stock, document and audit changes in one PostgreSQL transaction.
-
-```mermaid
-flowchart LR
-  React[React + TypeScript] -->|JSON / Bearer JWT| API[ASP.NET Core controllers]
-  API --> Services[Scoped business services + validation]
-  Services --> EF[EF Core AppDbContext]
-  EF --> PG[(PostgreSQL)]
-```
-
-| Concern | Technology |
+| Role | Email |
 | --- | --- |
-| Backend | .NET 10 / ASP.NET Core, EF Core 10, Npgsql, FluentValidation |
-| Frontend | React 19, TypeScript 5.9, Vite 6, Tailwind CSS 4, React Router, TanStack Query |
-| Forms and charts | React Hook Form + Zod; Recharts |
-| Database | PostgreSQL 17; row/advisory locks, constraints and nine committed migrations |
-| Quality | xUnit v3, real PostgreSQL Testcontainers, Vitest + Testing Library, Playwright + axe |
-| Delivery | Multi-stage Docker builds, unprivileged runtime containers, Docker Compose, GitHub Actions |
+| Administrator | `admin@example.com` |
+| Viewer | `viewer@example.com` |
+| Operations manager | `operation@example.com` |
 
-Dependency versions are locked in `frontend/package-lock.json` and the backend project files. Container tags remain mutable; use reviewed digests in an actual deployment.
+Public synthetic-demo password: **`qwe123456789`**. A fresh installation does not automatically create these accounts; provision them using the initial Admin and user management. These credentials are exclusively for synthetic demonstrations.
 
-### Consistency and security
-
-Writers lock documents, warehouses, products and balances in a consistent order. Production consumes all required materials or rolls back; completion produces output once. Receipt idempotency binds replay to the original payload, and transfer completion creates paired movements atomically. PostgreSQL constraints provide a second boundary against negative stock and invalid history.
-
-```mermaid
-flowchart LR
-  Token[JWT authentication] --> Current[Current user / role / SecurityVersion]
-  Current --> Policy[Authorization policy]
-  Policy --> Operation[Validated business operation]
-  Operation --> Transaction[Stock + document + audit transaction]
-```
-
-See [database design](docs/DATABASE.md), [security](docs/SECURITY.md), [inventory](docs/INVENTORY.md), [warehouses](docs/WAREHOUSE_MANAGEMENT.md), [procurement](docs/PROCUREMENT.md) and [manufacturing](docs/MANUFACTURING.md).
-
-## Quality and verification
+## Testing and quality
 
 ```sh
-dotnet build Catalog.slnx
-dotnet test Catalog.slnx
+dotnet test backend/Demo.Api.Tests
+node --test scripts/tests/*.test.mjs
 cd frontend
 npm ci
 npm run lint
@@ -111,34 +116,33 @@ npm test
 npm run build
 ```
 
-Backend integration tests create their own PostgreSQL containers. They do not use EF InMemory or the application's database. Browser workflows require a separate, disposable Compose project and test-only Admin credentials; follow [Testing](docs/TESTING.md) before running them.
+Backend tests use real PostgreSQL Testcontainers and committed migrations. Browser acceptance requires a disposable stack and explicit synthetic administrator credentials. Normal CI needs neither paid AI access nor a GPU. Live tests are separate opt-ins; a skipped test is never counted as a live success.
 
-```mermaid
-flowchart LR
-  Change[Pull request / main push] --> Build[Backend + frontend build]
-  Build --> Tests[PostgreSQL / component / browser tests]
-  Tests --> Security[Dependency audit + accessibility checks]
-  Security --> Result[Verification result]
-```
+**Measured October 22, 2026:** 714 backend tests passed with the three live local-model cases enabled; 22 frontend unit tests and 32 script tests passed. The broad browser run passed 119 cases and skipped four opt-in/profile cases. Designer live acceptance and the model-disabled repeat passed separately. These are recorded local results, not a claim that the current GitHub Actions run is green. [Commands and test boundaries](docs/TESTING.md) · [Dated evidence and remaining limits](VERIFICATION.md).
 
-The [CI workflow](.github/workflows/ci.yml) runs backend tests, frontend lint/type/component/build checks, dependency auditing and a separate browser smoke/accessibility job. It needs no paid API access. Local executed results and remote CI limitations are recorded separately in [VERIFICATION.md](VERIFICATION.md).
+The checked-in [GitHub Actions workflow](.github/workflows/ci.yml) builds/tests the API and frontend, runs deterministic AI evaluation and uses disposable browser smoke/accessibility checks. **No deployment job is configured.**
 
-SQL review uses a deterministic isolated database and actual `EXPLAIN (ANALYZE, BUFFERS)` plans. In the Phase 10 fixture, filtering production-preview stock to five materials reduced rows read from 5,000 to five and the warm median from **0.421 ms to 0.031 ms**. These are database execution measurements, not HTTP latency or a production SLA. [Method, raw plans and reproduction](docs/PERFORMANCE.md).
+## Technical documentation
 
-## Interface
+| Start here | Engineering details |
+| --- | --- |
+| [Documentation index](docs/README.md) | Current guides and preserved phase history |
+| [Architecture](docs/ARCHITECTURE.md) | System, backend layers, providers, orchestration, approvals, RAG and workflow diagrams |
+| [AI agents](docs/AI_AGENTS.md) | Responsibilities, fixed read tools, routing and human control |
+| [Security](docs/SECURITY.md) | Current-user authorization, audit, approval and document scopes |
+| [Database](docs/DATABASE.md) · [API](docs/API.md) | Business data, migrations, transactions and endpoint contracts |
+| [Testing](docs/TESTING.md) · [Development](docs/DEVELOPMENT.md) | Reproducible checks and disposable environments |
+| [Roadmap](docs/ROADMAP.md) · [Feature status](docs/FEATURE_STATUS.md) | Verified implementation, partial verification and future work |
+| [Deployment](docs/DEPLOYMENT.md) | Local topology and remaining hosting requirements |
 
-The forest-green design system includes grouped navigation, desktop collapse, mobile navigation, consistent status labels, keyboard focus, loading skeletons and confirmed-save feedback. Charts and figures use real API responses. Automated axe checks and four-width browser rendering support accessibility review; they do not certify WCAG conformance.
+## Scope and roadmap
 
-![Production detail with material consumption and output](docs/screenshots/production-detail-en.png)
+Implemented work spans ERP transactions through local AI, RAG, monitoring, evaluation and visual workflows. The next priorities are workflow-history retention, uncertain-run operator tooling, transactional event delivery and timezone-aware schedules.
 
-[Login](docs/screenshots/login-en.png) · [Products](docs/screenshots/products-en.png) · [Sales orders](docs/screenshots/orders-en.png) · [Inventory](docs/screenshots/inventory-en.png) · [Warehouses](docs/screenshots/warehouses-en.png) · [Purchasing](docs/screenshots/purchase-orders-en.png) · [BOMs](docs/screenshots/manufacturing-en.png)
+This is a personal engineering demonstration, not a production certification. Multi-tenancy, full accounting/tax, unrestricted autonomous agents, recursive BOM explosion and distributed high-throughput workflow execution are not implemented. Current automation is intentionally bounded; replenishment estimates are policies, not predictive forecasts. [Roadmap and explicit status](docs/ROADMAP.md).
 
-All published screenshots come from a running application with synthetic records. [UI decisions and responsive review](docs/UI_DESIGN.md).
+## Author and usage terms
 
-## Scope and deployment limits
+**Sabri Caner Genco** · [Portfolio](https://scgenco.com) · [GitHub](https://github.com/SCanerG)
 
-DemoErp is a runnable portfolio demonstration. It does not implement accounting, tax calculation, multi-tenancy, multi-currency settlement, recursive BOM explosion, capacity scheduling or partial production. The AI assistant is optional and read-only; estimates require human review.
-
-Production hosting requires HTTPS/reverse-proxy configuration, independent secrets, backup/restore drills, monitored health checks and an operational migration strategy. These are documented in [Deployment](docs/DEPLOYMENT.md); no public production deployment is claimed.
-
-[Source usage terms](NOTICE.md)
+The existing [source usage notice](NOTICE.md) remains unchanged: no open-source license is granted. Contact the author for reuse or commercial use. An external contribution policy has not been established; no open contribution program is implied.

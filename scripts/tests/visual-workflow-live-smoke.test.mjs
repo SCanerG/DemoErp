@@ -1,0 +1,4 @@
+import{test}from'node:test';import assert from'node:assert/strict';import{runVisualWorkflowLiveSmoke}from'../visual-workflow-live-smoke.mjs';
+test('workflow live smoke does not access network without explicit opt-in',async()=>assert.equal((await runVisualWorkflowLiveSmoke({},()=>{})).skipped,true));
+test('workflow live smoke rejects a remote or credential-bearing origin',async()=>{for(const API_URL of['http://example.com','http://user:pass@127.0.0.1:5120','https://127.0.0.1','http://127.0.0.1/path'])await assert.rejects(()=>runVisualWorkflowLiveSmoke({VISUAL_WORKFLOW_LIVE_SMOKE:'true',API_URL},()=>{}),/loopback/);});
+test('workflow live smoke requires explicit existing isolated credentials',async()=>assert.rejects(()=>runVisualWorkflowLiveSmoke({VISUAL_WORKFLOW_LIVE_SMOKE:'true',API_URL:'http://127.0.0.1:5120'},()=>{}),/credentials/));

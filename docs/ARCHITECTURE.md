@@ -1,5 +1,11 @@
 # Architecture
 
+## Current system map
+
+Start with the [seven current architecture diagrams](architecture/README.md): system, backend layers, provider abstraction, agent collaboration, secure approval, RAG and visual workflow execution. [Feature status](FEATURE_STATUS.md) distinguishes implementation evidence from future work. The source remains a layered monolith; optional AI/knowledge/monitoring/workflow services use the existing authorization and transactional business boundaries.
+
+The phase sections below preserve earlier decisions. Their phase-scoped statements about absent storage, RAG, manufacturing or AI capabilities are historical where later modules supersede them. Current provider configuration is in [Local Ollama](LOCAL_OLLAMA.md), agent responsibilities in [AI agents](AI_AGENTS.md), and actual execution results in [verification](../VERIFICATION.md).
+
 ## Phase 10 quality and frontend architecture
 
 The application remains a layered monolith with one API project and one React app. There are no independent module assemblies, repositories or distributed business services. Scoped application services own transactions; shared inventory locks and PostgreSQL guards protect cross-module consistency. EF Core provides typed projections/migrations and PostgreSQL provides relational constraints, row/advisory locks and transactional behavior.

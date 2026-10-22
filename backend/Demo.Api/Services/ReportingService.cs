@@ -69,6 +69,14 @@ public sealed class ReportingService(AppDbContext db)
         };
         return sorted.ThenBy(o => o.Id).Select(o => new SalesRow(o.Id, o.OrderNumber, o.Customer.Name, o.OrderDate, o.CompletedAt, o.Status, o.Items.Count, o.TotalAmount));
     }
+    // Bounded trusted application read reused by replenishment; identical CompletedAt/line semantics to sales reports.
+    public Task<Dictionary<Guid,long>> CompletedQuantities(DateTimeOffset start,DateTimeOffset end,Guid[] products,CancellationToken ct)
+    {
+        new ReportFilter {Start=start,End=end}.Validate("products");
+        if(products.Length>10)throw new BusinessException("invalidReportFilters");
+        return CompletedLines(start,end).Where(i=>products.Contains(i.ProductId)).GroupBy(i=>i.ProductId)
+            .Select(g=>new {Id=g.Key,Quantity=g.Sum(i=>(long)i.Quantity)}).ToDictionaryAsync(x=>x.Id,x=>x.Quantity,ct);
+    }
     public IQueryable<ProductSalesRow> Products(ReportFilter filter)
     {
         var (start, end) = filter.Validate("products");

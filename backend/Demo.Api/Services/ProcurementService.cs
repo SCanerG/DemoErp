@@ -95,7 +95,7 @@ public sealed class ProcurementService(AppDbContext db)
     }
     public async Task<PurchaseResponse?> Save(Guid? id, PurchaseRequest input, Guid user, CancellationToken ct)
     {
-        await using var tx = await db.Database.BeginTransactionAsync(ct);
+        await using var tx = db.Database.CurrentTransaction is null ? await db.Database.BeginTransactionAsync(ct) : null;
         var order = id is null ? new PurchaseOrder { CreatedByUserId = user } : await Lock(id.Value, ct);
         if (order is null) return null;
         if (order.Status != PurchaseOrderStatus.Draft) throw new BusinessException("purchaseNotDraft", 409);
@@ -117,7 +117,7 @@ public sealed class ProcurementService(AppDbContext db)
         order.TotalAmount = order.Items.Sum(i => i.LineTotal);
         if (order.TotalAmount > 9999999999999999.99m) throw new BusinessException("totalTooLarge");
         if (id is not null) order.UpdatedAt = DateTimeOffset.UtcNow;
-        await db.SaveChangesAsync(ct); await tx.CommitAsync(ct); return (await Get(order.Id, ct))!;
+        await db.SaveChangesAsync(ct); if (tx is not null) await tx.CommitAsync(ct); return (await Get(order.Id, ct))!;
     }
     public async Task<PurchaseResponse?> Transition(Guid id, bool submit, CancellationToken ct)
     {

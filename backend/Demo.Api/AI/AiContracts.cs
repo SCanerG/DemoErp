@@ -2,14 +2,14 @@ using System.Text.Json;
 
 namespace Demo.Api.AI;
 
-public sealed record AiChatRequest(string Message, string Language);
+public sealed record AiChatRequest(string Message, string Language, Guid? ConversationId = null, bool Remember = false, string Agent = "reporting");
 public sealed record AiSource(string Type, string Name, string Label, JsonElement Parameters, string ReportPath);
-public sealed record AiChatResponse(string Answer, string Language, DateTimeOffset GeneratedAtUtc, List<AiSource> Sources, string RequestId);
-public sealed record AiStatus(bool Enabled, bool Configured, bool Available);
-public sealed record AiToolDefinition(string Name, string Description, string Schema, string Policy, string Label, string ReportPath);
+public sealed record AiChatResponse(string Answer, string Language, DateTimeOffset GeneratedAtUtc, List<AiSource> Sources, string RequestId, Guid? ConversationId = null, Guid? ExecutionId = null, bool IsMock = false, string ResponseKind = "model");
+public sealed record AiStatus(bool Enabled, bool Configured, bool Available, string Provider = "OpenAI", bool IsMock = false, int RetentionDays = 7);
+public sealed record AiToolDefinition(string Name, string Description, string Schema, string Policy, string Label, string ReportPath, AiToolAccess Access = AiToolAccess.ReadOnly);
 public sealed record AiToolCall(string Id, string Name, string Arguments);
 public sealed record AiModelMessage(string Role, string Text, IReadOnlyList<AiToolCall>? Calls = null, string? CallId = null);
-public sealed record AiModelTurn(string? Answer, string? Language, IReadOnlyList<AiToolCall> Calls, int? TotalTokens = null);
+public sealed record AiModelTurn(string? Answer, string? Language, IReadOnlyList<AiToolCall> Calls, int? TotalTokens = null, string ResponseKind = "model");
 public interface IAiModelClient
 {
     Task<AiModelTurn> Complete(IReadOnlyList<AiModelMessage> messages, IReadOnlyList<AiToolDefinition> tools, CancellationToken ct);
@@ -27,3 +27,6 @@ public sealed record AiPendingOrder(string OrderNumber, DateTimeOffset OrderDate
 public sealed record AiPendingOrders(int TotalPendingOrders, List<AiPendingOrder> Orders);
 public sealed record AiStockRisk(string Product, int QuantityOnHand, long RecentCompletedQuantity, decimal DailyAverage,
     decimal EstimatedDaysRemaining);
+
+public sealed record AiExecutionStatus(Guid Id, string CorrelationId, string Provider, string Model, string Outcome, int ProviderCalls, int TotalTokens, long DurationMs, DateTimeOffset CreatedAt, List<AiToolStatus> Tools);
+public sealed record AiToolStatus(string Name, string Outcome, long DurationMs, DateTimeOffset? StartedAt = null, DateTimeOffset? EndedAt = null);

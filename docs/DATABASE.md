@@ -1,5 +1,7 @@
 # Database
 
+Current AI additions include private conversations/execution metadata, proposals, knowledge documents/chunks/jobs, monitoring, quality metadata and five visual workflow tables. These are additive to the business schema; [current system diagrams](architecture/README.md), [knowledge storage](ENTERPRISE_RAG.md) and [workflow versioning/migration](VISUAL_WORKFLOWS.md) describe their boundaries. Earlier counts below refer to their named phases rather than the current total migration/table count.
+
 ## Phase 10 review
 
 No table, sequence, enum or index migration was needed. All nine migrations and existing stock/history constraints remain in place. The only business query change bounds manufacturing preview stock to the recipe's materials; the existing warehouse/product index is sufficient. [Measured plans](PERFORMANCE.md). Application data is backed up and all 23 existing business tables/views are compared before/after runtime upgrade; browser fixtures and benchmarks use separate databases.

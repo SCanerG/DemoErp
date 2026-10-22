@@ -1,5 +1,15 @@
 # Security design
 
+## Current AI and automation boundaries
+
+The application still enforces current user/role/SecurityVersion checks and transactional business rules. Nine read-only reporting tools do not grant model write authority. Exact server-owned proposals require separate explicit human approval, current-data revalidation and idempotent execution through existing services. Document retrieval filters current owner/workspace access before ranking and rechecks sources. Workflow publication cannot grant permissions; each run rechecks the published owner's current authority. Fixture simulations cannot approve live writes.
+
+[Approval lifecycle](architecture/AGENT_WORKFLOWS.md#secure-order-approval) · [RAG access](ENTERPRISE_RAG.md) · [Workflow security](VISUAL_WORKFLOWS.md) · [Safe observability](AI_QUALITY.md)
+
+Ollama remains numeric-loopback and Development-only; provider credentials never belong in frontend configuration. Model output and document text are untrusted. Safe Markdown rendering does not execute model HTML or arbitrary links. The workspace is not tenant-enabled. Actual production HTTPS, shared quota/spend controls, backups and hostile-file process isolation remain deployment work.
+
+The current lockfile uses Vitest **4.1.12**, including the Phase 11.8 test-tool security patch. Earlier dependency selections below are historical; dated audit results are in [verification](../VERIFICATION.md). The existing usage notice is unchanged, and no public vulnerability-reporting or external contribution policy is implied by this design document.
+
 ## Phase 10 review
 
 JWT signature/issuer/audience/lifetime validation, current user/role/SecurityVersion checks, deactivation, last-Admin protection and server-side policy enforcement remain intact. Stock writers preserve transaction/lock order and audit behavior; real PostgreSQL regression tests verify rollback, concurrency and replay.

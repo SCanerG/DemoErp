@@ -11,6 +11,24 @@ async function fixtureSession(page: Page, language = 'en') {
   await page.route('**/api/ai/status', route => route.fulfill({ json: { enabled: true, configured: true, available: true } }));
 }
 
+test('AI response safely renders Turkish Markdown and identifies deterministic fallback', async ({ page }) => {
+  await fixtureSession(page, 'tr');
+  await page.route('**/api/ai/chat', route => route.fulfill({ json: {
+    answer: '### Stok değerlendirmesi\n\n**Örnek Ürün** için stok sıfır.\n\n- Yeniden tedarik edin.\n- Kaynağı inceleyin.\n\n<img src=x onerror=alert(1)> [Bağlantı](javascript:alert)',
+    language: 'tr', responseKind: 'fallback', isMock: false, sources: [], requestId: 'safe-render-fixture', generatedAtUtc: '2026-10-21T00:00:00Z'
+  } }));
+  await page.goto('/ai-assistant');
+  await page.getByLabel('İşletmeniz hakkındaki sorunuz').fill('Stok özeti');
+  await page.getByRole('button', { name: 'Soruyu gönder' }).click();
+  const answer = page.locator('.ai-answer');
+  await expect(answer.getByRole('heading', { name: 'Stok değerlendirmesi' })).toBeVisible();
+  await expect(answer.locator('strong')).toHaveText('Örnek Ürün');
+  await expect(answer.getByRole('listitem')).toHaveCount(2);
+  await expect(answer).not.toContainText('**');
+  await expect(answer.locator('img, script, a')).toHaveCount(0);
+  await expect(answer).toContainText('yapay zekâ açıklaması üretilemedi');
+});
+
 test('AI real Viewer navigation and default-disabled Docker require no provider key', async ({ page }) => {
   const viewer = await createAccount(page.request, 'Viewer');
   await page.goto('/auth/login'); await page.getByLabel('Email address').fill(viewer.email); await page.getByLabel('Password', { exact: true }).fill(viewer.password);
@@ -56,8 +74,15 @@ test('AI input, suggestions, loading, duplicate prevention and actual-source ren
 
 for (const [status, code, message] of [
   [503, 'aiProviderUnavailable', 'The AI provider is unavailable. Please try again later.'],
+  [502, 'aiToolSelectionFailed', 'A reporting tool could not be selected. Specify whether you need sales, inventory or pending orders.'],
   [429, 'aiRateLimit', 'AI request limit reached. Please try again later.'],
   [403, 'aiForbidden', 'You do not have permission to read this report.'],
+  [422, 'aiRefused', 'The AI provider declined this request. Rephrase your question.'],
+  [502, 'aiIncompleteResponse', 'The AI response was incomplete. Ask a narrower question or contact your administrator.'],
+  [503, 'aiModelUnavailable', 'The configured model is not available. For Ollama, check that the model is installed.'],
+  [503, 'aiProviderAuthentication', 'AI provider authentication failed. Contact your administrator.'],
+  [503, 'aiProviderQuota', 'The AI provider quota is unavailable. Contact your administrator.'],
+  [502, 'aiProviderRejected', 'The AI provider rejected the request configuration. Contact your administrator.'],
 ] as const) test(`AI safely displays ${status} ${code}`, async ({ page }) => {
   await fixtureSession(page); await page.route('**/api/ai/chat', route => route.fulfill({ status, json: { code } }));
   await page.goto('/ai-assistant'); await page.getByLabel('Your business question').fill('Sales?'); await page.getByRole('button', { name: 'Send question' }).click();

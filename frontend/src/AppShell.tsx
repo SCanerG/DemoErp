@@ -14,7 +14,7 @@ const groups: { label: string; links: [string, string, Permission?][] }[] = [
   { label: 'Procurement', links: [['suppliers', 'Suppliers'], ['purchase-orders', 'Purchase orders']] },
   { label: 'Manufacturing', links: [['boms', 'Bill of Materials'], ['production-orders', 'Production Orders']] },
   { label: 'Analytics', links: [['reports', 'Reports']] },
-  { label: 'Assistance', links: [['ai-assistant', 'AI Assistant']] },
+  { label: 'Assistance', links: [['workflows', 'Workflow Designer'], ['ai-quality', 'AI Quality Dashboard'], ['operations', 'AI Operations Center'], ['ai-assistant', 'AI Assistant'], ['agent-center', 'Agent Control Center'], ['knowledge', 'Knowledge Center']] },
   { label: 'Administration', links: [['users', 'Users', 'users'], ['audit-logs', 'Audit Logs', 'audit']] },
 ];
 const icons: Record<string, string> = {

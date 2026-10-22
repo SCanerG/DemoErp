@@ -39,6 +39,9 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options, IHttpCo
         {
             string[] fields = entry.Entity switch
             {
+                Demo.Api.AI.Knowledge.KnowledgeDocument => ["OwnerId", "Scope", "Version", "Status", "UpdatedAt"],
+                Demo.Api.AI.Monitoring.MonitoringRule => ["Kind", "Version", "Enabled", "Settings"],
+                Demo.Api.AI.Agents.AiOrderProposal => ["ExecutionId", "Kind", "State", "Fingerprint", "ExpiresAt", "ResultId", "ResultNumber", "ResultStatus", "CompletedAt", "ErrorCategory"],
                 Product => ["Name", "Price", "IsActive", "CategoryId", "ProductType"],
                 Domain.BillOfMaterials => ["ProductId", "Version", "BaseQuantity", "IsActive", "ActivatedAt"],
                 ProductionOrder => ["ProductionOrderNumber", "ProductId", "BillOfMaterialsId", "PlannedQuantity", "ProducedQuantity", "SourceWarehouseId", "DestinationWarehouseId", "Status", "StartedAt", "CompletedAt", "StartedByUserId", "CompletedByUserId"],
@@ -117,6 +120,12 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options, IHttpCo
 
     protected override void OnModelCreating(ModelBuilder model)
     {
+        AiModel.Configure(model);
+        Demo.Api.AI.Knowledge.KnowledgeDbModel.Configure(model);
+        Demo.Api.AI.Monitoring.MonitoringModel.Configure(model);
+        Demo.Api.AI.Quality.QualityModel.Configure(model);
+        Demo.Api.AI.Workflows.WorkflowModel.Configure(model);
+        Demo.Api.AI.Agents.WorkflowProposals.Configure(model);
         ProcurementModel.Configure(model);
         WarehouseModel.Configure(model);
         ManufacturingModel.Configure(model);

@@ -2,6 +2,22 @@
 
 [README](../README.md) · [Executed results](../VERIFICATION.md)
 
+## Current AI and workflow checks
+
+The latest recorded Phase 11.8 results are dated **2026-10-22**: 714 backend cases passed with three opt-in local-model cases enabled, 22 frontend unit cases, 32 script cases and 33 deterministic evaluation scenarios. A broad browser run passed 119 and skipped four opt-in/profile cases. Separate actual designer and model-disabled acceptances passed. These are recorded local results, not a new remote CI or performance claim.
+
+The complete backend suite includes authorization, denied tools, malformed provider output, proposal expiry/replay/stale-data rejection, RAG access, monitoring leases and workflow simulation/recovery/cancellation regressions. Normal runs do not require a GPU or paid API access. Clear live flags for ordinary tests; enable them only deliberately in an isolated environment.
+
+```powershell
+Remove-Item Env:OLLAMA_LIVE_SMOKE, Env:PROACTIVE_LIVE_SMOKE, Env:VISUAL_WORKFLOW_LIVE_SMOKE -ErrorAction SilentlyContinue
+$env:AI_EVAL_REPORT_DIRECTORY = Join-Path (Get-Location).Path 'artifacts/ai-evaluation'
+dotnet test backend/Demo.Api.Tests
+node scripts/verify-ai-evaluation.mjs artifacts/ai-evaluation
+node --test scripts/tests/*.test.mjs
+```
+
+For browser designer/quality fixtures, configure the disposable stack and credentials below, then from `frontend` run `npx playwright test workflows.spec.ts quality-dashboard.spec.ts`. The default browser configuration targets localhost:3000 and installed Chromium; other origins must match the API CORS configuration. [Visual workflow actual-model/API/UI opt-ins](VISUAL_WORKFLOWS.md#tests), [RAG opt-ins](ENTERPRISE_RAG.md), [quality live checks](AI_QUALITY.md) and [OpenAI live command](OPENAI_INTEGRATION.md) are separate from ordinary CI. None of the new documentation commands implicitly approves an order.
+
 ## Backend
 
 Use .NET SDK 10 and a running Docker daemon with Linux containers:
@@ -30,9 +46,9 @@ npm run build
 npm audit --audit-level=high
 ```
 
-ESLint checks production TypeScript; TypeScript also checks test sources. Vitest runs `src/**/*.test.tsx` in jsdom with Testing Library. Tests cover readable/localized statuses, field errors, accessible loading, language state, role boundaries, protected content, login validation, actual workflow indicators and save-message dismissal. Browser-level dialog, table, search, select, pagination and dynamic-row behavior is covered in Playwright instead of imitating native browser behavior in jsdom.
+ESLint checks production TypeScript; TypeScript also checks test sources. Vitest runs `src/**/*.test.{ts,tsx}` in jsdom with Testing Library. Tests cover readable/localized statuses, field errors, accessible loading, language state, role boundaries, protected content, login validation, workflow helpers, safe AI Markdown and save-message dismissal. Browser-level dialog, table, search, select, pagination and dynamic-row behavior is covered in Playwright instead of imitating native browser behavior in jsdom.
 
-Vitest's test-only API URL points at an unreachable loopback port; component tests do not contact a real backend. The pinned Vitest 4.1.11 works with the repository's Vite 6 and avoids the dependency advisories found in the initially considered Vitest 3 tooling. ESLint 10 requires Node 22.13+ on the Node 22 line; use current Node 22 for local/CI commands. See [Vitest](https://vitest.dev/guide/) and [typescript-eslint](https://typescript-eslint.io/getting-started/).
+Vitest's test-only API URL points at an unreachable loopback port; component tests do not contact a real backend. The lockfile pins Vitest 4.1.12, including the later test-tool security patch, with Vite 6. ESLint 10 requires Node 22.13+ on the Node 22 line; use current Node 22 for local/CI commands. Exact versions are in the manifests/lockfile and dated checks in verification.
 
 ## Browser tests: use a disposable database
 
@@ -75,3 +91,13 @@ The matrix renders dashboard, product form/list, order detail, warehouses, purch
 ## API and SQL checks
 
 `scripts/verify.mjs` includes a PostgreSQL outage check and must run only against a disposable Compose project, never concurrently with browser workflows. The guarded SQL benchmark uses a local database named `reporting_benchmark`; see [Performance](PERFORMANCE.md). Neither benchmark nor integration tests should ever use the primary Compose database.
+
+## Phase 11 AI boundary checks
+
+The backend suite covers strict output validation, provider abstraction, retry/cancellation, owner-only opt-in history, expiry/deletion, revision conflicts, tool policies, denied tool auditing and preservation of the 23 business tables/views across the additive migration. No paid calls are required.
+
+On an isolated default-disabled stack, run `npm run test:ai` after configuring the same browser/bootstrap variables as other browser tests. On a separate or reconfigured Development stack with `AI_ENABLED=true`, `AI_PROVIDER=Mock` and no API key, set `AI_DEVELOPMENT_MOCK=true` in the test process and run `npm run test:ai-mock`. The latter is explicitly skipped unless that test flag is set; it verifies real reporting, persistence, reload, mock labeling and deletion. GitHub CI runs both modes in its disposable Compose project. On Windows where native Chromium cannot launch, use the existing Dockerfile.e2e and container-runner described in DEVELOPMENT.md.
+
+## Phase 11.1 Responses integration
+
+The official SDK is tested through intercepted HTTP at /v1/responses; no paid requests occur. Normal CI additionally runs `node --test scripts/tests/ai-live-smoke.test.mjs` against a local fake API. `node scripts/ai-live-smoke.mjs` skips by default. For an explicitly authorized real acceptance request, follow [OpenAI integration](OPENAI_INTEGRATION.md#deterministic-tests-and-opt-in-live-acceptance). Mocked HTTP and Development Mock results are never reported as live provider verification.

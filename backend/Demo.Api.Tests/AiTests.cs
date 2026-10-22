@@ -15,7 +15,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Demo.Api.Tests;
 
-public sealed class AiTests(ApiFixture fixture) : IClassFixture<ApiFixture>
+public sealed partial class AiTests(ApiFixture fixture) : IClassFixture<ApiFixture>
 {
     private static CancellationToken Ct => TestContext.Current.CancellationToken;
     private const string Key = "test-only-provider-credential";
@@ -35,7 +35,7 @@ public sealed class AiTests(ApiFixture fixture) : IClassFixture<ApiFixture>
             return Handler is null ? Task.FromResult(Turns.Dequeue()) : Handler(messages, tools, ct);
         }
     }
-    private Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory<Program> App(FakeModel fake, AiAssistantOptions? options = null) =>
+    private Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory<Program> App(IAiModelClient fake, AiAssistantOptions? options = null) =>
         fixture.App.WithWebHostBuilder(builder => builder.ConfigureTestServices(services =>
         {
             services.RemoveAll<AiAssistantOptions>(); services.AddSingleton(options ?? new() { Enabled = true, ApiKey = Key });

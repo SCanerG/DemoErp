@@ -1,0 +1,6 @@
+# Use a NEW project/volume for evaluation; never attach retained production data.
+services:
+  postgres:
+    image: pgvector/pgvector:pg17
+    ports:
+      - "127.0.0.1:55442:5432"

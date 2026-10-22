@@ -21,7 +21,7 @@ if (!baseUrl) throw new Error('VITE_API_BASE_URL is required. See .env.example.'
 export async function api<T>(path: string, options: RequestInit = {}, format: 'json' | 'blob' = 'json'): Promise<T> {
   const session = sessionStore.get();
   const headers = new Headers(options.headers);
-  if (options.body) headers.set('Content-Type', 'application/json');
+  if (options.body && !(options.body instanceof FormData)) headers.set('Content-Type', 'application/json');
   const protectedRequest = !path.startsWith('/auth/');
   if (protectedRequest && session) headers.set('Authorization', `Bearer ${session.accessToken}`);
   let response: Response;
