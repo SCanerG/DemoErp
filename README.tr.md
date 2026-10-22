@@ -2,7 +2,7 @@
 
 **İş kurallarıyla korunan ERP süreçleri. Yetkili AI araçları. İnsan onaylı işlemler.**
 
-DemoERP; satış, satın alma, depo stoku ve üretimi tek bir React çalışma alanında birleştirir. Bu kişisel mühendislik projesi, uzmanlaşmış AI agent’larının gerçek iş verileriyle nasıl çalışabileceğini inceler. Hesaplamaları, yetkileri ve veritabanı işlemlerini .NET backend yönetir; isteğe bağlı yerel veya harici modeller istekleri yönlendirir ve doğrulanmış sonuçları açıklar.
+DemoERP; satış, satın alma, depo stoku ve üretimi tek bir React çalışma alanında birleştirir. **Agent’a stokları sorgulatabilir, sipariş taslağı hazırlatabilir ve tam içeriğini inceledikten sonra açık onayınızla kaydedebilirsiniz.** Bu kişisel mühendislik projesi, uzmanlaşmış AI agent’larının gerçek iş verileriyle nasıl çalışabileceğini inceler. Hesaplamaları, yetkileri ve veritabanı işlemlerini .NET backend yönetir; isteğe bağlı yerel veya harici modeller istekleri yönlendirir ve doğrulanmış sonuçları açıklar.
 
 ![.NET 10](https://img.shields.io/badge/.NET-10-512BD4?style=flat) ![React 19](https://img.shields.io/badge/React-19-149ECA?style=flat) ![TypeScript](https://img.shields.io/badge/TypeScript-5.9-3178C6?style=flat) ![PostgreSQL 17](https://img.shields.io/badge/PostgreSQL-17-4169E1?style=flat) ![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?style=flat) ![Ollama](https://img.shields.io/badge/Ollama-local_AI-222222?style=flat) [![GitHub Actions yapılandırması](https://img.shields.io/badge/GitHub_Actions-CI_configuration-2088FF?style=flat)](.github/workflows/ci.yml)
 
@@ -55,12 +55,38 @@ Agent’lar, ortak model soyutlamasını kullanan ve sınırları belirlenmiş C
 
 Yerel işbirliği ve taslak çalıştırmalarının kanıtları [doğrulama kaydında](VERIFICATION.md) bulunur. Bu işbirliği örneği salt okunurdur; otomatik satın alma, talep tahmini veya kendiliğinden sipariş onayı anlamına gelmez. [Agent sorumlulukları ve onay yaşam döngüsü](docs/AI_AGENTS.md).
 
+## Agent ile stok kontrolü ve onaylı sipariş kaydı
+
+### Doğal dille gerçek stokları kontrol edin
+
+> “Hangi ürünlerde stok az? Son satışları da inceleyip ikmal öner.”
+
+Stok Agent’ı gerçek ERP bakiyelerini, asgari stok seviyelerini ve tamamlanmış satışlardan gelen talebi okur. Güncel stok, satılan miktar ve backend tarafından hesaplanan ikmal önerilerini kaynak raporlarla birlikte gösterir. Sıfır stok ve talep verisinin yetersiz olduğu durumlar açıkça belirtilir; model stok uydurmaz veya stok hareketi kaydetmez.
+
+![Gerçek Stok Agent sonucunda sentetik ERP kayıtlarına ait mevcut stok, asgari stok, satılan miktar ve politika tabanlı ikmal önerileri](docs/assets/screenshots/agent-inventory-results-en.png)
+
+*Kaydedilmiş yerel Satış + Stok çalıştırmasının ayrıntısıdır. Rakamlar tarihli sentetik örnek verilerdir; canlı stok göstergesi değildir.*
+
+### Sipariş hazırlatın, inceleyin ve kaydedin
+
+> “[Müşteri adı] için [ürün adı] ürününden 10 adet sipariş taslağı hazırla.”
+
+Sipariş Taslağı Agent’ı gerçek müşteri, ürün ve depoyu çözümler; ERP’deki güncel fiyatlarla tam bir işlem önerisi hazırlar. **Yönetici veya operasyon sorumlusu müşteriyi, ürünleri, miktarları ve fiyatları inceler; onay kutusunu işaretleyip “Siparişi kaydet” düğmesine basar.** Backend yetkileri ve iş verilerini yeniden doğrular, mükerrer kaydı önler; gerçek sipariş numarasını ve **Siparişi görüntüle** bağlantısını döndürür.
+
+Sonuç, normal ERP sipariş ekranında bir **Beklemede satış siparişidir**. Kaydetme işlemi siparişi onaylamaz, stok ayırmaz veya stok düşmez; bunlar ayrı yetkili iş adımlarıdır. Satın alma işbirliği de desteklenen satın alma önerisini ancak açık incelemeden sonra **Taslak** olarak kaydeder.
+
+![Kaydedilmiş sentetik siparişleri, müşteriyi, durumları ve tutarları gösteren gerçek ERP satış siparişleri ekranı](docs/assets/screenshots/orders-en.png)
+
+*Görsel, agent onay ekranını değil, kayıtların ulaştığı ERP sipariş ekranını gösterir. Agent ile kayıt entegrasyonu gerçek tarayıcı kabulü ve backend onay/tekrar gönderim testleriyle ayrıca doğrulanmıştır; görseldeki örnek satırların agent tarafından oluşturulduğu ileri sürülmez.*
+
+**Akış:** doğal dilde istek → backend tarafından çözümlenen taslak → tam içeriğin insan tarafından incelenmesi → **Siparişi kaydet** → doğrulanan gerçek kayıt. [Agent rehberi](docs/AI_AGENTS.md) · [Onay ve idempotency tasarımı](docs/SECURE_WORKFLOWS.md) · [Test kanıtları](VERIFICATION.md).
+
 ## Temel özellikler
 
 | Alan | Uygulanan özellikler |
 | --- | --- |
 | **ERP çekirdeği** | Ürün, kategori, müşteri, sunucuda fiyatlanan satış siparişleri, depo bakiyeleri ve transferler; tedarikçiler, satın alma siparişleri ve mal kabul; sürümlü tek seviyeli ürün reçeteleri ve üretim emirleri; gösterge paneli ve sınırlı CSV raporları |
-| **AI desteği** | Salt okunur Asistan, Agent Kontrol Merkezi, Stok/Satış/Sipariş Taslağı/Bilgi servisleri; sabit araç çağrıları, sınırlandırılmış sıralı koordinasyon, backend tarafından hazırlanan öneriler ve açık insan onayı |
+| **AI desteği** | Doğal dille stok kontrolü ve ikmal analizi; agent’ın hazırladığı satış/satın alma önerilerini açık **Siparişi kaydet** onayıyla gerçek kayda dönüştürme; salt okunur Asistan, Agent Kontrol Merkezi, Bilgi Agent’ı, sabit araç çağrıları ve sınırlandırılmış sıralı koordinasyon |
 | **Kurumsal bilgi** | PDF/DOCX/TXT/Markdown yükleme, sürümlü indeksleme, yerel embedding, yetkili pgvector ve tam metin araması; kaynağı doğrulanan birebir alıntılar |
 | **Otomasyon** | Deterministik proaktif izleme, yinelenmeyen özel uyarılar, görsel döngüsüz iş akışları, haftalık UTC zamanlaması, değişmez yayın sürümleri, güvenli sentetik simülasyon ve çalışma geçmişi |
 | **Mühendislik kalitesi** | JWT ve güncel kullanıcı kontrolleri; Yönetici/Operasyon Sorumlusu/Görüntüleyici yetkileri; transaction ile tutarlı denetim; PostgreSQL eşzamanlılık testleri; bileşen/tarayıcı/erişilebilirlik testleri; deterministik AI değerlendirmeleri ve özel çalışma izleri |

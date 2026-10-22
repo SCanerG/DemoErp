@@ -33,6 +33,8 @@ Replenishment uses a minimum/threshold policy and constant historical demand; it
 
 ## Approval and observability
 
+In the Agent Control Center, Admin/Manager users can review an exact sales-order proposal, tick the explicit review checkbox and click **Save order / Siparişi kaydet**. This saves a real **Pending** sales order and displays its verified order number/link. It is more than a text-only draft, but saving still requires the user's action; confirmation, stock reservation/deduction and goods receipt are not performed by that save. [README stock/order examples and authentic images](../README.md#check-stock-and-save-a-reviewed-order-with-an-agent).
+
 AI preparation may persist a pending proposal, but this is not an ERP order. Authorized users review exact changes and approve separately. Fingerprints, expiry, current identity checks and idempotency prevent stale or duplicated writes through the supported path. [Full lifecycle](SECURE_WORKFLOWS.md).
 
 Execution IDs, safe step/tool categories, available usage, timings and outcomes support investigation. Private business facts can appear in authorized report/run history; telemetry does not capture prompts, raw documents, hidden reasoning or secrets. The Quality Dashboard's completed-request rate is an operational metric, not model factual accuracy. [Observability and evaluations](AI_QUALITY.md).

@@ -1,3 +1,13 @@
+# Agent stock and reviewed-order showcase follow-up (2026-10-22)
+
+Both README introductions and feature tables now explicitly highlight natural-language inventory checks and agent-prepared orders that users can save after exact review. Dedicated sections explain real stock/minimum/sales reads, the review checkbox and **Save order**, verified persisted receipts, Pending sales orders and separate confirmation/stock operations. The order workspace image is explicitly identified as the destination screen; its example rows are not falsely attributed to an agent.
+
+A ninth authentic asset, `agent-inventory-results-en.png`, is a pixel-preserving crop of the previously recorded real Ollama Sales + Inventory run. No artificial UI, altered figures or mocked result is presented as a live capture. Current follow-up validation checked **461 local links**, **nine image assets** and rendered all **34 Mermaid diagrams** successfully. No application source was changed, so the existing runtime test results below are retained without claiming a new full suite.
+
+A temporary read-only-use history review did not produce a new authenticated agent approval image. Checksums/counts of the retained synthetic Orders, WarehouseInventories and AiOrderProposals were identical before/after; no approval or new agent execution was requested. Only the temporary history API/frontend were stopped, leaving the existing database container unchanged. Actual reviewed-order and proposal/replay implementation tests are recorded in earlier sections; the absence of a new approval-screen capture is not concealed by using a fabricated image.
+
+---
+
 # Owner-authorized repository publication checks (2026-10-22)
 
 After the owner explicitly requested a repository update, a normal publication clone was based on GitHub `main` commit `01922508e46c7f697bc0c86e19976a63587675d7`. It preserves all 62 existing standalone `showcase/` files, the usage notice, old business migrations and commit history. Publication includes the previously verified AI implementation through Phase 11.8 and the professional bilingual documentation, without deployment or business database changes.

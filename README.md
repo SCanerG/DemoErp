@@ -2,7 +2,7 @@
 
 **Transactional ERP workflows. Authorized AI tools. Human-approved actions.**
 
-DemoERP connects sales, purchasing, warehouse inventory and manufacturing in one React workspace. This personal engineering project explores how specialized AI agents can work with real business data: the .NET backend owns calculations, permissions and transactions, while optional local or hosted models help route requests and explain verified results.
+DemoERP connects sales, purchasing, warehouse inventory and manufacturing in one React workspace. **Ask an agent to check stock or prepare an order, review the exact proposal, then save it with explicit approval.** This personal engineering project explores how specialized AI agents can work with real business data: the .NET backend owns calculations, permissions and transactions, while optional local or hosted models help route requests and explain verified results.
 
 ![.NET 10](https://img.shields.io/badge/.NET-10-512BD4?style=flat) ![React 19](https://img.shields.io/badge/React-19-149ECA?style=flat) ![TypeScript](https://img.shields.io/badge/TypeScript-5.9-3178C6?style=flat) ![PostgreSQL 17](https://img.shields.io/badge/PostgreSQL-17-4169E1?style=flat) ![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?style=flat) ![Ollama](https://img.shields.io/badge/Ollama-local_AI-222222?style=flat) [![GitHub Actions configuration](https://img.shields.io/badge/GitHub_Actions-CI_configuration-2088FF?style=flat)](.github/workflows/ci.yml)
 
@@ -55,12 +55,38 @@ The agents are bounded, specialized C# services sharing a provider abstraction. 
 
 Actual local collaboration and draft executions are recorded in [verification](VERIFICATION.md). The collaboration example is read-only; it does not imply automatic procurement, forecasting or autonomous order confirmation. [Agent responsibilities and approval lifecycle](docs/AI_AGENTS.md).
 
+## Check stock and save a reviewed order with an agent
+
+### Check actual inventory in natural language
+
+> “Which products are low on stock? Check recent sales and recommend replenishment.”
+
+The Inventory Agent reads actual ERP balances, minimum levels and completed-sales demand. It shows current stock, quantities sold and backend-calculated replenishment suggestions beside the source reports. Zero stock and insufficient demand evidence are explicit; the model does not invent balances or write stock movements.
+
+![Actual Inventory Agent results showing current stock, minimum levels, quantities sold and policy-based replenishment recommendations from synthetic ERP records](docs/assets/screenshots/agent-inventory-results-en.png)
+
+*Detail from the recorded local Sales + Inventory run; figures are a dated synthetic-data snapshot, not live stock.*
+
+### Prepare, approve and save an order
+
+> “Prepare an order for 10 units of [product name] for [customer name].”
+
+The Order Draft Agent resolves the real customer, product and warehouse, reads current ERP prices and prepares an exact proposal. An **Admin or operations manager reviews the customer, items, quantities and prices, checks the approval box and clicks “Save order.”** The backend revalidates permissions and business data, prevents duplicate saves and returns the persisted order number and a **View order** link.
+
+The result is a **Pending sales order** in the normal ERP order workspace. Saving does not confirm the order, reserve stock or deduct inventory; those remain separate authorized business operations. The procurement collaboration likewise saves a supported purchase **Draft** only after explicit review.
+
+![Actual ERP sales order workspace with persisted synthetic orders, customer, status and order totals](docs/assets/screenshots/orders-en.png)
+
+*The image shows the destination ERP order workspace with synthetic example records, not the agent approval screen. The agent-save integration is verified separately by actual browser acceptance and backend approval/replay tests; the example rows pictured are not attributed to an agent.*
+
+**Flow:** natural-language request → backend-resolved draft → exact human review → **Save order** → verified persisted result. [Agent guide](docs/AI_AGENTS.md) · [Approval and idempotency design](docs/SECURE_WORKFLOWS.md) · [Recorded test evidence](VERIFICATION.md).
+
 ## Key features
 
 | Area | Implemented capabilities |
 | --- | --- |
 | **ERP core** | Products, categories, customers, server-priced sales orders, warehouse balances/transfers, suppliers, purchase orders and goods receipts; versioned single-level BOMs and production orders; dashboard and bounded CSV reports |
-| **AI assistance** | Read-only Assistant, Agent Control Center, Inventory/Sales/Order Draft/Knowledge services, fixed tool calling, bounded sequential orchestration, backend-resolved proposals and explicit human approval |
+| **AI assistance** | Natural-language stock checks and replenishment analysis; agent-prepared sales/purchase proposals with explicit **Save order** approval and verified persistence; read-only Assistant, Agent Control Center, Knowledge Agent, fixed tool calling and bounded sequential orchestration |
 | **Knowledge** | PDF/DOCX/TXT/Markdown ingestion, versioned indexing, local embeddings, authorized pgvector + full-text retrieval and verified literal source excerpts |
 | **Automation** | Deterministic proactive monitoring, deduplicated private alerts, visual acyclic workflows, weekly UTC schedules, immutable published versions, safe fixture simulations and execution history |
 | **Engineering** | JWT and current-user revocation checks, Admin/Manager/Viewer policies, transactional audit, PostgreSQL concurrency tests, component/browser/accessibility tests, deterministic AI evaluations and private runtime traces |

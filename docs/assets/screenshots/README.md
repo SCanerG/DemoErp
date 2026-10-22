@@ -20,6 +20,10 @@ Every image below originated in a real browser capture of DemoERP using syntheti
 
 ## ERP workspaces
 
+![Actual Inventory Agent stock and demand results with backend-calculated replenishment suggestions](agent-inventory-results-en.png)
+
+**Inventory Agent detail.** A pixel-preserving 655 × 1060 crop from the same actual October 20 Sales + Inventory browser capture, focusing on current stock, minimum levels and demand-based recommendations. The original panel has horizontally overflowing columns; the crop does not invent or reflow values. These are historical synthetic facts, not a live data feed.
+
 ![Actual English warehouse inventory list and stock indicators](inventory-en.png)
 
 ![Actual English sales order workspace with synthetic records](orders-en.png)
@@ -33,10 +37,11 @@ Every image below originated in a real browser capture of DemoERP using syntheti
 | `dashboard-overview-en.png` | Existing `docs/screenshots/dashboard-en.png` | Upper 1440 × 1200 crop |
 | `dashboard-full-en.png` | Same existing dashboard capture | Full original content, lossless compression |
 | `agent-control-center-en.png` | Preserved Phase 11.3 actual-model browser capture | Upper 1280 × 1260 crop; no text/result changes |
+| `agent-inventory-results-en.png` | Same actual-model browser capture | Stock/demand/replenishment result panel, 655 × 1060 crop |
 | `workflow-designer-tr.png` | Preserved Phase 11.8 actual-browser capture | Canvas/review detail, 1135 × 1210 |
 | `workflow-designer-full-tr.png` | Same Phase 11.8 capture | Full 1440 × 2738 page |
 | `inventory-en.png`, `orders-en.png`, `production-order-en.png` | Corresponding original `docs/screenshots/` assets | Full content, lossless compression |
 
-Eight optimized PNG assets total approximately **1.26 MB**. Original ERP screenshots remain in `docs/screenshots/`; original local execution evidence stays ignored. No secrets, personal customer records, browser error overlays or private server addresses are shown in the selected captures. The screenshot set is a product demonstration, not a real customer's business history.
+Nine optimized PNG assets retain authentic application content. Original ERP screenshots remain in `docs/screenshots/`; original local execution evidence stays ignored. No secrets, personal customer records, browser error overlays or private server addresses are shown in the selected captures. The screenshot set is a product demonstration, not a real customer's business history. The ordinary order workspace illustrates where approved orders appear; it is not labelled as a capture of an agent approval or proof that its pictured sample rows were agent-created.
 
 Fresh AI Assistant, Knowledge Center, Operations Center and Quality Dashboard screenshots are **not included**: no new database records or live queries were submitted during this documentation change solely to fill a gallery. Their implemented status is documented separately, and missing visual evidence is not replaced by mockups. A future refresh should use an explicitly isolated synthetic environment and consistent viewport sizes. [Capture/test procedure](../../DEVELOPMENT.md#screenshots).
